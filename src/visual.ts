@@ -12,6 +12,11 @@ import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import ISelectionId = powerbi.visuals.ISelectionId;
 import DataView = powerbi.DataView;
 import DataViewTableRow = powerbi.DataViewTableRow;
+import IVisualLicenseManager = powerbi.extensibility.IVisualLicenseManager;
+import ServicePlanState = powerbi.ServicePlanState;
+
+const SP_IDENTIFIER = "flow-chart-tcviz";
+const MAX_FREE_NODES = 9;
 
 import { VisualFormattingSettingsModel } from "./settings";
 
@@ -115,6 +120,10 @@ export class Visual implements IVisual {
     private tooltipsEnabled: boolean = true;
     private centeringApplied: boolean = false;
     private swimlaneBands: { label: string; start: number; end: number; axisStart: number }[] = [];
+    private licenseManager: IVisualLicenseManager;
+    private isPro: boolean = false;
+    private isLimited: boolean = false;
+    private fullNodeCount: number = 0;
 
     constructor(options: VisualConstructorOptions) {
         this.formattingSettingsService = new FormattingSettingsService();
@@ -122,6 +131,7 @@ export class Visual implements IVisual {
         this.host = options.host;
         this.selectionManager = this.host.createSelectionManager();
         this.events = this.host.eventService;
+        this.licenseManager = options.host.licenseManager;
 
         this.target.style.overflow = "hidden";
         this.target.tabIndex = 0;
@@ -155,9 +165,20 @@ export class Visual implements IVisual {
         this.updateMinimapViewport();
     }
 
-    public update(options: VisualUpdateOptions): void {
+    public async update(options: VisualUpdateOptions): Promise<void> {
         this.events.renderingStarted(options);
         try {
+            // Production license check via Microsoft AppSource
+            try {
+                const licenseResult = await this.licenseManager.getAvailableServicePlans();
+                this.isPro = licenseResult.plans?.some(
+                    plan => plan.spIdentifier === SP_IDENTIFIER &&
+                            plan.state === ServicePlanState.Active
+                ) ?? false;
+            } catch (_) {
+                this.isPro = false;
+            }
+
             this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(
                 VisualFormattingSettingsModel,
                 options.dataViews && options.dataViews[0]
@@ -175,6 +196,14 @@ export class Visual implements IVisual {
             }
 
             this.data = this.parseDataView(dataView);
+
+            // Free tier: cap the diagram to MAX_FREE_NODES nodes (kept connected via BFS from the roots)
+            this.fullNodeCount = this.data.nodes.length;
+            this.isLimited = !this.isPro && this.fullNodeCount > MAX_FREE_NODES;
+            if (this.isLimited) {
+                this.data = this.limitFreeTierNodes(this.data, MAX_FREE_NODES);
+            }
+
             this.computeLayout();
             this.render();
 
@@ -182,6 +211,31 @@ export class Visual implements IVisual {
         } catch (e) {
             this.events.renderingFailed(options, String(e));
         }
+    }
+
+    /** Keeps only the first `maxNodes` reachable from the root layer (BFS), so the
+     *  trimmed diagram stays a connected sub-tree instead of an arbitrary node cut. */
+    private limitFreeTierNodes(data: ParsedData, maxNodes: number): ParsedData {
+        const minLayer = Math.min(...data.nodes.map(n => n.layer));
+        const childrenOf = new Map<string, string[]>();
+        data.links.forEach(l => {
+            if (!childrenOf.has(l.sourceId)) childrenOf.set(l.sourceId, []);
+            childrenOf.get(l.sourceId).push(l.targetId);
+        });
+        const roots = data.nodes.filter(n => n.layer === minLayer).map(n => n.id);
+        const kept = new Set<string>();
+        const queue = [...roots];
+        while (queue.length && kept.size < maxNodes) {
+            const id = queue.shift();
+            if (kept.has(id)) continue;
+            kept.add(id);
+            (childrenOf.get(id) || []).forEach(cid => { if (!kept.has(cid)) queue.push(cid); });
+        }
+        return {
+            ...data,
+            nodes: data.nodes.filter(n => kept.has(n.id)),
+            links: data.links.filter(l => kept.has(l.sourceId) && kept.has(l.targetId))
+        };
     }
 
     private renderEmpty(): void {
@@ -950,6 +1004,7 @@ export class Visual implements IVisual {
                 <button type="button" class="flow-fit" aria-label="Fit diagram to view" style="font:12px 'Segoe UI',sans-serif;padding:2px 8px;border:1px solid #ccc;border-radius:3px;background:#fff;cursor:pointer;">Fit</button>
                 ${variants.length ? `<button type="button" class="flow-variants-toggle" aria-label="Toggle top variants panel" aria-pressed="${this.variantsPanelOpen}" style="font:12px 'Segoe UI',sans-serif;padding:2px 8px;border:1px solid #ccc;border-radius:3px;background:${this.variantsPanelOpen ? "#e8f0fe" : "#fff"};cursor:pointer;">Variants</button>` : ""}
                 <button type="button" class="flow-tooltips-toggle" title="Toggle tooltips" aria-label="Toggle tooltips" aria-pressed="${this.tooltipsEnabled}" style="font:12px 'Segoe UI',sans-serif;padding:2px 8px;border:1px solid #ccc;border-radius:3px;background:${this.tooltipsEnabled ? "#fff" : "#e8f0fe"};cursor:pointer;">Tooltips</button>
+                ${this.isLimited ? `<span class="flow-free-limit-msg" style="font:11px 'Segoe UI',sans-serif;padding:3px 8px;color:#C9524A;font-weight:600;">Free: showing ${MAX_FREE_NODES} of ${this.fullNodeCount} nodes — upgrade to Pro to see the full diagram</span>` : ""}
             </div>
             ${variantsPanelHtml}
             <div class="flow-scroll" style="position:absolute;inset:0;overflow:auto;">

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Flow Chart — Infographic</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.19.0/iconfont/tabler-icons.min.css">
+<style>
+  :root {
+    --bg:#FAF9F5;  --bg2:#EDE9DE;  --bd:#F5F3ED;  --line:#DAD9D4;
+    --t1:#3D3929;  --t2:#535146;   --t3:#83827D;
+    --acc:#2B6CB0; --accd:#1F4E80; --acc2:#3E9C5B; --acc2l:#D9EFE0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #888; font-family: 'Segoe UI', system-ui, sans-serif; }
+  #infographic {
+    width: 1366px; min-height: 768px;
+    background: var(--bg); color: var(--t1);
+    display: flex; flex-direction: column;
+    padding: 28px 40px;
+  }
+  #dl-btn {
+    position: fixed; top: 12px; left: 12px; z-index: 10;
+    background: var(--acc); color: #fff; border: none; border-radius: 6px;
+    padding: 8px 16px; font: 700 13px 'Segoe UI', sans-serif; cursor: pointer;
+  }
+  #dl-btn:hover { background: var(--accd); }
+
+  .header { display: grid; grid-template-columns: auto 1fr auto; gap: 24px; align-items: center; margin-bottom: 18px; }
+  .header h1 { font-size: 30px; font-weight: 700; }
+  .header h1 span { color: var(--acc); }
+  .header .subtitle { color: var(--t3); font-size: 14px; margin-top: 4px; }
+
+  .usecases { display: flex; align-items: center; gap: 18px; background: var(--bd); border: 1px solid var(--line); border-radius: 10px; padding: 14px 22px; margin-bottom: 18px; }
+  .usecases .lbl { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--t3); }
+  .usecases .items { display: flex; gap: 20px; flex: 1; flex-wrap: wrap; }
+  .usecases .item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--t2); }
+  .usecases .item i { color: var(--acc); font-size: 16px; }
+  .usecases .callout { background: var(--acc); color: #fff; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 20px; white-space: nowrap; }
+
+  .body-row { display: grid; grid-template-columns: 1fr 210px 1fr; gap: 20px; margin-bottom: 18px; }
+  .tier-box { border-radius: 10px; padding: 20px 24px; }
+  .tier-box.free { border: 2px solid var(--acc); background: #fff; }
+  .tier-box.pro { border: 2px solid var(--acc2); background: #fff; }
+  .tier-box .tname { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .tier-box.free .tname { color: var(--acc); }
+  .tier-box.pro .tname { color: var(--acc2); }
+  .tier-box ul { list-style: none; }
+  .tier-box li { font-size: 13px; color: var(--t2); padding: 3px 0 3px 20px; position: relative; }
+  .tier-box li::before { content: "✓"; position: absolute; left: 0; font-weight: 700; }
+  .tier-box.free li::before { color: var(--acc); }
+  .tier-box.pro li::before { color: var(--acc2); }
+
+  .stat-center { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+  .stat-circle { width: 130px; height: 130px; border-radius: 50%; background: linear-gradient(135deg, var(--acc), var(--acc2)); display: flex; align-items: center; justify-content: center; color: #fff; text-align: center; font-weight: 700; font-size: 14px; padding: 10px; }
+  .stat-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
+  .stat-pill { background: var(--bd); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; text-align: center; }
+  .stat-pill .n { font-size: 16px; font-weight: 700; color: var(--acc); }
+  .stat-pill .l { font-size: 9px; color: var(--t3); text-transform: uppercase; letter-spacing: .5px; }
+
+  .workflow { display: flex; align-items: center; gap: 8px; background: var(--bd); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; }
+  .wf-step { flex: 1; text-align: center; font-size: 12px; color: var(--t2); }
+  .wf-step .n { width: 24px; height: 24px; border-radius: 50%; background: var(--acc); color: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px; font-weight: 700; font-size: 12px; }
+  .wf-arrow { color: var(--t3); font-size: 16px; }
+  .workflow-tag { font-style: italic; color: var(--t3); font-size: 12px; text-align: center; margin-bottom: 18px; }
+
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; flex: 1; }
+  .grid3 .panel { background: var(--bd); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .grid3 .panel h3 { font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--acc); }
+  .grid3 .panel ul { list-style: none; }
+  .grid3 .panel li { font-size: 12px; color: var(--t2); padding: 3px 0; }
+
+  .footer { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .footer .links { display: flex; gap: 18px; font-size: 12px; color: var(--t3); }
+
+  @media print { @page { size: A4 landscape; margin: 0; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } #dl-btn { display: none; } }
+</style>
+</head>
+<body>
+<button id="dl-btn" onclick="download()">Download PNG</button>
+<div id="infographic">
+
+  <div class="header">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 828 362" width="150" height="66">
+      <defs><linearGradient id="g" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0" stop-color="#1F4E80"/><stop offset="0.55" stop-color="#2B6CB0"/><stop offset="1" stop-color="#3E9C5B"/>
+      </linearGradient></defs>
+      <g transform="translate(40,46)">
+        <rect x="22" y="20" width="150" height="150" rx="30" fill="none" stroke="url(#g)" stroke-width="11"/>
+        <g fill="url(#g)">
+          <rect x="42" y="110" width="20" height="58" rx="5"/><rect x="70" y="86" width="20" height="82" rx="5"/>
+          <rect x="98" y="62" width="20" height="106" rx="5"/><rect x="126" y="38" width="20" height="130" rx="5"/>
+        </g>
+      </g>
+      <text x="258" y="246" font-family="Poppins,sans-serif" font-weight="700" font-size="196" letter-spacing="-4">
+        <tspan fill="url(#g)">tc</tspan><tspan fill="#3D3929">viz</tspan>
+      </text>
+      <text x="264" y="306" font-family="Poppins,sans-serif" font-weight="500" font-size="31" letter-spacing="6.5" fill="#83827D">VISUALS TO POWER BI</text>
+    </svg>
+    <div>
+      <h1>Flow <span>Chart</span></h1>
+      <div class="subtitle">Data-driven process flow diagrams with native Power BI selection, cross-filtering and KPI-aware nodes.</div>
+    </div>
+    <svg width="190" height="100" viewBox="0 0 190 100">
+      <rect x="6" y="42" width="34" height="24" rx="5" fill="#2B6CB0"/>
+      <path d="M40,54 C58,54 55,20 73,20" stroke="#2B6CB0" stroke-width="3" fill="none"/>
+      <path d="M40,54 C58,54 55,80 73,80" stroke="#2B6CB0" stroke-width="3" fill="none"/>
+      <rect x="73" y="8" width="30" height="24" rx="5" fill="#3E9C5B"/>
+      <rect x="73" y="68" width="30" height="24" rx="5" fill="#D9A441"/>
+      <path d="M103,20 C120,20 120,10 138,10" stroke="#3E9C5B" stroke-width="2.5" fill="none"/>
+      <path d="M103,20 C120,20 120,30 138,30" stroke="#3E9C5B" stroke-width="2.5" fill="none"/>
+      <rect x="138" y="4" width="24" height="18" rx="4" fill="#8E5FC4"/>
+      <rect x="138" y="24" width="24" height="18" rx="4" fill="#8E5FC4"/>
+    </svg>
+  </div>
+
+  <div class="usecases">
+    <div class="lbl">USE CASES</div>
+    <div class="items">
+      <div class="item"><i class="ti ti-route"></i>Process mapping</div>
+      <div class="item"><i class="ti ti-funnel"></i>Funnel / distribution flow</div>
+      <div class="item"><i class="ti ti-sitemap"></i>Org & decomposition trees</div>
+      <div class="item"><i class="ti ti-target-arrow"></i>KPI vs target tracking</div>
+      <div class="item"><i class="ti ti-swimming"></i>Swimlane workflows</div>
+      <div class="item"><i class="ti ti-git-branch"></i>Variant / conformance analysis</div>
+    </div>
+    <div class="callout">No DAX required</div>
+  </div>
+
+  <div class="body-row">
+    <div class="tier-box free">
+      <div class="tname">Free</div>
+      <ul>
+        <li>Full hierarchical diagram</li>
+        <li>KPI badges, swimlanes, variants</li>
+        <li>Golden path highlighting</li>
+        <li>Zoom, minimap, search, collapse</li>
+        <li>Up to 9 nodes</li>
+      </ul>
+    </div>
+    <div class="stat-center">
+      <div class="stat-circle">Levels → Value<br>= diagram</div>
+      <div class="stat-pills">
+        <div class="stat-pill"><div class="n">9</div><div class="l">Free nodes</div></div>
+        <div class="stat-pill"><div class="n">∞</div><div class="l">Pro nodes</div></div>
+        <div class="stat-pill"><div class="n">8</div><div class="l">Top variants</div></div>
+        <div class="stat-pill"><div class="n">6</div><div class="l">Level colors</div></div>
+      </div>
+    </div>
+    <div class="tier-box pro">
+      <div class="tname">Pro</div>
+      <ul>
+        <li>Unlimited nodes</li>
+        <li>All Free features included</li>
+        <li>No diagram size restriction</li>
+        <li>Priority support</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="workflow">
+    <div class="wf-step"><div class="n">1</div>Drag fields into Levels (in order)</div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step"><div class="n">2</div>Add Value measure</div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step"><div class="n">3</div>Tree builds automatically</div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step"><div class="n">4</div>Optional: Target, Swimlane</div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step"><div class="n">5</div>Explore: zoom, collapse, search</div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step"><div class="n">6</div>Click to cross-filter the page</div>
+  </div>
+  <div class="workflow-tag">"From a flat table to an interactive process diagram — no edge table, no DAX."</div>
+
+  <div class="grid3">
+    <div class="panel">
+      <h3>Key Benefits</h3>
+      <ul>
+        <li>Native selection & cross-filtering</li>
+        <li>Automatic hierarchy from column order</li>
+        <li>Multi-parent graphs handled correctly</li>
+        <li>Accessible: keyboard focus, high contrast</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Tips</h3>
+      <ul>
+        <li>Column order = level order</li>
+        <li>Collapse a node to cascade-recalculate downstream</li>
+        <li>Use Variants panel to trace top paths</li>
+        <li>Toggle tooltips off from the toolbar for presentations</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Format Pane Reference</h3>
+      <ul>
+        <li>Layout · Nodes · Value/KPI badge</li>
+        <li>Value format · Links · Swimlanes</li>
+        <li>Legend · Data colors (default or per-level)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    <svg width="70" height="30" viewBox="0 0 828 362">
+      <defs><linearGradient id="gf" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0" stop-color="#1F4E80"/><stop offset="0.55" stop-color="#2B6CB0"/><stop offset="1" stop-color="#3E9C5B"/>
+      </linearGradient></defs>
+      <g transform="translate(40,46)">
+        <rect x="22" y="20" width="150" height="150" rx="30" fill="none" stroke="url(#gf)" stroke-width="11"/>
+        <g fill="url(#gf)">
+          <rect x="42" y="110" width="20" height="58" rx="5"/><rect x="70" y="86" width="20" height="82" rx="5"/>
+          <rect x="98" y="62" width="20" height="106" rx="5"/><rect x="126" y="38" width="20" height="130" rx="5"/>
+        </g>
+      </g>
+      <text x="258" y="246" font-family="Poppins,sans-serif" font-weight="700" font-size="196"><tspan fill="url(#gf)">tc</tspan><tspan fill="#3D3929">viz</tspan></text>
+    </svg>
+    <div class="links">
+      <span>Video: youtube.com/watch?v=wXvxscw7e4k</span>
+      <span>Support: tinocallarisa-web.github.io/FlowChart/support.html</span>
+      <span>Privacy</span><span>Terms</span><span>GitHub</span>
+    </div>
+  </div>
+
+</div>
+<script>
+function download() {
+  html2canvas(document.getElementById('infographic'), { scale: 2 }).then(function (canvas) {
+    const a = document.createElement('a');
+    a.download = 'flowchart-infographic.png';
+    a.href = canvas.toDataURL('image/png');
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
+}
+</script>
+</body>
+</html>

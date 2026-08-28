@@ -1,0 +1,41 @@
+Flow Chart for Power BI — build interactive process diagrams straight from your data model, with full native Power BI selection and cross-filtering.
+
+In this video: how to set up the visual, the hierarchical Levels field well, KPI badges, swimlanes, variant analysis, golden path highlighting, and the Free vs Pro tiers.
+
+CHAPTERS
+0:00 Introduction
+0:00 Setting up the data (Levels, Value)
+0:00 Automatic tree building and branch merging
+0:00 KPI badges (Target field)
+0:00 Swimlanes
+0:00 Golden path and Variants panel
+0:00 Collapse / expand, zoom, minimap, search
+0:00 Format pane tour
+0:00 Free vs Pro
+0:00 Wrap-up
+
+FREE VS PRO
+Free: full feature set, diagrams up to 9 nodes.
+Pro: unlimited nodes. Licensed through Microsoft AppSource — no extra setup, detected automatically once your subscription is active.
+
+LINKS
+Support & FAQ: https://tinocallarisa-web.github.io/FlowChart/support.html
+Privacy Policy: https://tinocallarisa-web.github.io/FlowChart/privacy.html
+Terms of Use: https://tinocallarisa-web.github.io/FlowChart/terms.html
+Contact: support@tcviz.com
+
+This visual makes no external network calls — everything runs locally inside your Power BI report.
+
+#PowerBI #DataVisualization #ProcessMining #CustomVisual #TCViz
+
+---
+SHORT VERSION (Shorts / LinkedIn)
+Turn a flat table into a fully interactive process diagram in Power BI — no DAX, just drag your hierarchy fields in order. Native selection, cross-filtering, KPI badges, swimlanes and variant analysis included. #PowerBI #DataViz
+
+---
+ALTERNATE TITLES
+1. Flow Chart for Power BI — Build Process Diagrams from Your Data Model
+2. Native Power BI Process Flow Diagrams (No DAX Required)
+3. Hierarchical Flow Charts in Power BI — KPI Badges, Swimlanes & Variants
+4. The Power BI Custom Visual for Process & Decomposition Diagrams
+5. Flow Chart: Interactive Process Mapping Inside Power BI

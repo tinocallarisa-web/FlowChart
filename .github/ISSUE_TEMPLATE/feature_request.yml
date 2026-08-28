@@ -1,0 +1,31 @@
+name: Feature Request
+description: Suggest an improvement for the Flow Chart visual
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the situation before jumping to a specific solution.
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Layout / navigation
+        - Formatting / styling
+        - Data roles / modeling
+        - Interactivity / selection
+        - Accessibility
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Current workaround (if any)
+    validations:
+      required: false

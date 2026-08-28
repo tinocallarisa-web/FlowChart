@@ -1,0 +1,62 @@
+name: Bug Report
+description: Report a problem with the Flow Chart visual
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: tier
+    attributes:
+      label: License tier
+      options:
+        - Free
+        - Pro
+    validations:
+      required: true
+  - type: input
+    id: visual-version
+    attributes:
+      label: Visual version
+      placeholder: "e.g. 1.0.0.0"
+    validations:
+      required: true
+  - type: input
+    id: desktop-version
+    attributes:
+      label: Power BI Desktop version (or Service)
+      placeholder: "e.g. 2.130.xxxx.0, or Power BI Service"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What did you do, and what happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: false
+  - type: textarea
+    id: data
+    attributes:
+      label: Data shape
+      description: Roughly how many levels, nodes, and rows? Any relevant field types?
+    validations:
+      required: false
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Drag and drop images here if helpful.
+    validations:
+      required: false
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console errors
+      description: Open DevTools (F12) → Console, and paste any red errors here.
+    validations:
+      required: false

@@ -1,0 +1,61 @@
+FLOW CHART — TIPS & HINTS
+==========================
+
+
+GETTING STARTED
+---------------
+Minimum setup: drag two or more fields into Levels (in order — the first
+one becomes the root) and a measure into Value. The tree builds itself;
+nodes with the same value at the same level automatically merge.
+
+
+FIELD WELLS
+-----------
+. Levels ........... one field per hierarchy level, dragged in order
+. Level images ..... optional base64 image per level (aligned with Levels)
+. Value ............ the metric propagated through every parent-child link
+. Target ........... optional, turns on the KPI badge (value + up/down %)
+. Swimlane ......... optional, groups nodes into colored bands
+. Tooltip fields ... optional extra measures shown in tooltips
+
+
+FORMAT PANE
+-----------
+Free vs Pro
+    Free ... full feature set, capped at 9 nodes total
+    Pro .... unlimited nodes
+Layout ..... direction (horizontal/vertical), node gap, layer gap
+Nodes ...... width, height, corner radius, font, image size, border, shadow
+Badge/KPI .. font, colors, background opacity, up/down KPI colors
+Value fmt .. plain / thousands / compact (K/M) / percent of total, decimals
+Links ...... color, base width, curvature, golden-path & top-variant highlight
+Swimlanes .. on/off, 4 band colors, opacity, label style
+Legend ..... on/off (level color legend)
+Data colors  default color, or per-level (up to 6 configurable colors)
+
+
+TIPS & BEST PRACTICES
+----------------------
+. Order matters: the sequence you drag fields into Levels defines the
+  hierarchy top to bottom, not the field names.
+. A node can have more than one parent (e.g. two channels feeding the same
+  downstream step) — collapse/expand handles this correctly.
+. Collapsing a node hides its whole branch and recalculates values/targets/
+  link widths downstream, cutting only what passed through that branch.
+. Use the Variants panel (toolbar button) to see the 8 highest-value
+  complete paths and trace one on the diagram.
+. Toggle tooltips off from the toolbar for a cleaner view when presenting.
+. The minimap appears automatically once the diagram has more than 6 nodes.
+
+
+TROUBLESHOOTING
+----------------
+. Nothing renders ................ check Levels has 2+ fields and Value
+                                     has a measure
+. Diagram looks cut off ........... Free tier + more than 9 nodes; upgrade
+                                     to Pro for the full diagram
+. Node not in expected swimlane ... a node only joins a band if EVERY row
+                                     feeding it shares the same swimlane
+                                     value; otherwise it stays neutral
+. Page tooltip not triggering ..... known limitation on nodes with 3+
+                                     hierarchy levels; works on links

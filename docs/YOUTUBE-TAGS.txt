@@ -1,0 +1,6 @@
+Power BI, Power BI custom visual, flow chart, process flow, process mining, decomposition tree, Sankey diagram, KPI dashboard, data visualization, PowerBI visuals, Microsoft AppSource, business intelligence, org chart, process mapping, swimlane diagram, hierarchical chart, TCViz
+
+VARIANTS BY FOCUS
+Setup-focused: Power BI tutorial, custom visual setup, drag and drop Power BI, Power BI field wells
+KPI-focused: KPI tracking, target vs actual, variance analysis, Power BI KPI visual
+Process-focused: process flow diagram, workflow visualization, funnel analysis, distribution flow
