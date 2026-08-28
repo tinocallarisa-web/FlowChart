@@ -1,0 +1,25 @@
+.flow-node {
+    cursor: pointer;
+
+    &:focus {
+        outline: 2px solid #2B6CB0;
+        outline-offset: 2px;
+    }
+
+    &:focus:not(:focus-visible) {
+        outline: none;
+    }
+
+    &.search-hit rect {
+        stroke: #F5A623;
+        stroke-width: 3px;
+    }
+}
+
+.flow-link {
+    cursor: pointer;
+
+    &:focus {
+        outline: 2px solid #2B6CB0;
+    }
+}

@@ -1,0 +1,49 @@
+Level1,Level2,Level3,Level4,Level1Image,Level2Image,Level3Image,Level4Image,Litros,Unidades,ValorEUR,Area,Equipo,target
+Fabricante,Distribucion Directa,AFH,Hosteleria,62,64,66,90,741,815,2371,Norte,Equipo Horeca,2394.71
+Fabricante,Distribucion Directa,AFH,Hosteleria,62,64,66,90,805,886,2576,Sur,Equipo Horeca,2627.52
+Fabricante,Distribucion Directa,AFH,Hosteleria,62,64,66,90,404,444,1293,Este,Equipo Horeca,1318.86
+Fabricante,Distribucion Directa,AFH,Hosteleria,62,64,66,90,520,572,1664,Oeste,Equipo Horeca,1713.92
+Fabricante,Distribucion Directa,AFH,Restauracion,62,64,66,90,699,769,2237,Norte,Equipo Horeca,2304.11
+Fabricante,Distribucion Directa,AFH,Restauracion,62,64,66,90,756,832,2419,Sur,Equipo Horeca,2491.57
+Fabricante,Distribucion Directa,AFH,Restauracion,62,64,66,90,371,408,1187,Este,Equipo Horeca,1222.61
+Fabricante,Distribucion Directa,AFH,Restauracion,62,64,66,90,1091,1200,3491,Oeste,Equipo Horeca,3525.91
+Fabricante,Distribucion Directa,AFH,Catering,62,64,66,90,830,913,2656,Norte,Equipo Horeca,2682.56
+Fabricante,Distribucion Directa,AFH,Catering,62,64,66,90,670,737,2144,Sur,Equipo Horeca,2208.32
+Fabricante,Distribucion Directa,AFH,Catering,62,64,66,90,556,612,1779,Este,Equipo Horeca,1796.79
+Fabricante,Distribucion Directa,AFH,Catering,62,64,66,90,1003,1103,3210,Oeste,Equipo Horeca,3242.1
+Fabricante,Distribucion Directa,HOME,Supermercados,62,64,66,90,892,981,2854,Norte,Equipo Retail,2037.756
+Fabricante,Distribucion Directa,HOME,Supermercados,62,64,66,90,369,406,1181,Sur,Equipo Retail,843.234
+Fabricante,Distribucion Directa,HOME,Supermercados,62,64,66,90,749,824,2397,Este,Equipo Retail,1728.237
+Fabricante,Distribucion Directa,HOME,Supermercados,62,64,66,90,512,563,1638,Oeste,Equipo Retail,1158.066
+Fabricante,Distribucion Directa,HOME,Hipermercados,62,64,66,90,905,996,2896,Norte,Equipo Retail,2067.744
+Fabricante,Distribucion Directa,HOME,Hipermercados,62,64,66,90,442,486,1414,Sur,Equipo Retail,999.698
+Fabricante,Distribucion Directa,HOME,Hipermercados,62,64,66,90,804,884,2573,Este,Equipo Retail,1837.122
+Fabricante,Distribucion Directa,HOME,Hipermercados,62,64,66,90,739,813,2365,Oeste,Equipo Retail,1672.055
+Fabricante,Distribucion Directa,HOME,Tienda Tradicional,62,64,66,90,459,505,1469,Norte,Equipo Retail,1038.583
+Fabricante,Distribucion Directa,HOME,Tienda Tradicional,62,64,66,90,345,380,1104,Sur,Equipo Retail,788.256
+Fabricante,Distribucion Directa,HOME,Tienda Tradicional,62,64,66,90,1145,1260,3664,Este,Equipo Retail,2616.096
+Fabricante,Distribucion Directa,HOME,Tienda Tradicional,62,64,66,90,1173,1290,3754,Oeste,Equipo Retail,2654.078
+Fabricante,Distribucion Indirecta,AFH,Hosteleria,62,64,68,90,409,450,1309,Norte,Equipo Horeca,943.789
+Fabricante,Distribucion Indirecta,AFH,Hosteleria,62,64,68,90,700,770,2240,Sur,Equipo Horeca,1583.68
+Fabricante,Distribucion Indirecta,AFH,Hosteleria,62,64,68,90,1160,1276,3712,Este,Equipo Horeca,2624.384
+Fabricante,Distribucion Indirecta,AFH,Hosteleria,62,64,68,90,470,517,1504,Oeste,Equipo Horeca,1063.328
+Fabricante,Distribucion Indirecta,AFH,Restauracion,62,64,68,90,677,745,2166,Norte,Equipo Horeca,1531.362
+Fabricante,Distribucion Indirecta,AFH,Restauracion,62,64,68,90,795,875,2544,Sur,Equipo Horeca,1816.416
+Fabricante,Distribucion Indirecta,AFH,Restauracion,62,64,68,90,905,996,2896,Este,Equipo Horeca,2047.472
+Fabricante,Distribucion Indirecta,AFH,Restauracion,62,64,68,90,553,608,1770,Oeste,Equipo Horeca,1787.7
+Fabricante,Distribucion Indirecta,AFH,Catering,62,64,68,90,453,498,1450,Norte,Equipo Horeca,1464.5
+Fabricante,Distribucion Indirecta,AFH,Catering,62,64,68,90,1187,1306,3798,Sur,Equipo Horeca,3873.96
+Fabricante,Distribucion Indirecta,AFH,Catering,62,64,68,90,701,771,2243,Este,Equipo Horeca,2287.86
+Fabricante,Distribucion Indirecta,AFH,Catering,62,64,68,90,509,560,1629,Oeste,Equipo Horeca,1645.29
+Fabricante,Distribucion Indirecta,HOME,Supermercados,62,64,66,90,792,871,2534,Norte,Equipo Retail,2584.68
+Fabricante,Distribucion Indirecta,HOME,Supermercados,62,64,66,90,597,657,1910,Sur,Equipo Retail,1967.3
+Fabricante,Distribucion Indirecta,HOME,Supermercados,62,64,66,90,438,482,1402,Este,Equipo Retail,1416.02
+Fabricante,Distribucion Indirecta,HOME,Supermercados,62,64,66,90,996,1096,3187,Oeste,Equipo Retail,3250.74
+Fabricante,Distribucion Indirecta,HOME,Hipermercados,62,64,66,90,617,679,1974,Norte,Equipo Retail,1993.74
+Fabricante,Distribucion Indirecta,HOME,Hipermercados,62,64,66,90,615,677,1968,Sur,Equipo Retail,1987.68
+Fabricante,Distribucion Indirecta,HOME,Hipermercados,62,64,66,90,372,409,1190,Este,Equipo Retail,1201.9
+Fabricante,Distribucion Indirecta,HOME,Hipermercados,62,64,66,90,1134,1247,3629,Oeste,Equipo Retail,3737.87
+Fabricante,Distribucion Indirecta,HOME,Tienda Tradicional,62,64,66,90,515,567,1648,Norte,Equipo Retail,1664.48
+Fabricante,Distribucion Indirecta,HOME,Tienda Tradicional,62,64,66,90,1096,1206,3507,Sur,Equipo Retail,3542.07
+Fabricante,Distribucion Indirecta,HOME,Tienda Tradicional,62,64,66,90,724,796,2317,Este,Equipo Retail,2340.17
+Fabricante,Distribucion Indirecta,HOME,Tienda Tradicional,62,64,66,90,512,563,1638,Oeste,Equipo Retail,1670.76

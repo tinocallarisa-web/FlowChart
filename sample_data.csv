@@ -1,0 +1,13 @@
+Source,Target,Value,Status,AvgDurationHours
+Opened,Triage,420,good,1.5
+Triage,Assigned,380,good,2.0
+Triage,Escalated,40,bad,6.0
+Assigned,In Progress,360,good,3.0
+Escalated,In Progress,35,bad,8.5
+In Progress,Waiting for Customer,90,ok,12.0
+In Progress,Resolved,270,good,4.0
+Waiting for Customer,In Progress,60,ok,20.0
+Waiting for Customer,Reopened,15,bad,30.0
+Reopened,In Progress,15,bad,5.0
+Resolved,Closed,260,good,1.0
+Resolved,Reopened,10,bad,48.0

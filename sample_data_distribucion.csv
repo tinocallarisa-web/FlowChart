@@ -1,0 +1,49 @@
+SourceId,TargetId,SourceLabel,TargetLabel,Area,Litros,Unidades,ValorEUR
+1,2,Fabricante,Distribucion Directa,Norte,1840,2024,5888
+1,2,Fabricante,Distribucion Directa,Sur,1745,1920,5584
+1,2,Fabricante,Distribucion Directa,Este,1943,2137,6218
+1,2,Fabricante,Distribucion Directa,Oeste,1678,1846,5370
+1,3,Fabricante,Distribucion Indirecta,Norte,1387,1526,4438
+1,3,Fabricante,Distribucion Indirecta,Sur,1609,1770,5149
+1,3,Fabricante,Distribucion Indirecta,Este,1434,1577,4589
+1,3,Fabricante,Distribucion Indirecta,Oeste,675,743,2160
+2,4,Distribucion Directa,AFH,Norte,1584,1742,5069
+2,4,Distribucion Directa,AFH,Sur,1693,1862,5418
+2,4,Distribucion Directa,AFH,Este,1594,1753,5101
+2,4,Distribucion Directa,AFH,Oeste,1050,1155,3360
+2,5,Distribucion Directa,HOME,Norte,1638,1802,5242
+2,5,Distribucion Directa,HOME,Sur,1927,2120,6166
+2,5,Distribucion Directa,HOME,Este,1991,2190,6371
+2,5,Distribucion Directa,HOME,Oeste,1851,2036,5923
+3,4,Distribucion Indirecta,AFH,Norte,856,942,2739
+3,4,Distribucion Indirecta,AFH,Sur,789,868,2525
+3,4,Distribucion Indirecta,AFH,Este,1517,1669,4854
+3,4,Distribucion Indirecta,AFH,Oeste,1765,1942,5648
+3,5,Distribucion Indirecta,HOME,Norte,829,912,2653
+3,5,Distribucion Indirecta,HOME,Sur,1218,1340,3898
+3,5,Distribucion Indirecta,HOME,Este,1037,1141,3318
+3,5,Distribucion Indirecta,HOME,Oeste,1293,1422,4138
+4,6,AFH,Hosteleria,Norte,1539,1693,4925
+4,6,AFH,Hosteleria,Sur,657,723,2102
+4,6,AFH,Hosteleria,Este,1365,1502,4368
+4,6,AFH,Hosteleria,Oeste,1662,1828,5318
+4,7,AFH,Restauracion,Norte,1206,1327,3859
+4,7,AFH,Restauracion,Sur,1628,1791,5210
+4,7,AFH,Restauracion,Este,770,847,2464
+4,7,AFH,Restauracion,Oeste,1869,2056,5981
+4,8,AFH,Catering,Norte,1265,1392,4048
+4,8,AFH,Catering,Sur,847,932,2710
+4,8,AFH,Catering,Este,1829,2012,5853
+4,8,AFH,Catering,Oeste,861,947,2755
+5,9,HOME,Supermercados,Norte,1077,1185,3446
+5,9,HOME,Supermercados,Sur,1668,1835,5338
+5,9,HOME,Supermercados,Este,998,1098,3194
+5,9,HOME,Supermercados,Oeste,642,706,2054
+5,10,HOME,Hipermercados,Norte,1972,2169,6310
+5,10,HOME,Hipermercados,Sur,859,945,2749
+5,10,HOME,Hipermercados,Este,1527,1680,4886
+5,10,HOME,Hipermercados,Oeste,1921,2113,6147
+5,11,HOME,Tienda Tradicional,Norte,1028,1131,3290
+5,11,HOME,Tienda Tradicional,Sur,1513,1664,4842
+5,11,HOME,Tienda Tradicional,Este,701,771,2243
+5,11,HOME,Tienda Tradicional,Oeste,689,758,2205
