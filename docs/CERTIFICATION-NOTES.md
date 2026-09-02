@@ -1,127 +1,40 @@
-# Certification Notes — Flow Chart v1.0.0.0
+Flow Chart v1.0.0.0 — Certification Notes
 
-## Visual Information
+Certification branch: https://github.com/tinocallarisa-web/FlowChart/tree/certification
 
-| Field | Value |
-|---|---|
-| Display Name | Flow Chart |
-| GUID | flowChart69C501A62F7E49748AD3DA7D4E840200 |
-| Version | 1.0.0.0 |
-| Author | Tino Callarisa / TCViz |
-| Support URL | https://tinocallarisa-web.github.io/FlowChart/support.html |
-| Privacy URL | https://tinocallarisa-web.github.io/FlowChart/privacy.html |
+SOURCE CODE REPOSITORY ACCESS
+Repository: https://github.com/tinocallarisa-web/FlowChart
+Read-only collaborator access has been granted to GitHub users "OSDC1033" and "pbicvsupport" (two-factor authentication requirement disabled for this repository so both accounts can accept without blockers). Please accept the pending collaborator invitations to browse the source. The certification branch above points to the exact commit submitted for review.
+Support: https://tinocallarisa-web.github.io/FlowChart/support.html
+Privacy: https://tinocallarisa-web.github.io/FlowChart/privacy.html
+Terms: https://tinocallarisa-web.github.io/FlowChart/terms.html
+Video: https://www.youtube.com/watch?v=wXvxscw7e4k
 
-## Links
+LICENSE VALIDATION
+Resolved via the official IVisualLicenseManager API (getAvailableServicePlans), checked against Plan ID "flow-chart-tcviz". Async, off the render path. No external servers, no user data sent. Falls back to Free on any error.
 
-- **Certification branch:** https://github.com/tinocallarisa-web/FlowChart/tree/certification
-- **Support page:** https://tinocallarisa-web.github.io/FlowChart/support.html
-- **Privacy policy:** https://tinocallarisa-web.github.io/FlowChart/privacy.html
-- **Terms of service:** https://tinocallarisa-web.github.io/FlowChart/terms.html
-- **Demo video:** https://www.youtube.com/watch?v=wXvxscw7e4k
+FREE VS PRO
+Free: all features unlocked (KPI badges, swimlanes, golden path, variants, collapse/expand, zoom, minimap, search, full formatting). Diagrams capped at 9 nodes, kept as a connected sub-tree from the root.
+Pro: same features, unlimited nodes.
 
----
+PRIVACY / NETWORK
+No external network calls, no telemetry, no browser storage. Data processed comes only from the Power BI dataView (Levels, Value, Target, Swimlane, Tooltip fields), including optional base64 level images supplied by the data model — nothing fetched or persisted outside the report.
 
-## License Validation
+TESTING — FREE
+1. Import the _test build with --free flag applied (real license check, no active plan).
+2. Drag 3+ fields into Levels + a Value measure, using a dataset with 10+ nodes.
+3. Verify only 9 nodes render (connected sub-tree) with a "Free: showing 9 of N" message.
+4. Click a node/link — verify cross-filtering on other visuals.
 
-License is resolved via the official Power BI `IVisualLicenseManager` API:
+TESTING — PRO
+1. Import the _test build with isPro forced true.
+2. Same dataset — verify the full diagram renders, no limit message.
+3. Add a Target measure — verify KPI badge (value + up/down %).
+4. Add a Swimlane field — verify colored bands.
+5. Open Variants panel, click a variant — verify it traces on the diagram.
+6. Collapse a mid-level node — verify downstream values/badges recalculate.
 
-```typescript
-const licenseResult = await this.licenseManager.getAvailableServicePlans();
-this.isPro = licenseResult.plans?.some(
-    plan => plan.spIdentifier === "flow-chart-tcviz" &&
-            plan.state === ServicePlanState.Active
-) ?? false;
-```
+CAPABILITIES
+All 5 required flags present (supportsHighlight, supportsSynchronizingFilterState, supportsLandingPage, supportsKeyboardFocus, supportsMultiVisualSelection). Rendering events (renderingStarted/Finished/Failed) on every code path in update(). Table dataView mapping — Power BI filters by row count, no highlight-array handling needed.
 
-- No external server calls for license validation
-- Resolution is asynchronous and does not block rendering
-- If validation fails or is unavailable, the visual falls back gracefully to the Free tier
-- `ServicePlanState.Active` is used as an imported enum value (not the numeric literal trick — see visual.ts)
-- `spIdentifier` must match the Plan ID configured for this offer in Partner Center exactly: `flow-chart-tcviz`
-
----
-
-## Free vs Pro Features
-
-### Free tier (no license required)
-- Full hierarchical flow diagram: Levels, Value, Target, Swimlane, Tooltip fields — all data roles available
-- KPI badges (target vs. actual with variation %)
-- Golden path / dominant-route highlighting
-- Top-variant highlighting and Variants panel
-- Swimlanes, collapse/expand, zoom, minimap, search, fit-to-view
-- Native selection, cross-filtering, context menu, tooltips (basic and report/page)
-- Full format pane customization
-- **Diagrams are capped at 9 nodes.** Diagrams with more nodes are trimmed (kept as a connected sub-tree from the root) and a message is shown in the toolbar.
-
-### Pro tier (requires AppSource license)
-- Unlimited nodes — no diagram size restriction
-- All Free tier features
-
----
-
-## Privacy & Network Access
-
-This visual makes **no external network requests** of any kind.
-
-- No telemetry
-- No analytics calls
-- No CDN or font loading at runtime
-- No data leaves the Power BI environment
-- All computation is local and in-memory
-
-Data processed: level labels, numeric Value/Target measures, optional Swimlane and Tooltip field values, and optional base64 Level images — all sourced exclusively from the Power BI dataView passed to `update()`. Level images are rendered directly from the base64 string supplied by the data model; no image is fetched from a URL or persisted outside the report.
-
----
-
-## Capabilities Compliance
-
-All five required flags are present in `capabilities.json`:
-
-```json
-"supportsHighlight": true,
-"supportsSynchronizingFilterState": true,
-"supportsLandingPage": true,
-"supportsKeyboardFocus": true,
-"supportsMultiVisualSelection": true
-```
-
-Rendering events are implemented in all code paths of `update()`:
-
-```typescript
-this.events.renderingStarted(options);
-try {
-    // render logic
-    this.events.renderingFinished(options);
-} catch (e) {
-    this.events.renderingFailed(options, String(e));
-}
-```
-
-Selection/cross-filtering: each node and link accumulates the identities of every row that feeds it (not just one arbitrary row), so cross-filtering to other visuals reflects the full contribution.
-
----
-
-## Testing Instructions
-
-### Free tier test
-1. Import the `_test` build (run `node build-test.js --free`) into Power BI Desktop
-2. Drag 3+ fields into **Levels** (in order) and a measure into **Value**, using a dataset with more than 9 total nodes (e.g. `sample_data_levels.csv` or `sample_data_swimlanes.csv`)
-3. Verify: only 9 nodes render, kept as a connected sub-tree from the root, with a "Free: showing 9 of N nodes" message in the toolbar
-4. Click a node/link — verify cross-filtering works on other visuals
-5. Verify collapse/expand, zoom, minimap, search all work normally within the 9-node limit
-
-### Pro tier test
-_(Use the default test build — `node build-test.js`, `isPro` forced to `true`)_
-1. Use the same dataset with more than 9 nodes — verify the full diagram renders, no limit message
-2. Drag a measure into **Target** — verify KPI badges show actual value + ▲/▼ variation %
-3. Drag a field into **Swimlane** — verify colored bands appear across levels
-4. Open the Variants panel — verify top paths are listed and clicking one traces it in the diagram
-5. Collapse a mid-level node — verify downstream values/badges/link thickness recalculate correctly
-
----
-
-## Known Warnings (non-blocking)
-
-The following warning appears in the pbiviz build output and is informational only:
-
-- `Localizations`: `stringResources` is empty (single-language visual, no UI strings hardcoded in English that need translation beyond the format pane, which uses plain `displayName` strings via `powerbi-visuals-utils-formattingmodel`). Not required for certification.
+KNOWN WARNING (non-blocking): Localizations — single-language visual, stringResources intentionally empty.

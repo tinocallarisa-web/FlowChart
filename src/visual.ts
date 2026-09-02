@@ -99,6 +99,7 @@ export class Visual implements IVisual {
     private formattingSettingsService: FormattingSettingsService;
     private events: powerbi.extensibility.IVisualEventService;
     private svgRoot: SVGSVGElement;
+    private contextMenuBound: boolean = false;
     private data: ParsedData;
     private direction: string = "horizontal";
     private width: number = 0;
@@ -1195,15 +1196,18 @@ export class Visual implements IVisual {
         const zoomOutButton = this.target.querySelector(".flow-zoom-out") as HTMLButtonElement;
         if (zoomOutButton) zoomOutButton.addEventListener("click", () => zoomBy(1 / 1.25));
 
-        this.svgRoot.addEventListener("contextmenu", (e: MouseEvent) => {
-            e.preventDefault();
-            const nodeEl = (e.target as Element).closest(".flow-node") as SVGGElement;
-            const linkEl = (e.target as Element).closest(".flow-link") as SVGPathElement;
-            const node = nodeEl ? this.data.nodes.find(n => n.id === nodeEl.getAttribute("data-node-id")) : null;
-            const link = linkEl ? this.data.links.find(l => l.id === linkEl.getAttribute("data-link-id")) : null;
-            const selectionId = node?.selectionIds?.[0] ?? link?.selectionIds?.[0] ?? undefined;
-            this.selectionManager.showContextMenu(selectionId ?? {}, { x: e.clientX, y: e.clientY });
-        });
+        if (!this.contextMenuBound) {
+            this.contextMenuBound = true;
+            this.target.addEventListener("contextmenu", (e: MouseEvent) => {
+                e.preventDefault();
+                const nodeEl = (e.target as Element).closest(".flow-node") as SVGGElement;
+                const linkEl = (e.target as Element).closest(".flow-link") as SVGPathElement;
+                const node = nodeEl ? this.data.nodes.find(n => n.id === nodeEl.getAttribute("data-node-id")) : null;
+                const link = linkEl ? this.data.links.find(l => l.id === linkEl.getAttribute("data-link-id")) : null;
+                const selectionId = node?.selectionIds?.[0] ?? link?.selectionIds?.[0] ?? undefined;
+                this.selectionManager.showContextMenu(selectionId ?? {}, { x: e.clientX, y: e.clientY });
+            });
+        }
 
         this.svgRoot.addEventListener("click", (e: MouseEvent) => {
             if ((this.host as any).allowInteractions === false) return;
