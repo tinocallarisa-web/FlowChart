@@ -1,28 +1,29 @@
 {
-    "visual": {
-        "name": "flowChart",
-        "displayName": "Flow Chart",
-        "guid": "flowChart69C501A62F7E49748AD3DA7D4E840200",
-        "visualClassName": "Visual",
-        "version": "1.0.1.0",
-        "description": "Data-driven process flow chart with native Power BI selection, cross-filtering and KPI-aware nodes.",
-        "supportUrl": "https://tinocallarisa-web.github.io/FlowChart/support.html",
-        "gitHubUrl": "https://github.com/tinocallarisa-web/FlowChart"
-    },
-    "author": {
-        "name": "TCViz",
-        "email": "tinocallarisa@tcviz.com"
-    },
-    "privacyTerms": {
-        "link": "https://tinocallarisa-web.github.io/FlowChart/privacy.html"
-    },
-    "assets": {
-        "icon": "assets/icon.png"
-    },
-    "externalJS": null,
-    "style": "style/visual.less",
-    "capabilities": "capabilities.json",
-    "dependencies": null,
-    "stringResources": [],
-    "apiVersion": "5.11.1"
+  "visual": {
+    "name": "flowChart",
+    "displayName": "Flow Chart",
+    "guid": "flowChart69C501A62F7E49748AD3DA7D4E840200",
+    "visualClassName": "Visual",
+    "version": "1.0.1.0",
+    "description": "Data-driven process flow chart with native Power BI selection, cross-filtering and KPI-aware nodes.",
+    "supportUrl": "https://tinocallarisa-web.github.io/FlowChart/support.html",
+    "privacyTermsLink": "https://tinocallarisa-web.github.io/FlowChart/privacy.html",
+    "gitHubUrl": "https://github.com/tinocallarisa-web/FlowChart"
+  },
+  "author": {
+    "name": "TCViz",
+    "email": "support@tcviz.com"
+  },
+  "privacyTerms": {
+    "link": "https://tinocallarisa-web.github.io/FlowChart/privacy.html"
+  },
+  "assets": {
+    "icon": "assets/icon.png"
+  },
+  "externalJS": null,
+  "style": "style/visual.less",
+  "capabilities": "capabilities.json",
+  "dependencies": null,
+  "stringResources": [],
+  "apiVersion": "5.11.1"
 }
