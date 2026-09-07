@@ -1,62 +1,95 @@
-name: Bug Report
-description: Report a problem with the Flow Chart visual
-title: "[Bug]: "
+name: Bug report
+description: Something in Flow Chart does not work as documented.
 labels: ["bug"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Before filing, it is worth checking the
+        [FAQ](https://tinocallarisa-web.github.io/FlowChart/support.html#faq) — several common
+        cases (empty diagram, nine-node limit, missing KPI badge) are answered there.
+
   - type: dropdown
     id: tier
     attributes:
-      label: License tier
+      label: Licence tier
       options:
         - Free
         - Pro
+        - Not sure
     validations:
       required: true
+
   - type: input
     id: visual-version
     attributes:
-      label: Visual version
-      placeholder: "e.g. 1.0.0.0"
+      label: Flow Chart version
+      description: Shown in the visual's information panel in Power BI, e.g. 1.0.2.0
+      placeholder: "1.0.2.0"
     validations:
       required: true
-  - type: input
-    id: desktop-version
+
+  - type: dropdown
+    id: environment
     attributes:
-      label: Power BI Desktop version (or Service)
-      placeholder: "e.g. 2.130.xxxx.0, or Power BI Service"
+      label: Where does it happen?
+      options:
+        - Power BI Desktop
+        - Power BI Service (browser)
+        - Both
     validations:
       required: true
+
+  - type: input
+    id: host-version
+    attributes:
+      label: Power BI Desktop build / browser
+      description: Help → About in Desktop, or the browser and version if in the Service.
+      placeholder: "2.148.x (September 2026) — or: Edge 129"
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+
   - type: textarea
     id: steps
     attributes:
       label: Steps to reproduce
-      description: What did you do, and what happened?
+      description: |
+        Include which field wells you filled and roughly what the data looks like — number of
+        levels, how many distinct values per level, whether there are cycles.
+      placeholder: |
+        1. Drag Stage, SubStage, Outcome into Levels
+        2. Add [Total Cases] to Value
+        3. ...
     validations:
       required: true
+
   - type: textarea
-    id: expected
+    id: screenshot
     attributes:
-      label: Expected behavior
-    validations:
-      required: false
-  - type: textarea
-    id: data
-    attributes:
-      label: Data shape
-      description: Roughly how many levels, nodes, and rows? Any relevant field types?
-    validations:
-      required: false
-  - type: textarea
-    id: screenshots
-    attributes:
-      label: Screenshots
-      description: Drag and drop images here if helpful.
-    validations:
-      required: false
+      label: Screenshot
+      description: Paste an image if the problem is visual. Please redact anything confidential.
+
   - type: textarea
     id: console
     attributes:
-      label: Browser console errors
-      description: Open DevTools (F12) → Console, and paste any red errors here.
-    validations:
-      required: false
+      label: Browser console output
+      description: |
+        Optional but very useful. Open developer tools (F12) in the Service, reproduce, and paste
+        any errors. This will be rendered as code, so no backticks are needed.
+      render: text
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Before submitting
+      options:
+        - label: I have checked the FAQ and the changelog for this version.
+          required: true
+        - label: This report contains no confidential data.
+          required: true

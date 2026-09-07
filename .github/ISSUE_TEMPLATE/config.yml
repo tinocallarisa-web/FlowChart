@@ -1,14 +1,14 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Documentation & FAQ
+  - name: Documentation & Support
     url: https://tinocallarisa-web.github.io/FlowChart/support.html
-    about: Setup instructions and frequently asked questions.
-  - name: Video walkthrough
-    url: https://www.youtube.com/watch?v=wXvxscw7e4k
-    about: See the visual in action.
-  - name: Licensing questions
-    url: mailto:support@tcviz.com
-    about: Questions about Free vs Pro licensing or billing.
+    about: Setup guide, field wells, full Format Pane reference and FAQ.
   - name: Changelog
-    url: https://github.com/tinocallarisa-web/FlowChart/blob/main/CHANGELOG.md
-    about: See what changed in each release.
+    url: https://tinocallarisa-web.github.io/FlowChart/changelog.html
+    about: What changed in each released version.
+  - name: Ask a question
+    url: https://github.com/tinocallarisa-web/FlowChart/discussions
+    about: Usage questions and ideas — for anything that is not a bug.
+  - name: Email support
+    url: mailto:support@tcviz.com
+    about: For anything you would rather not discuss in public.

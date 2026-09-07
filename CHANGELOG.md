@@ -2,6 +2,24 @@
 
 All notable changes to the Flow Chart Power BI custom visual are documented here.
 
+## [1.0.2.0] - 2026-09-07
+
+### Fixed
+- **Context menu binding** — the listener is now attached once to the visual target instead of
+  being re-bound to the SVG root on every render. Handlers no longer accumulate as the report
+  refreshes, so right-click keeps behaving consistently in long-lived report sessions.
+
+### Changed
+- Support contact address updated to [support@tcviz.com](mailto:support@tcviz.com).
+- Power BI Visuals API pinned to `5.11.1`.
+
+### Documentation
+- Support, privacy, terms and changelog pages rewritten and expanded: full field-well reference,
+  complete Format Pane documentation, FAQ, and in-page documentation search.
+- `changelog.html` is now generated from this file by `tools/build-changelog.mjs`, so the published
+  page cannot drift from the manifest version.
+- Certification notes updated for resubmission.
+
 ## [1.0.0.0] - 2026-08-28
 
 ### Added

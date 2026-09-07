@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flow Chart &ndash; Privacy Policy | TCViz</title>
+<title>Flow Chart &ndash; Changelog | TCViz</title>
 <style>
   :root {
     --bg: #FAF9F5; --bg2: #EDE9DE; --bd: #F5F3ED; --line: #DAD9D4;
@@ -188,96 +188,88 @@
   </svg>
   <div>
     <div class="title">Flow Chart</div>
-    <div class="sub">Privacy Policy</div>
+    <div class="sub">Release History</div>
   </div>
 </header>
 
 <nav>
   <a href="support.html">Support</a>
-  <a href="privacy.html" class="active">Privacy</a>
+  <a href="privacy.html">Privacy</a>
   <a href="terms.html">Terms</a>
-  <a href="changelog.html">Changelog</a>
+  <a href="changelog.html" class="active">Changelog</a>
   <a href="https://github.com/tinocallarisa-web/FlowChart">GitHub</a>
 </nav>
 
 <div class="wrap">
 
-  <h1>Privacy Policy</h1>
-  <p class="meta">Flow Chart &mdash; TCViz &nbsp;&middot;&nbsp; Last updated: September 2026</p>
+  <h1>Changelog</h1>
+  <p class="lead">Every released version of Flow Chart and what changed in it. The version you are running is
+  shown in Power BI under the visual's information panel, or on its AppSource page.</p>
 
-  <div class="highlight-box">
-    <strong>Short version:</strong> Flow Chart makes no network calls of its own, collects nothing, and stores
-    nothing. Your report data is read from the Power BI data view, drawn on screen, and never leaves the
-    environment Power BI is already running in.
-  </div>
+  <h2 id="releases">Releases</h2>
 
-  <h2>1. Who we are</h2>
-  <p>Flow Chart is a Power BI custom visual developed and published by <strong>TCViz</strong> (Tino Callarisa)
-  and distributed through Microsoft AppSource. For privacy questions, write to
-  <a href="mailto:support@tcviz.com">support@tcviz.com</a>.</p>
-
-  <h2>2. Data processed by the visual</h2>
-  <div class="card">
-    <h3>Report data</h3>
-    <p>The visual receives only what you place in its field wells: the grouping values in <strong>Levels</strong>
-    and <strong>Swimlane</strong>, and the measures in <strong>Value</strong>, <strong>Target</strong>,
-    <strong>Level images</strong> and <strong>Tooltip fields</strong>. That data is used to build and render the
-    diagram on screen. It is not read, stored, transmitted or logged by TCViz.</p>
-
-    <h3>Level images</h3>
-    <p>The <strong>Level images</strong> field well accepts base64 image strings that already exist in your data
-    model. The visual renders them inline. It does not fetch images from URLs, and no image is uploaded,
-    cached outside the report, or sent anywhere.</p>
-
-    <h3>Format Pane settings</h3>
-    <p>Your formatting choices &mdash; colours, node size, spacing, number format, swimlane bands and the rest
-    &mdash; are saved by Power BI inside your report file, on your own storage: OneDrive, SharePoint or the
-    Power BI Service. TCViz has no access to them.</p>
-
-    <h3>Licence validation</h3>
-    <p>To tell Free from Pro, the visual calls Microsoft's official licensing API
-    (<code>IVisualLicenseManager</code>) and asks whether the current account has an active plan. The call goes
-    to Microsoft's licensing infrastructure, not to any TCViz server. It runs asynchronously, off the rendering
-    path, and falls back to Free if it cannot be completed. TCViz receives nothing from it.</p>
-  </div>
-
-  <h2>3. Data we do not collect</h2>
-  <p>Through this visual, TCViz collects none of the following:</p>
-  <ul>
-    <li>Personal identifiable information: names, email addresses, user identifiers</li>
-    <li>Report data, datasets, measures or any value visible in Power BI</li>
-    <li>Usage analytics, telemetry or crash reports</li>
-    <li>IP addresses or device identifiers</li>
-    <li>Cookies or any form of browser tracking</li>
-  </ul>
-
-  <h2>4. Network requests and local storage</h2>
-  <p>The visual makes exactly one kind of outbound call: the licence check to Microsoft described above. There
-  are no other network requests, no calls to TCViz servers, and no third-party scripts. The visual does not
-  write to <code>localStorage</code>, <code>sessionStorage</code>, cookies or any other browser storage.</p>
-
-  <h2>5. Third-party services</h2>
-  <p>Flow Chart is distributed through <strong>Microsoft AppSource</strong> and runs inside
-  <strong>Microsoft Power BI</strong>. Microsoft's own privacy practices govern those platforms; see
-  <a href="https://privacy.microsoft.com" target="_blank" rel="noopener">privacy.microsoft.com</a>.</p>
-  <p>Purchases and billing are handled entirely by Microsoft through the marketplace. TCViz does not process
-  payment information or manage subscriptions.</p>
-
-  <h2>6. Children's privacy</h2>
-  <p>Flow Chart is a professional business analytics tool. It is not directed at children under 13, and we do
-  not knowingly collect information from minors.</p>
-
-  <h2>7. Changes to this policy</h2>
-  <p>We may update this policy when the visual's functionality changes or regulations require it. The
-  &ldquo;Last updated&rdquo; date above reflects the most recent revision.</p>
-
-  <h2>8. Contact</h2>
-  <div class="contact-box">
-    <div class="icon">&#9993;</div>
-    <div>
-      <h3>Privacy questions</h3>
-      <p>Write to <a href="mailto:support@tcviz.com">support@tcviz.com</a>. We respond within 5 business days.</p>
+  <div class="rel">
+    <div class="rel-head">
+      <span class="rel-ver">1.0.2.0</span>
+      <span class="tag tag-cur">Current</span>
+      <span class="rel-date">2026-09-07</span>
     </div>
+
+    <h4><span class="tag tag-fix">Fixed</span></h4>
+    <ul>
+      <li><strong>Context menu binding</strong> — the listener is now attached once to the visual target instead of being re-bound to the SVG root on every render. Handlers no longer accumulate as the report refreshes, so right-click keeps behaving consistently in long-lived report sessions.</li>
+    </ul>
+
+    <h4><span class="tag tag-chg">Changed</span></h4>
+    <ul>
+      <li>Support contact address updated to <a href="mailto:support@tcviz.com" target="_blank" rel="noopener">support@tcviz.com</a>.</li>
+      <li>Power BI Visuals API pinned to <code>5.11.1</code>.</li>
+    </ul>
+
+    <h4><span class="tag tag-chg">Documentation</span></h4>
+    <ul>
+      <li>Support, privacy, terms and changelog pages rewritten and expanded: full field-well reference, complete Format Pane documentation, FAQ, and in-page documentation search.</li>
+      <li><code>changelog.html</code> is now generated from this file by <code>tools/build-changelog.mjs</code>, so the published page cannot drift from the manifest version.</li>
+      <li>Certification notes updated for resubmission.</li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="rel-head">
+      <span class="rel-ver">1.0.0.0</span>
+      <span class="rel-date">2026-08-28</span>
+    </div>
+
+    <h4><span class="tag tag-add">Added</span></h4>
+    <ul>
+      <li>Initial release.</li>
+      <li>Data-driven hierarchical process flow diagram (Levels, Value, Target, Swimlane, Tooltip fields data roles).</li>
+      <li>Automatic tree construction from column order, with branch merging for repeated values.</li>
+      <li>Horizontal/vertical layout, per-layer centering, barycenter-based node ordering to minimize crossings.</li>
+      <li>Back-edge (cyclic) detection and routing as discontinuous loops.</li>
+      <li>Golden path and top-variant highlighting.</li>
+      <li>Collapse/expand branches with cascading value recalculation.</li>
+      <li>Zoom, native scroll, minimap, search, and "fit to view".</li>
+      <li>Variants panel with top 8 paths by value.</li>
+      <li>Swimlanes (color bands across levels).</li>
+      <li>KPI badges (target vs. actual, with variation %).</li>
+      <li>Native Power BI selection, cross-filtering, context menu, and tooltips (including report/page tooltips on links).</li>
+      <li>Keyboard focus and high-contrast mode support.</li>
+      <li>Full format pane customization (layout, nodes, badges, value format, links, swimlanes, legend, data colors).</li>
+      <li>Free tier: diagrams limited to 9 nodes. Pro tier: unlimited nodes, validated via Microsoft AppSource licensing.</li>
+    </ul>
+
+    <h4><span class="tag tag-chg">Documentation</span></h4>
+    <ul>
+      <li>Privacy policy, terms of use, and support pages published via GitHub Pages.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <strong>Reporting a problem?</strong> Open an issue on
+    <a href="https://github.com/tinocallarisa-web/FlowChart/issues" target="_blank" rel="noopener">GitHub</a> or email
+    <a href="mailto:support@tcviz.com">support@tcviz.com</a>, including the visual version and your Power BI
+    Desktop build.
   </div>
 
 </div>

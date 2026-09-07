@@ -1,31 +1,41 @@
-name: Feature Request
-description: Suggest an improvement for the Flow Chart visual
-title: "[Feature]: "
+name: Feature request
+description: Suggest something Flow Chart should be able to do.
 labels: ["enhancement"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        The [Format Pane reference](https://tinocallarisa-web.github.io/FlowChart/support.html#format)
+        lists everything the visual can already be configured to do — worth a look first, in case the
+        setting exists under a different name.
+
   - type: textarea
     id: problem
     attributes:
-      label: What problem are you trying to solve?
-      description: Describe the situation before jumping to a specific solution.
+      label: What are you trying to do?
+      description: |
+        Describe the reporting problem rather than the solution. Knowing what you are trying to show,
+        and to whom, usually leads to a better answer than implementing the first idea.
     validations:
       required: true
-  - type: dropdown
-    id: category
+
+  - type: textarea
+    id: proposal
     attributes:
-      label: Category
-      options:
-        - Layout / navigation
-        - Formatting / styling
-        - Data roles / modeling
-        - Interactivity / selection
-        - Accessibility
-        - Other
-    validations:
-      required: true
+      label: What would help
+      description: The behaviour or setting you have in mind, if you have one.
+
   - type: textarea
     id: workaround
     attributes:
-      label: Current workaround (if any)
-    validations:
-      required: false
+      label: How are you handling it today?
+      description: A DAX workaround, a different visual, or nothing at all.
+
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Licence tier
+      options:
+        - Free
+        - Pro
+        - Not sure

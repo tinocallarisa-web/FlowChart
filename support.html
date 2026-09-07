@@ -1,98 +1,717 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Support — Flow Chart | TCViz</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f7f8fa; color: #1a1a2e; line-height: 1.7; }
-    header { background: #2B6CB0; padding: 20px 40px; }
-    header .brand { color: #fff; font-size: 20px; font-weight: 700; }
-    header .brand span { opacity: 0.7; font-weight: 400; font-size: 15px; margin-left: 8px; }
-    .container { max-width: 760px; margin: 48px auto; padding: 0 24px; }
-    .card { background: #fff; border-radius: 12px; padding: 48px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-bottom: 24px; }
-    h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
-    .subtitle { color: #6b7280; font-size: 14px; margin-bottom: 36px; }
-    h2 { font-size: 16px; font-weight: 600; margin: 32px 0 10px; color: #2B6CB0; }
-    h2:first-of-type { margin-top: 0; }
-    p { font-size: 15px; color: #374151; margin-bottom: 12px; }
-    .badge { display: inline-block; background: #EAF1FA; color: #2B6CB0; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; margin-bottom: 32px; }
-    .contact-box { background: #EAF1FA; border-radius: 10px; padding: 24px 28px; margin-top: 8px; }
-    .contact-box a { color: #2B6CB0; font-weight: 600; font-size: 16px; text-decoration: none; }
-    .contact-box p { margin: 0; color: #374151; font-size: 14px; margin-top: 4px; }
-    .faq-item { margin-bottom: 24px; }
-    .faq-item .q { font-weight: 600; font-size: 15px; color: #1a1a2e; margin-bottom: 6px; }
-    .faq-item .a { font-size: 15px; color: #374151; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
-    th { background: #f3f4f6; padding: 10px 14px; text-align: left; font-weight: 600; color: #374151; }
-    td { padding: 10px 14px; border-top: 1px solid #e5e7eb; color: #374151; }
-    code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
-    a { color: #2B6CB0; }
-    footer { text-align: center; padding: 32px; color: #9ca3af; font-size: 13px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flow Chart &ndash; Support | TCViz</title>
+<style>
+  :root {
+    --bg: #FAF9F5; --bg2: #EDE9DE; --bd: #F5F3ED; --line: #DAD9D4;
+    --t1: #3D3929; --t2: #535146; --t3: #83827D;
+    --acc: #C96442; --accd: #B05730; --acc2: #9C87F5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--t1); line-height: 1.65; }
+
+  /* ── Header ── */
+  header { background: var(--t1); color: #fff; padding: 28px 48px; display: flex; align-items: center; gap: 20px; }
+  header svg { flex-shrink: 0; }
+  header .title { font-size: 22px; font-weight: 700; }
+  header .sub   { font-size: 13px; color: #b5b3aa; margin-top: 2px; }
+
+  /* ── Nav ── */
+  nav { background: var(--bg2); border-bottom: 1px solid var(--line); padding: 0 48px; display: flex; gap: 0; }
+  nav a { display: block; padding: 14px 20px; font-size: 13px; font-weight: 600; color: var(--t2);
+          text-decoration: none; border-bottom: 3px solid transparent; transition: color .2s, border-color .2s; }
+  nav a:hover, nav a.active { color: var(--acc); border-bottom-color: var(--acc); }
+
+  /* ── Layout ── */
+  .wrap { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+  h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+  h2 { font-size: 17px; font-weight: 700; color: var(--t1); margin: 40px 0 12px; padding-bottom: 8px;
+       border-bottom: 2px solid var(--acc); display: inline-block; }
+  h3 { font-size: 14px; font-weight: 700; color: var(--t1); margin: 18px 0 6px; }
+  p  { font-size: 14px; color: var(--t2); margin-bottom: 10px; }
+  ul { font-size: 14px; color: var(--t2); padding-left: 20px; margin-bottom: 10px; }
+  li { margin-bottom: 5px; }
+  code { font-family: monospace; background: var(--bg2); padding: 1px 6px; border-radius: 4px;
+         font-size: 12px; color: var(--acc); }
+
+  /* ── Cards ── */
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 24px 28px; margin-bottom: 16px; }
+
+  /* ── Badges ── */
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+           text-transform: uppercase; letter-spacing: .5px; vertical-align: middle; margin-left: 6px; }
+  .badge-pro  { background: var(--acc2); color: #fff; }
+  .badge-free { background: var(--acc);  color: #fff; }
+
+  /* ── Field wells table ── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
+  th { background: var(--bg2); color: var(--t1); font-weight: 700; padding: 10px 14px; text-align: left;
+       border-bottom: 2px solid var(--line); }
+  td { padding: 9px 14px; border-bottom: 1px solid var(--bd); color: var(--t2); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  /* ── FAQ ── */
+  details { border: 1px solid var(--line); border-radius: 8px; margin-bottom: 10px; background: #fff; }
+  summary { padding: 14px 18px; font-size: 14px; font-weight: 600; cursor: pointer; list-style: none;
+            display: flex; align-items: center; justify-content: space-between; color: var(--t1); }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: '+'; font-size: 18px; font-weight: 300; color: var(--acc); transition: transform .2s; }
+  details[open] summary::after { content: '−'; }
+  details[open] summary { border-bottom: 1px solid var(--line); }
+  .faq-body { padding: 14px 18px; font-size: 14px; color: var(--t2); }
+  .faq-body p { margin-bottom: 6px; }
+  .faq-body ul { margin-top: 6px; }
+
+  /* ── Contact box ── */
+  .contact-box { background: var(--acc); color: #fff; border-radius: 10px; padding: 24px 28px;
+                  display: flex; align-items: center; gap: 20px; }
+  .contact-box .icon { font-size: 36px; flex-shrink: 0; }
+  .contact-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; color: #fff; }
+  .contact-box p  { font-size: 13px; color: rgba(255,255,255,.85); margin: 0; }
+  .contact-box a  { color: #fff; font-weight: 700; text-decoration: underline; }
+
+  /* ── Video embed ── */
+  .video-wrap { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 10px; overflow: hidden;
+                border: 1px solid var(--line); margin-bottom: 20px; }
+  .video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+
+  /* ── CTA strip ── */
+  .cta { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+  .btn { display: inline-block; padding: 10px 22px; border-radius: 6px; font-size: 13px; font-weight: 700;
+          text-decoration: none; transition: background .2s; }
+  .btn-primary { background: var(--acc); color: #fff; }
+  .btn-primary:hover { background: var(--accd); }
+  .btn-outline { background: transparent; color: var(--acc); border: 2px solid var(--acc); }
+  .btn-outline:hover { background: var(--acc); color: #fff; }
+
+  /* ── Search ── */
+  .searchbar { background: var(--bg2); border-bottom: 1px solid var(--line); padding: 14px 48px 16px; }
+  .searchbox { position: relative; max-width: 900px; margin: 0 auto; display: flex; align-items: center;
+               gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 0 12px; }
+  .searchbox:focus-within { border-color: var(--acc); box-shadow: 0 0 0 3px rgba(201,100,66,.14); }
+  .searchbox svg { color: var(--t3); flex-shrink: 0; }
+  .searchbox input { flex: 1; border: none; outline: none; background: transparent; font: inherit;
+                     font-size: 14px; color: var(--t1); padding: 11px 0; }
+  .searchbox input::placeholder { color: var(--t3); }
+  .searchbox button { border: none; background: transparent; color: var(--t3); font-size: 20px;
+                      line-height: 1; cursor: pointer; padding: 0 2px; }
+  .searchbox button:hover { color: var(--acc); }
+  .search-status { max-width: 900px; margin: 8px auto 0; font-size: 12px; color: var(--t3); min-height: 16px; }
+  mark { background: #FCE8A8; color: var(--t1); border-radius: 2px; padding: 0 2px; }
+  .is-hidden { display: none !important; }
+
+  /* ── Version pill ── */
+  .verpill { display: block; width: fit-content; font-size: 11px; font-weight: 700; letter-spacing: .4px;
+             background: var(--bg2); color: var(--t2); border: 1px solid var(--line);
+             padding: 3px 10px; border-radius: 20px; margin-bottom: 14px; }
+  .verpill a { color: var(--acc); text-decoration: none; }
+
+  /* ── Footer ── */
+  footer { background: var(--t1); color: var(--t3); text-align: center; padding: 24px 48px; font-size: 12px; }
+  footer a { color: #b5b3aa; text-decoration: none; margin: 0 8px; }
+  footer a:hover { color: #fff; }
+
+  .lead { font-size: 15px; color: var(--t2); max-width: 68ch; margin-bottom: 20px; }
+  .rel { background:#fff; border:1px solid var(--line); border-radius:10px; padding:22px 26px; margin-bottom:16px; }
+  .rel-head { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+  .rel-ver { font-size:18px; font-weight:700; color:var(--t1); }
+  .rel-date { font-size:12px; color:var(--t3); }
+  .tag { display:inline-block; font-size:10px; font-weight:700; text-transform:uppercase;
+         letter-spacing:.5px; padding:2px 8px; border-radius:20px; }
+  .tag-cur { background:var(--acc); color:#fff; }
+  .tag-add { background:#2E7D5B; color:#fff; }
+  .tag-chg { background:#8A6D1F; color:#fff; }
+  .tag-fix { background:#2E5BA8; color:#fff; }
+  .tag-plan{ background:var(--bg2); color:var(--t2); border:1px solid var(--line); }
+  .rel h4 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.6px;
+            color:var(--t3); margin:16px 0 6px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; margin-bottom:16px; }
+  .tile { background:#fff; border:1px solid var(--line); border-radius:10px; padding:22px 24px;
+          text-decoration:none; display:block; transition:border-color .2s, transform .2s; }
+  .tile:hover { border-color:var(--acc); transform:translateY(-2px); }
+  .tile h3 { margin:0 0 6px; font-size:15px; color:var(--t1); }
+  .tile p  { margin:0; font-size:13px; color:var(--t2); }
+  .tile .arrow { color:var(--acc); font-weight:700; }
+  pre { background:var(--t1); color:#EDE9DE; padding:16px 18px; border-radius:8px; overflow-x:auto;
+        font-size:12px; line-height:1.6; margin-bottom:14px; }
+  pre code { background:none; color:inherit; padding:0; font-size:12px; }
+  .note { border-left:4px solid var(--acc); background:#fff; border-radius:0 8px 8px 0;
+          padding:14px 18px; margin-bottom:16px; font-size:13px; color:var(--t2); }
+  .note strong { color:var(--t1); }
+  .hero { background:var(--bg2); border-bottom:1px solid var(--line); padding:52px 24px; text-align:center; }
+  .hero h1 { font-size:32px; margin-bottom:10px; }
+  .hero p  { font-size:15px; color:var(--t2); max-width:62ch; margin:0 auto 22px; }
+  @media (max-width: 640px) {
+    header, nav, .searchbar { padding-left:20px; padding-right:20px; }
+    nav { overflow-x:auto; }
+    .wrap { padding:32px 18px 60px; }
+  }
+
+.highlight-box {
+    background: var(--bg2); border-left: 4px solid var(--acc);
+    border-radius: 0 8px 8px 0; padding: 16px 20px; margin: 0 0 32px;
+    font-size: 14px; color: var(--t2);
+  }
+.highlight-box strong { color: var(--t1); }
+.meta { font-size: 13px; color: var(--t3); margin-bottom: 32px; }
+</style>
 </head>
 <body>
-<header><div class="brand">TCViz <span>Power BI Custom Visuals</span></div></header>
-<div class="container">
-  <div class="card">
-    <div class="badge">Flow Chart</div>
-    <h1>Support</h1>
-    <p class="subtitle">We're here to help. Typical response time: 1–2 business days.</p>
 
-    <h2>Contact Us</h2>
-    <div class="contact-box">
-      <a href="mailto:support@tcviz.com">support@tcviz.com</a>
-      <p>For bug reports, feature requests, and license issues.</p>
-    </div>
+<header>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 828 362" width="90" height="40" aria-hidden="true">
+    <defs><linearGradient id="g" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#B05730"/>
+      <stop offset=".55" stop-color="#C96442"/>
+      <stop offset="1" stop-color="#9C87F5"/>
+    </linearGradient></defs>
+    <g transform="translate(40,46)">
+      <rect x="22" y="20" width="150" height="150" rx="30" fill="none" stroke="url(#g)" stroke-width="11"/>
+      <g fill="url(#g)">
+        <rect x="40" y="52" width="46" height="26" rx="6"/>
+        <rect x="108" y="52" width="46" height="26" rx="6"/>
+        <rect x="40" y="112" width="46" height="26" rx="6"/>
+        <rect x="108" y="112" width="46" height="26" rx="6"/>
+        <rect x="86" y="63" width="22" height="5" rx="2.5"/>
+        <rect x="86" y="123" width="22" height="5" rx="2.5"/>
+        <rect x="60" y="78" width="5" height="34" rx="2.5"/>
+        <rect x="128" y="78" width="5" height="34" rx="2.5"/>
+      </g>
+    </g>
+    <text x="258" y="246" font-family="Poppins,sans-serif" font-weight="700" font-size="196" letter-spacing="-4">
+      <tspan fill="url(#g)">tc</tspan><tspan fill="#fff">viz</tspan>
+    </text>
+    <text x="264" y="306" font-family="Poppins,sans-serif" font-weight="500" font-size="31" letter-spacing="6.5" fill="#83827D">VISUALS TO POWER BI</text>
+  </svg>
+  <div>
+    <div class="title">Flow Chart</div>
+    <div class="sub">Support &amp; Documentation</div>
+  </div>
+</header>
 
-    <h2>Video Walkthrough</h2>
-    <p><a href="https://www.youtube.com/watch?v=wXvxscw7e4k" target="_blank" rel="noopener">Watch the Flow Chart walkthrough on YouTube</a></p>
+<nav>
+  <a href="support.html" class="active">Support</a>
+  <a href="#quickstart">Quick Start</a>
+  <a href="#fields">Field Wells</a>
+  <a href="#format">Format Pane</a>
+  <a href="#interaction">Interaction</a>
+  <a href="#accessibility">Accessibility</a>
+  <a href="#free-pro">Free vs Pro</a>
+  <a href="#faq">FAQ</a>
+  <a href="changelog.html">Changelog</a>
+  <a href="#contact">Contact</a>
+</nav>
 
-    <h2>How to Set Up the Visual</h2>
-    <p>After importing the visual into your Power BI report, drag the following fields into the data roles:</p>
-    <table>
-      <tr><th>Data Role</th><th>Description</th><th>Required</th></tr>
-      <tr><td><strong>Levels</strong></td><td>One field per hierarchy level, dragged in order (Level 1, Level 2, Level 3...). The visual builds the tree automatically from the column order; nodes sharing the same value at the same level are merged.</td><td>Yes (at least 2)</td></tr>
-      <tr><td><strong>Level images</strong></td><td>Optional base64 image per level, aligned by order with Levels</td><td>No</td></tr>
-      <tr><td><strong>Value</strong></td><td>The main metric, aggregated across each parent→child transition</td><td>Yes</td></tr>
-      <tr><td><strong>Target</strong></td><td>Enables the KPI badge (value ▲/▼ variation% vs. target)</td><td>No</td></tr>
-      <tr><td><strong>Swimlane</strong></td><td>Groups nodes into colored bands across the diagram</td><td>No</td></tr>
-      <tr><td><strong>Tooltip fields</strong></td><td>Extra fields shown in node and link tooltips</td><td>No</td></tr>
-    </table>
+<div class="searchbar">
+  <div class="searchbox">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="docsearch" type="search" placeholder="Search the documentation &mdash; try &ldquo;swimlane&rdquo;, &ldquo;KPI badge&rdquo;, &ldquo;Pro&rdquo;&hellip;"
+           aria-label="Search the documentation" autocomplete="off">
+    <button id="searchclear" type="button" aria-label="Clear search" hidden>&times;</button>
+  </div>
+  <p class="search-status" id="searchstatus" role="status" aria-live="polite"></p>
+</div>
 
-    <h2>Frequently Asked Questions</h2>
+<div class="wrap">
 
-    <div class="faq-item">
-      <div class="q">Why is my diagram cut off / not showing all nodes?</div>
-      <div class="a">The Free tier is limited to 9 nodes. Upgrade to Pro via Microsoft AppSource to unlock unlimited nodes. A message in the toolbar tells you when the diagram is being trimmed.</div>
-    </div>
-    <div class="faq-item">
-      <div class="q">How does the visual decide the hierarchy?</div>
-      <div class="a">By the order you drag fields into "Levels" — the first field is Level 1 (the root), the second is Level 2, and so on. Rows with the same value at the same level are automatically merged into one node.</div>
-    </div>
-    <div class="faq-item">
-      <div class="q">How do I show KPI badges (target vs. actual)?</div>
-      <div class="a">Drag a measure into the <strong>Target</strong> field. Nodes fed by rows with a target value switch their badge to show the actual value plus the ▲/▼ variation percentage, colored via the KPI up/down colors in the Format pane.</div>
-    </div>
-    <div class="faq-item">
-      <div class="q">How do swimlanes work?</div>
-      <div class="a">Drag a field into <strong>Swimlane</strong>. A node is only assigned to a band if every row that feeds it shares the same swimlane value; otherwise it stays neutral. Configure colors, opacity and label style under <strong>Swimlanes</strong> in the Format pane.</div>
-    </div>
-    <div class="faq-item">
-      <div class="q">Can I collapse parts of the diagram?</div>
-      <div class="a">Yes — any node with children shows a −/+ button on its edge. Collapsing hides the branch and recalculates the values, targets and link thickness upstream to reflect only what's still connected.</div>
-    </div>
-    <div class="faq-item">
-      <div class="q">How do I activate my Pro license?</div>
-      <div class="a">Purchase the Pro license on Microsoft AppSource. Once your subscription is active, the visual detects it automatically the next time you open or refresh your report — no additional steps required.</div>
-    </div>
-    <div class="faq-item">
-      <div class="q">The visual is not rendering. What should I check?</div>
-      <div class="a">Make sure at least two fields are in <strong>Levels</strong> and a measure is in <strong>Value</strong>. If the issue persists, try re-importing the <code>.pbiviz</code> file or contact us at support@tcviz.com.</div>
-    </div>
+<h1>Support &amp; Documentation</h1>
+<span class="verpill">Version 1.0.2.0 &middot; <a href="changelog.html">See what&rsquo;s new</a></span>
+<p>Flow Chart turns a set of ordered columns into a process diagram. Each column you drop into
+<strong>Levels</strong> becomes one stage of the flow, repeated values merge into shared branches, and the
+<strong>Value</strong> measure sets the weight of every node and link. Everything below is documented against
+version 1.0.2.0 of the visual.</p>
+
+<div class="cta">
+  <a class="btn btn-primary" href="#quickstart">Get started</a>
+  <a class="btn btn-outline" href="https://github.com/tinocallarisa-web/FlowChart/issues" target="_blank" rel="noopener">Report a bug</a>
+</div>
+
+<h2 id="quickstart">Quick Start</h2>
+
+<div class="card">
+  <h3>1. Add the visual to your report</h3>
+  <p>Import Flow Chart from AppSource, or from a <code>.pbiviz</code> file via
+  <em>Insert &rarr; More visuals &rarr; Import a visual from a file</em>. Drop it onto the canvas and give it
+  room &mdash; process diagrams need horizontal space more than height.</p>
+</div>
+
+<div class="card">
+  <h3>2. Build the flow with Levels</h3>
+  <p>Drag one field per stage into <strong>Levels</strong>, <em>in the order the process happens</em>. Field order
+  is the structure: the first field is the root layer, the second the next layer, and so on. Rows that share the
+  same value at a given level are merged into one node, which is how branches form.</p>
+  <p>Add a measure to <strong>Value</strong>. Node badges, link thickness and the dominant path are all derived
+  from it.</p>
+</div>
+
+<div class="card">
+  <h3>3. Read the diagram</h3>
+  <p>Nodes are the states, links are the transitions between them, and link thickness is proportional to
+  <strong>Value</strong>. The dominant path &mdash; the heaviest chain through the diagram &mdash; is emphasised
+  by default. A transition that goes backwards in the process is detected as a cycle and drawn as a
+  discontinuous loop instead of being forced into the layer order.</p>
+</div>
+
+<div class="card">
+  <h3>4. Add context</h3>
+  <p>A <strong>Target</strong> measure turns on the KPI badge on each node (actual against target, with the
+  variation percentage). A <strong>Swimlane</strong> field draws coloured bands across the levels. Measures in
+  <strong>Tooltip fields</strong> appear on hover without changing the layout.</p>
+</div>
+
+<h2 id="video">Video Walkthrough</h2>
+<div class="video-wrap">
+  <iframe src="https://www.youtube.com/embed/wXvxscw7e4k" title="Flow Chart for Power BI &ndash; walkthrough"
+          allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+</div>
+
+<h2 id="fields">Field Wells</h2>
+<p>Six field wells. Only <strong>Levels</strong> and <strong>Value</strong> are needed to draw a diagram.</p>
+
+<table>
+  <thead>
+    <tr><th>Field well</th><th>Accepts</th><th>Required</th><th>What it does</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Levels</strong></td><td>Grouping fields</td><td>Yes</td>
+      <td>One field per stage, in process order. Defines the layers of the diagram; repeated values merge into
+      shared nodes. Add fields to go deeper, reorder them to restructure the flow.</td>
+    </tr>
+    <tr>
+      <td><strong>Level images</strong></td><td>Measure</td><td>No</td>
+      <td>Base64 image strings, one per level, supplied by your data model. Rendered inside the node chips.
+      Nothing is fetched from the network &mdash; if the string is not in the model, no image appears.</td>
+    </tr>
+    <tr>
+      <td><strong>Value</strong></td><td>Measure</td><td>Yes</td>
+      <td>The weight of each node and link. Drives badge numbers, link thickness, the dominant path and the
+      variants ranking.</td>
+    </tr>
+    <tr>
+      <td><strong>Target</strong></td><td>Measure</td><td>No</td>
+      <td>Enables the KPI badge. Each node shows its value against target with a variation percentage, coloured
+      by the KPI up/down colours.</td>
+    </tr>
+    <tr>
+      <td><strong>Swimlane</strong></td><td>Grouping field</td><td>No</td>
+      <td>Draws coloured bands across the levels so you can see which part of the organisation or which phase
+      owns each stage.</td>
+    </tr>
+    <tr>
+      <td><strong>Tooltip fields</strong></td><td>Measures</td><td>No</td>
+      <td>Extra measures shown on hover. Report page tooltips are supported as well &mdash; see
+      <a href="#interaction">Interaction</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="format">Format Pane Reference</h2>
+<p>Seven cards, listed in the order they appear in the pane. Default values are given so you can always get
+back to the starting point.</p>
+
+<h3>Layout</h3>
+<table>
+  <thead><tr><th>Setting</th><th>Default</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>Direction</td><td>Left to right</td><td>Or top to bottom. Left to right suits long processes; top to bottom suits deep hierarchies in a narrow visual.</td></tr>
+    <tr><td>Spacing between nodes</td><td>24</td><td>Gap within a layer. Lower it when a level has many branches.</td></tr>
+    <tr><td>Spacing between levels</td><td>100</td><td>Gap between layers. This is the setting to raise when links get hard to follow.</td></tr>
+  </tbody>
+</table>
+
+<h3>Nodes</h3>
+<table>
+  <thead><tr><th>Setting</th><th>Default</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>Node width</td><td>140</td><td>Chip width in pixels.</td></tr>
+    <tr><td>Node height</td><td>36</td><td>Chip height in pixels.</td></tr>
+    <tr><td>Corner radius</td><td>6</td><td>0 for square chips.</td></tr>
+    <tr><td>Font family</td><td>Segoe UI</td><td>Also Arial, Calibri, Georgia, Consolas.</td></tr>
+    <tr><td>Label size</td><td>12</td><td>Node label size in points.</td></tr>
+    <tr><td>Text color</td><td>#FFFFFF</td><td>Label colour. Pair it with the node colours below.</td></tr>
+    <tr><td>Show value badge in chip</td><td>On</td><td>Off hides the number and leaves only the label.</td></tr>
+    <tr><td>Badge font / size</td><td>Segoe UI / 9</td><td>Badge typography, set independently of the label.</td></tr>
+    <tr><td>Badge text color</td><td>#FFFFFF</td><td></td></tr>
+    <tr><td>Badge background</td><td>#000000</td><td>Only visible once opacity is above zero.</td></tr>
+    <tr><td>Badge background opacity %</td><td>0</td><td>Transparent by default, so the badge sits directly on the node colour.</td></tr>
+    <tr><td>KPI up color</td><td>#3E9C5B</td><td>Applied when the value beats target.</td></tr>
+    <tr><td>KPI down color</td><td>#C9524A</td><td>Applied when it misses.</td></tr>
+    <tr><td>Border width</td><td>0</td><td>No border by default.</td></tr>
+    <tr><td>Border color</td><td>#FFFFFF</td><td></td></tr>
+    <tr><td>Color border by level</td><td>Off</td><td>On takes the border colour from the level palette instead.</td></tr>
+    <tr><td>Show node shadow</td><td>Off</td><td></td></tr>
+    <tr><td>Shadow color</td><td>#000000</td><td></td></tr>
+  </tbody>
+</table>
+
+<h3>Value format</h3>
+<table>
+  <thead><tr><th>Setting</th><th>Default</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>Number format</td><td>Thousands (1,234)</td><td>Also Plain, Compact (1.2K / 3.4M) and Percent.</td></tr>
+    <tr><td>Decimal places</td><td>0</td><td></td></tr>
+    <tr><td>Prefix</td><td>&mdash;</td><td>For example a currency symbol.</td></tr>
+    <tr><td>Suffix</td><td>&mdash;</td><td>For example a unit.</td></tr>
+  </tbody>
+</table>
+
+<h3>Links</h3>
+<table>
+  <thead><tr><th>Setting</th><th>Default</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>Link color</td><td>#B7C0D8</td><td></td></tr>
+    <tr><td>Base link width</td><td>2</td><td>Thickness before the value weighting is applied.</td></tr>
+    <tr><td>Curvature</td><td>0.5</td><td>0 gives straight connectors.</td></tr>
+    <tr><td>Highlight dominant path</td><td>On</td><td>Emphasises the heaviest chain through the diagram.</td></tr>
+    <tr><td>Dominant path thickness &times;</td><td>1.3</td><td>Multiplier applied to that path.</td></tr>
+    <tr><td>Highlight top end-to-end variant</td><td>Off</td><td>Traces the single most frequent complete route instead.</td></tr>
+    <tr><td>Top variant color</td><td>#F5A623</td><td>Colour used for that route.</td></tr>
+  </tbody>
+</table>
+
+<h3>Swimlanes</h3>
+<table>
+  <thead><tr><th>Setting</th><th>Default</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>Show swimlane bands</td><td>On</td><td>Only has an effect when the Swimlane field well is filled.</td></tr>
+    <tr><td>Label size</td><td>11</td><td></td></tr>
+    <tr><td>Label font</td><td>Segoe UI</td><td>Also Arial, Calibri, Georgia, Consolas.</td></tr>
+    <tr><td>Label color</td><td>#666666</td><td></td></tr>
+    <tr><td>Band 1&ndash;4 colors</td><td>#2B6CB0, #3E9C5B, #D9A441, #8E5FC4</td><td>Cycled across the lanes.</td></tr>
+    <tr><td>Band opacity %</td><td>6</td><td>Deliberately faint so bands read as background, not as data.</td></tr>
+  </tbody>
+</table>
+
+<h3>Legend</h3>
+<table>
+  <thead><tr><th>Setting</th><th>Default</th><th>Notes</th></tr></thead>
+  <tbody><tr><td>Show legend</td><td>On</td><td>Single toggle.</td></tr></tbody>
+</table>
+
+<h3>Data colors</h3>
+<table>
+  <thead><tr><th>Setting</th><th>Default</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>Default node color</td><td>#6B7A99</td><td>Used when colouring by level is off, and for any level past the sixth.</td></tr>
+    <tr><td>Color nodes by level</td><td>On</td><td>Off paints every node in the default colour.</td></tr>
+    <tr><td>Level 1&ndash;6 colors</td><td>#2B6CB0, #3E9C5B, #D9A441, #8E5FC4, #C9524A, #0E9AA7</td><td>One colour per layer, up to six.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="interaction">Interaction</h2>
+
+<div class="card">
+  <h3>Cross-filtering and selection</h3>
+  <p>Clicking a node or a link filters the rest of the report through the standard Power BI selection model.
+  Ctrl+click adds to the selection; clicking empty space clears it. Selections made in other visuals dim the
+  parts of the diagram that fall outside them, and the visual takes part in slicer state synchronisation.</p>
+</div>
+
+<div class="card">
+  <h3>Tooltips</h3>
+  <p>Standard tooltips show the node or link with its value, plus anything in <strong>Tooltip fields</strong>.
+  Report page tooltips are supported too, including on links: point the visual at a tooltip page and it will be
+  used instead of the default card.</p>
+</div>
+
+<div class="card">
+  <h3>Navigating a large diagram</h3>
+  <p>Zoom, native scrolling, a minimap, in-diagram search and a fit-to-view control. Collapsing a mid-level node
+  folds its branch away and recalculates the values downstream, which is usually a faster way to read a wide
+  process than zooming out.</p>
+</div>
+
+<div class="card">
+  <h3>Variants panel</h3>
+  <p>Lists the top eight end-to-end paths by value. Selecting one traces it on the diagram, which answers
+  &ldquo;what actually happens most of the time&rdquo; without rebuilding the model.</p>
+</div>
+
+<h2 id="accessibility">Accessibility</h2>
+
+<h3>Keyboard navigation</h3>
+<p>The diagram is reachable with the keyboard: Tab moves focus into it, the arrow keys move between nodes,
+Enter selects and Escape clears the selection. Focus is visible at all times.</p>
+
+<h3>High contrast</h3>
+<p>When Power BI is in a high-contrast theme the visual takes its colours from the host palette rather than the
+Format Pane. Because fill cannot carry meaning in that mode, emphasis is re-coded as border weight: the
+dominant path and the selected node are distinguished by thicker outlines, not by colour.</p>
+
+<h2 id="free-pro">Free vs Pro</h2>
+<table>
+  <thead><tr><th>&nbsp;</th><th>Free <span class="badge badge-free">Free</span></th><th>Pro <span class="badge badge-pro">Pro</span></th></tr></thead>
+  <tbody>
+    <tr><td>Nodes per diagram</td><td>Up to 9</td><td>Unlimited</td></tr>
+    <tr><td>KPI badges, swimlanes, dominant path, variants</td><td>Included</td><td>Included</td></tr>
+    <tr><td>Collapse / expand, zoom, minimap, search</td><td>Included</td><td>Included</td></tr>
+    <tr><td>Full Format Pane</td><td>Included</td><td>Included</td></tr>
+    <tr><td>Cross-filtering, tooltips, keyboard, high contrast</td><td>Included</td><td>Included</td></tr>
+  </tbody>
+</table>
+<p>Every feature is unlocked in the Free tier. The only limit is size: Free renders up to nine nodes, kept as a
+connected sub-tree from the root so the diagram still makes sense, with a message telling you how many nodes
+were left out. Pro removes the limit.</p>
+<p>Pro is licensed through Microsoft AppSource. The licence is checked with the official Power BI licensing API,
+asynchronously and off the rendering path, and falls back to Free if the check cannot be completed. No external
+server is involved. See the <a href="terms.html">Terms of Use</a> for what each tier includes.</p>
+
+<h2 id="faq">FAQ</h2>
+
+<details>
+  <summary>My diagram is empty. What am I missing?</summary>
+  <div class="faq-body">
+    <p>Flow Chart needs at least one field in <strong>Levels</strong> and a measure in <strong>Value</strong>.
+    With Levels alone there is nothing to weight the nodes with, and nothing is drawn.</p>
+  </div>
+</details>
+
+<details>
+  <summary>The stages are in the wrong order.</summary>
+  <div class="faq-body">
+    <p>Order comes from the order of the fields in the <strong>Levels</strong> well, not from the data. Drag the
+    fields into the sequence the process actually follows.</p>
+  </div>
+</details>
+
+<details>
+  <summary>Why do I only see nine nodes?</summary>
+  <div class="faq-body">
+    <p>That is the Free tier limit. The nine nodes shown are a connected sub-tree from the root rather than an
+    arbitrary slice, and a message reports how many were omitted. Pro removes the limit.</p>
+  </div>
+</details>
+
+<details>
+  <summary>I bought Pro but the limit is still there.</summary>
+  <div class="faq-body">
+    <p>The licence check runs asynchronously, so give the visual a moment after the report loads. If the limit
+    persists, confirm the Pro subscription is assigned to the account viewing the report &mdash; not only to the
+    account that bought it &mdash; then refresh. If it still does not resolve, email
+    <a href="mailto:support@tcviz.com">support@tcviz.com</a> with the report and the account in question.</p>
+  </div>
+</details>
+
+<details>
+  <summary>Some arrows point backwards.</summary>
+  <div class="faq-body">
+    <p>Those are cycles: transitions that return to an earlier stage. They are detected and drawn as
+    discontinuous loops rather than being forced into the layer order, so rework and retry loops stay visible
+    instead of distorting the diagram.</p>
+  </div>
+</details>
+
+<details>
+  <summary>The KPI badge does not appear.</summary>
+  <div class="faq-body">
+    <p>It needs a measure in the <strong>Target</strong> well. Also check that <em>Show value badge in chip</em>
+    is on under Nodes.</p>
+  </div>
+</details>
+
+<details>
+  <summary>Can I use more than six levels?</summary>
+  <div class="faq-body">
+    <p>Yes. The Format Pane offers six level colours; levels beyond the sixth are drawn in the default node
+    colour. The structure itself is not capped at six.</p>
+  </div>
+</details>
+
+<details>
+  <summary>The swimlane bands are barely visible.</summary>
+  <div class="faq-body">
+    <p>Band opacity is 6% by default, on purpose &mdash; bands are context, not data. Raise <em>Band opacity %</em>
+    under Swimlanes if you want them more prominent.</p>
+  </div>
+</details>
+
+<details>
+  <summary>Does the visual send my data anywhere?</summary>
+  <div class="faq-body">
+    <p>No. There are no network calls, no telemetry and no browser storage. Everything is computed from the
+    Power BI data view inside the report. The <a href="privacy.html">Privacy Policy</a> spells this out.</p>
+  </div>
+</details>
+
+<details>
+  <summary>My level images do not show.</summary>
+  <div class="faq-body">
+    <p><strong>Level images</strong> expects base64 strings that already live in your data model. The visual does
+    not fetch images from URLs, so a column of links will not render.</p>
+  </div>
+</details>
+
+<h2 id="contact">Contact &amp; Support</h2>
+<div class="contact-box">
+  <div class="icon">&#9993;</div>
+  <div>
+    <h3>Need help? We reply within 1 business day.</h3>
+    <p>Email <a href="mailto:support@tcviz.com">support@tcviz.com</a>, or open an issue on
+    <a href="https://github.com/tinocallarisa-web/FlowChart/issues" target="_blank" rel="noopener">GitHub</a>. Including your Power BI Desktop version and
+    the visual version (1.0.2.0) gets you an answer faster.</p>
   </div>
 </div>
-<footer>&copy; 2026 TCViz &middot; <a href="mailto:support@tcviz.com">support@tcviz.com</a></footer>
+
+</div>
+
+<footer>
+  <div style="margin-bottom:10px;">
+    <a href="https://tinocallarisa-web.github.io/FlowChart/support.html">Support</a>
+    <a href="https://tinocallarisa-web.github.io/FlowChart/privacy.html">Privacy Policy</a>
+    <a href="https://tinocallarisa-web.github.io/FlowChart/terms.html">Terms of Use</a>
+    <a href="https://tinocallarisa-web.github.io/FlowChart/changelog.html">Changelog</a>
+    <a href="https://github.com/tinocallarisa-web/FlowChart" target="_blank" rel="noopener">GitHub</a>
+  </div>
+  <p>&copy; 2026 TCViz &middot; Flow Chart &middot; <a href="mailto:support@tcviz.com">support@tcviz.com</a></p>
+</footer>
+<script>
+(function () {
+  'use strict';
+
+  // ── Nav highlight (in-page anchors only) ────────────────────────────────────
+  document.querySelectorAll('nav a[href^="#"]').forEach(function (a) {
+    a.addEventListener('click', function () {
+      document.querySelectorAll('nav a').forEach(function (x) { x.classList.remove('active'); });
+      a.classList.add('active');
+    });
+  });
+
+  // ── Documentation search ────────────────────────────────────────────────────
+  var input  = document.getElementById('docsearch');
+  var clear  = document.getElementById('searchclear');
+  var status = document.getElementById('searchstatus');
+  var wrap   = document.querySelector('.wrap');
+  if (!input || !wrap) { return; }
+
+  var HIDE = 'is-hidden';
+
+  // Atomic searchable units: one FAQ entry, one table row, one card.
+  var units = [];
+  function add(el) {
+    if (units.some(function (u) { return u.el === el; })) { return; }
+    units.push({ el: el, html: el.innerHTML, text: (el.textContent || '').toLowerCase() });
+  }
+  wrap.querySelectorAll('details').forEach(add);
+  wrap.querySelectorAll('table tr').forEach(function (tr) {
+    if (tr.querySelector('th')) { return; }   // header rows follow their table
+    add(tr);
+  });
+  wrap.querySelectorAll('.card, .contact-box').forEach(add);
+
+  // Sections: an <h2> plus every sibling up to the next <h2>.
+  var sections = [];
+  var current = null;
+  Array.prototype.forEach.call(wrap.children, function (el) {
+    if (el.tagName === 'H2') {
+      current = { head: el, body: [] };
+      sections.push(current);
+    } else if (current) {
+      current.body.push(el);
+    }
+  });
+  // Each body element remembers which units live inside it.
+  sections.forEach(function (sec) {
+    sec.body.forEach(function (b) {
+      b._units = units.filter(function (u) { return b === u.el || b.contains(u.el); });
+      if (!b._units.length) { b._html = b.innerHTML; }
+    });
+  });
+
+  function escapeRe(t) { return t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  function escapeHtml(t) {
+    return t.replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; });
+  }
+
+  function highlight(el, terms) {
+    var re = new RegExp('(' + terms.map(escapeRe).join('|') + ')', 'gi');
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    var nodes = [], n;
+    while ((n = walker.nextNode())) { nodes.push(n); }
+    nodes.forEach(function (node) {
+      var txt = node.nodeValue;
+      re.lastIndex = 0;
+      if (!re.test(txt)) { return; }
+      re.lastIndex = 0;
+      var span = document.createElement('span');
+      span.innerHTML = escapeHtml(txt).replace(re, '<mark>$1</mark>');
+      node.parentNode.replaceChild(span, node);
+    });
+  }
+
+  function showAll() {
+    units.forEach(function (u) { u.el.classList.remove(HIDE); u.el.innerHTML = u.html; });
+    sections.forEach(function (sec) {
+      sec.head.classList.remove(HIDE);
+      sec.body.forEach(function (b) {
+        b.classList.remove(HIDE);
+        if (b._html !== undefined) { b.innerHTML = b._html; }
+      });
+    });
+    status.textContent = '';
+    clear.hidden = true;
+  }
+
+  function run(q) {
+    q = (q || '').trim();
+    if (q.length < 2) { showAll(); return; }
+    clear.hidden = false;
+
+    var terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+    var hits = 0;
+
+    units.forEach(function (u) {
+      u.el.innerHTML = u.html;
+      var match = terms.every(function (t) { return u.text.indexOf(t) !== -1; });
+      u.el.classList.toggle(HIDE, !match);
+      if (match) {
+        hits++;
+        highlight(u.el, terms);
+        if (u.el.tagName === 'DETAILS') { u.el.open = true; }
+      }
+    });
+
+    sections.forEach(function (sec) {
+      var anyVisible = false;
+      sec.body.forEach(function (b) {
+        var visible;
+        if (b._units.length) {
+          visible = b._units.some(function (u) { return !u.el.classList.contains(HIDE); });
+        } else {
+          b.innerHTML = b._html;
+          var txt = (b.textContent || '').toLowerCase();
+          visible = terms.every(function (t) { return txt.indexOf(t) !== -1; });
+          if (visible) { highlight(b, terms); }
+        }
+        b.classList.toggle(HIDE, !visible);
+        if (visible) { anyVisible = true; }
+      });
+      sec.head.classList.toggle(HIDE, !anyVisible);
+    });
+
+    status.textContent = hits
+      ? hits + ' result' + (hits === 1 ? '' : 's') + ' for “' + q + '”'
+      : 'No results for “' + q + '”. Try a Format Pane setting name, or email support@tcviz.com.';
+  }
+
+  var timer;
+  input.addEventListener('input', function () {
+    clearTimeout(timer);
+    timer = setTimeout(function () { run(input.value); }, 120);
+  });
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { input.value = ''; showAll(); }
+  });
+  clear.addEventListener('click', function () { input.value = ''; showAll(); input.focus(); });
+
+  // Deep link: support.html?q=license
+  var qp = new URLSearchParams(location.search).get('q');
+  if (qp) { input.value = qp; run(qp); }
+})();
+</script>
 </body>
 </html>

@@ -1,98 +1,313 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Terms of Use — Flow Chart | TCViz</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f7f8fa; color: #1a1a2e; line-height: 1.7; }
-    header { background: #2B6CB0; padding: 20px 40px; }
-    header .brand { color: #fff; font-size: 20px; font-weight: 700; }
-    header .brand span { opacity: 0.7; font-weight: 400; font-size: 15px; margin-left: 8px; }
-    .container { max-width: 760px; margin: 48px auto; padding: 0 24px; }
-    .card { background: #fff; border-radius: 12px; padding: 48px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
-    h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
-    .subtitle { color: #6b7280; font-size: 14px; margin-bottom: 36px; }
-    h2 { font-size: 16px; font-weight: 600; margin: 32px 0 10px; color: #2B6CB0; }
-    p { font-size: 15px; color: #374151; margin-bottom: 12px; }
-    .badge { display: inline-block; background: #EAF1FA; color: #2B6CB0; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; margin-bottom: 32px; }
-    .tier-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
-    .tier-box { border-radius: 10px; padding: 24px; border: 1.5px solid #e5e7eb; }
-    .tier-box.pro { border-color: #2B6CB0; background: #EAF1FA; }
-    .tier-name { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; color: #6b7280; }
-    .tier-box.pro .tier-name { color: #2B6CB0; }
-    ul { list-style: none; padding: 0; }
-    ul li { font-size: 14px; color: #374151; padding: 4px 0 4px 18px; position: relative; }
-    ul li::before { content: "✓"; position: absolute; left: 0; color: #10b981; font-weight: 700; }
-    .tier-box.pro ul li::before { color: #2B6CB0; }
-    a { color: #2B6CB0; }
-    footer { text-align: center; padding: 32px; color: #9ca3af; font-size: 13px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flow Chart &ndash; Terms of Use | TCViz</title>
+<style>
+  :root {
+    --bg: #FAF9F5; --bg2: #EDE9DE; --bd: #F5F3ED; --line: #DAD9D4;
+    --t1: #3D3929; --t2: #535146; --t3: #83827D;
+    --acc: #C96442; --accd: #B05730; --acc2: #9C87F5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--t1); line-height: 1.65; }
+
+  /* ── Header ── */
+  header { background: var(--t1); color: #fff; padding: 28px 48px; display: flex; align-items: center; gap: 20px; }
+  header svg { flex-shrink: 0; }
+  header .title { font-size: 22px; font-weight: 700; }
+  header .sub   { font-size: 13px; color: #b5b3aa; margin-top: 2px; }
+
+  /* ── Nav ── */
+  nav { background: var(--bg2); border-bottom: 1px solid var(--line); padding: 0 48px; display: flex; gap: 0; }
+  nav a { display: block; padding: 14px 20px; font-size: 13px; font-weight: 600; color: var(--t2);
+          text-decoration: none; border-bottom: 3px solid transparent; transition: color .2s, border-color .2s; }
+  nav a:hover, nav a.active { color: var(--acc); border-bottom-color: var(--acc); }
+
+  /* ── Layout ── */
+  .wrap { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+  h1 { font-size: 26px; font-weight: 700; margin-bottom: 8px; }
+  h2 { font-size: 17px; font-weight: 700; color: var(--t1); margin: 40px 0 12px; padding-bottom: 8px;
+       border-bottom: 2px solid var(--acc); display: inline-block; }
+  h3 { font-size: 14px; font-weight: 700; color: var(--t1); margin: 18px 0 6px; }
+  p  { font-size: 14px; color: var(--t2); margin-bottom: 10px; }
+  ul { font-size: 14px; color: var(--t2); padding-left: 20px; margin-bottom: 10px; }
+  li { margin-bottom: 5px; }
+  code { font-family: monospace; background: var(--bg2); padding: 1px 6px; border-radius: 4px;
+         font-size: 12px; color: var(--acc); }
+
+  /* ── Cards ── */
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 24px 28px; margin-bottom: 16px; }
+
+  /* ── Badges ── */
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+           text-transform: uppercase; letter-spacing: .5px; vertical-align: middle; margin-left: 6px; }
+  .badge-pro  { background: var(--acc2); color: #fff; }
+  .badge-free { background: var(--acc);  color: #fff; }
+
+  /* ── Field wells table ── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
+  th { background: var(--bg2); color: var(--t1); font-weight: 700; padding: 10px 14px; text-align: left;
+       border-bottom: 2px solid var(--line); }
+  td { padding: 9px 14px; border-bottom: 1px solid var(--bd); color: var(--t2); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+
+  /* ── FAQ ── */
+  details { border: 1px solid var(--line); border-radius: 8px; margin-bottom: 10px; background: #fff; }
+  summary { padding: 14px 18px; font-size: 14px; font-weight: 600; cursor: pointer; list-style: none;
+            display: flex; align-items: center; justify-content: space-between; color: var(--t1); }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: '+'; font-size: 18px; font-weight: 300; color: var(--acc); transition: transform .2s; }
+  details[open] summary::after { content: '−'; }
+  details[open] summary { border-bottom: 1px solid var(--line); }
+  .faq-body { padding: 14px 18px; font-size: 14px; color: var(--t2); }
+  .faq-body p { margin-bottom: 6px; }
+  .faq-body ul { margin-top: 6px; }
+
+  /* ── Contact box ── */
+  .contact-box { background: var(--acc); color: #fff; border-radius: 10px; padding: 24px 28px;
+                  display: flex; align-items: center; gap: 20px; }
+  .contact-box .icon { font-size: 36px; flex-shrink: 0; }
+  .contact-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; color: #fff; }
+  .contact-box p  { font-size: 13px; color: rgba(255,255,255,.85); margin: 0; }
+  .contact-box a  { color: #fff; font-weight: 700; text-decoration: underline; }
+
+  /* ── Video embed ── */
+  .video-wrap { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 10px; overflow: hidden;
+                border: 1px solid var(--line); margin-bottom: 20px; }
+  .video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+
+  /* ── CTA strip ── */
+  .cta { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+  .btn { display: inline-block; padding: 10px 22px; border-radius: 6px; font-size: 13px; font-weight: 700;
+          text-decoration: none; transition: background .2s; }
+  .btn-primary { background: var(--acc); color: #fff; }
+  .btn-primary:hover { background: var(--accd); }
+  .btn-outline { background: transparent; color: var(--acc); border: 2px solid var(--acc); }
+  .btn-outline:hover { background: var(--acc); color: #fff; }
+
+  /* ── Search ── */
+  .searchbar { background: var(--bg2); border-bottom: 1px solid var(--line); padding: 14px 48px 16px; }
+  .searchbox { position: relative; max-width: 900px; margin: 0 auto; display: flex; align-items: center;
+               gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 0 12px; }
+  .searchbox:focus-within { border-color: var(--acc); box-shadow: 0 0 0 3px rgba(201,100,66,.14); }
+  .searchbox svg { color: var(--t3); flex-shrink: 0; }
+  .searchbox input { flex: 1; border: none; outline: none; background: transparent; font: inherit;
+                     font-size: 14px; color: var(--t1); padding: 11px 0; }
+  .searchbox input::placeholder { color: var(--t3); }
+  .searchbox button { border: none; background: transparent; color: var(--t3); font-size: 20px;
+                      line-height: 1; cursor: pointer; padding: 0 2px; }
+  .searchbox button:hover { color: var(--acc); }
+  .search-status { max-width: 900px; margin: 8px auto 0; font-size: 12px; color: var(--t3); min-height: 16px; }
+  mark { background: #FCE8A8; color: var(--t1); border-radius: 2px; padding: 0 2px; }
+  .is-hidden { display: none !important; }
+
+  /* ── Version pill ── */
+  .verpill { display: block; width: fit-content; font-size: 11px; font-weight: 700; letter-spacing: .4px;
+             background: var(--bg2); color: var(--t2); border: 1px solid var(--line);
+             padding: 3px 10px; border-radius: 20px; margin-bottom: 14px; }
+  .verpill a { color: var(--acc); text-decoration: none; }
+
+  /* ── Footer ── */
+  footer { background: var(--t1); color: var(--t3); text-align: center; padding: 24px 48px; font-size: 12px; }
+  footer a { color: #b5b3aa; text-decoration: none; margin: 0 8px; }
+  footer a:hover { color: #fff; }
+
+  .lead { font-size: 15px; color: var(--t2); max-width: 68ch; margin-bottom: 20px; }
+  .rel { background:#fff; border:1px solid var(--line); border-radius:10px; padding:22px 26px; margin-bottom:16px; }
+  .rel-head { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:6px; }
+  .rel-ver { font-size:18px; font-weight:700; color:var(--t1); }
+  .rel-date { font-size:12px; color:var(--t3); }
+  .tag { display:inline-block; font-size:10px; font-weight:700; text-transform:uppercase;
+         letter-spacing:.5px; padding:2px 8px; border-radius:20px; }
+  .tag-cur { background:var(--acc); color:#fff; }
+  .tag-add { background:#2E7D5B; color:#fff; }
+  .tag-chg { background:#8A6D1F; color:#fff; }
+  .tag-fix { background:#2E5BA8; color:#fff; }
+  .tag-plan{ background:var(--bg2); color:var(--t2); border:1px solid var(--line); }
+  .rel h4 { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.6px;
+            color:var(--t3); margin:16px 0 6px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; margin-bottom:16px; }
+  .tile { background:#fff; border:1px solid var(--line); border-radius:10px; padding:22px 24px;
+          text-decoration:none; display:block; transition:border-color .2s, transform .2s; }
+  .tile:hover { border-color:var(--acc); transform:translateY(-2px); }
+  .tile h3 { margin:0 0 6px; font-size:15px; color:var(--t1); }
+  .tile p  { margin:0; font-size:13px; color:var(--t2); }
+  .tile .arrow { color:var(--acc); font-weight:700; }
+  pre { background:var(--t1); color:#EDE9DE; padding:16px 18px; border-radius:8px; overflow-x:auto;
+        font-size:12px; line-height:1.6; margin-bottom:14px; }
+  pre code { background:none; color:inherit; padding:0; font-size:12px; }
+  .note { border-left:4px solid var(--acc); background:#fff; border-radius:0 8px 8px 0;
+          padding:14px 18px; margin-bottom:16px; font-size:13px; color:var(--t2); }
+  .note strong { color:var(--t1); }
+  .hero { background:var(--bg2); border-bottom:1px solid var(--line); padding:52px 24px; text-align:center; }
+  .hero h1 { font-size:32px; margin-bottom:10px; }
+  .hero p  { font-size:15px; color:var(--t2); max-width:62ch; margin:0 auto 22px; }
+  @media (max-width: 640px) {
+    header, nav, .searchbar { padding-left:20px; padding-right:20px; }
+    nav { overflow-x:auto; }
+    .wrap { padding:32px 18px 60px; }
+  }
+
+.highlight-box {
+    background: var(--bg2); border-left: 4px solid var(--acc);
+    border-radius: 0 8px 8px 0; padding: 16px 20px; margin: 0 0 32px;
+    font-size: 14px; color: var(--t2);
+  }
+.highlight-box strong { color: var(--t1); }
+.meta { font-size: 13px; color: var(--t3); margin-bottom: 32px; }
+</style>
 </head>
 <body>
-<header><div class="brand">TCViz <span>Power BI Custom Visuals</span></div></header>
-<div class="container">
-  <div class="card">
-    <div class="badge">Flow Chart</div>
-    <h1>Terms of Use</h1>
-    <p class="subtitle">Last updated: August 2026</p>
 
-    <h2>1. Acceptance of Terms</h2>
-    <p>By downloading, installing, or using the <strong>Flow Chart</strong> Power BI custom visual ("the Visual"), you agree to be bound by these Terms of Use. If you do not agree, do not use the Visual.</p>
-
-    <h2>2. License Tiers</h2>
-    <p>The Visual is available in two tiers:</p>
-    <div class="tier-grid">
-      <div class="tier-box">
-        <div class="tier-name">Free Tier</div>
-        <ul>
-          <li>Diagrams of up to 9 nodes</li>
-          <li>Hierarchical Levels, Value, Swimlane and Tooltip fields</li>
-          <li>KPI badges (Target vs. actual)</li>
-          <li>Golden path and variant highlighting</li>
-          <li>Variants panel</li>
-          <li>Collapse/expand, zoom, minimap, search</li>
-          <li>Full format pane customization</li>
-        </ul>
-      </div>
-      <div class="tier-box pro">
-        <div class="tier-name">Pro Tier</div>
-        <ul>
-          <li>Unlimited nodes</li>
-          <li>All Free tier features</li>
-          <li>No diagram size restriction</li>
-          <li>Priority support</li>
-        </ul>
-      </div>
-    </div>
-
-    <h2>3. License Grant</h2>
-    <p>TCViz grants you a non-exclusive, non-transferable, limited license to use the Visual within Microsoft Power BI for personal or business purposes, subject to these Terms and the applicable tier limitations.</p>
-    <p>The Pro tier license is validated through the official Microsoft AppSource licensing system. One active AppSource subscription is required per user.</p>
-
-    <h2>4. Restrictions</h2>
-    <p>You may not: (a) reverse engineer, decompile, or disassemble the Visual; (b) redistribute, resell, or sublicense the Visual; (c) remove or alter any proprietary notices within the Visual; (d) use the Visual in any way that violates applicable laws or Microsoft's Power BI terms of service.</p>
-
-    <h2>5. Intellectual Property</h2>
-    <p>The Visual, including all code, design, and documentation, is the exclusive property of TCViz (Tino Callarisa). All rights not expressly granted in these Terms are reserved.</p>
-
-    <h2>6. Disclaimer of Warranties</h2>
-    <p>The Visual is provided "as is" without warranties of any kind, express or implied. TCViz does not warrant that the Visual will be error-free, uninterrupted, or meet your specific requirements.</p>
-
-    <h2>7. Limitation of Liability</h2>
-    <p>To the maximum extent permitted by applicable law, TCViz shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Visual.</p>
-
-    <h2>8. Governing Law</h2>
-    <p>These Terms shall be governed by and construed in accordance with the laws of Spain, without regard to its conflict of law provisions.</p>
-
-    <h2>9. Changes to These Terms</h2>
-    <p>TCViz reserves the right to modify these Terms at any time. Continued use of the Visual after any changes constitutes your acceptance of the new Terms.</p>
-
-    <h2>10. Contact</h2>
-    <p>Questions about these Terms? Contact us at <a href="mailto:support@tcviz.com">support@tcviz.com</a>.</p>
+<header>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 828 362" width="90" height="40" aria-hidden="true">
+    <defs><linearGradient id="g" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#B05730"/>
+      <stop offset=".55" stop-color="#C96442"/>
+      <stop offset="1" stop-color="#9C87F5"/>
+    </linearGradient></defs>
+    <g transform="translate(40,46)">
+      <rect x="22" y="20" width="150" height="150" rx="30" fill="none" stroke="url(#g)" stroke-width="11"/>
+      <g fill="url(#g)">
+        <rect x="40" y="52" width="46" height="26" rx="6"/>
+        <rect x="108" y="52" width="46" height="26" rx="6"/>
+        <rect x="40" y="112" width="46" height="26" rx="6"/>
+        <rect x="108" y="112" width="46" height="26" rx="6"/>
+        <rect x="86" y="63" width="22" height="5" rx="2.5"/>
+        <rect x="86" y="123" width="22" height="5" rx="2.5"/>
+        <rect x="60" y="78" width="5" height="34" rx="2.5"/>
+        <rect x="128" y="78" width="5" height="34" rx="2.5"/>
+      </g>
+    </g>
+    <text x="258" y="246" font-family="Poppins,sans-serif" font-weight="700" font-size="196" letter-spacing="-4">
+      <tspan fill="url(#g)">tc</tspan><tspan fill="#fff">viz</tspan>
+    </text>
+    <text x="264" y="306" font-family="Poppins,sans-serif" font-weight="500" font-size="31" letter-spacing="6.5" fill="#83827D">VISUALS TO POWER BI</text>
+  </svg>
+  <div>
+    <div class="title">Flow Chart</div>
+    <div class="sub">Terms of Use</div>
   </div>
+</header>
+
+<nav>
+  <a href="support.html">Support</a>
+  <a href="privacy.html">Privacy</a>
+  <a href="terms.html" class="active">Terms</a>
+  <a href="changelog.html">Changelog</a>
+  <a href="https://github.com/tinocallarisa-web/FlowChart">GitHub</a>
+</nav>
+
+<div class="wrap">
+
+  <h1>Terms of Use</h1>
+  <p class="meta">Flow Chart &mdash; TCViz &nbsp;&middot;&nbsp; Effective: September 2026</p>
+
+  <p>These Terms of Use govern your use of Flow Chart, a Power BI custom visual developed by TCViz and
+  distributed through Microsoft AppSource. By installing or using the visual you agree to them.</p>
+
+  <h2>1. Licence tiers</h2>
+
+  <div class="card">
+    <h3>Free tier <span class="badge badge-free">Free</span></h3>
+    <p>Available to every Power BI user at no charge, with <strong>every feature unlocked</strong>:</p>
+    <ul>
+      <li>Data-driven process diagram built from the Levels field wells, with automatic branch merging</li>
+      <li>Horizontal or vertical layout, per-layer centring and crossing-minimisation</li>
+      <li>Cycle detection, drawn as discontinuous loops</li>
+      <li>Dominant path emphasis and top end-to-end variant highlighting</li>
+      <li>Variants panel with the top 8 paths by value</li>
+      <li>Collapse and expand branches, with cascading value recalculation</li>
+      <li>Zoom, native scroll, minimap, in-diagram search and fit to view</li>
+      <li>KPI badges (value against target, with variation %)</li>
+      <li>Swimlane bands across the levels</li>
+      <li>Level images from base64 strings in your model</li>
+      <li>Native selection, cross-filtering, context menu, standard and report page tooltips</li>
+      <li>Keyboard focus and high contrast support</li>
+      <li>The complete Format Pane: layout, nodes, badges, value format, links, swimlanes, legend, data colours</li>
+    </ul>
+    <p><strong>The only limit is size:</strong> a Free diagram renders up to <strong>9 nodes</strong>, kept as a
+    connected sub-tree from the root so the diagram remains coherent, with a message reporting how many nodes
+    were omitted.</p>
+
+    <h3 style="margin-top:20px;">Pro tier <span class="badge badge-pro">Pro</span></h3>
+    <p>Requires an active AppSource subscription. Identical to Free in every feature, with the node limit
+    removed: <strong>unlimited nodes</strong>.</p>
+  </div>
+
+  <table>
+    <thead><tr><th>Feature</th><th>Free</th><th>Pro</th></tr></thead>
+    <tbody>
+      <tr><td>Nodes per diagram</td><td>Up to 9</td><td>Unlimited</td></tr>
+      <tr><td>Process diagram, branch merging, cycle detection</td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>Dominant path and top variant highlighting</td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>Variants panel (top 8 paths)</td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>Collapse / expand with value recalculation</td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>Zoom, minimap, search, fit to view</td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>KPI badges and swimlanes</td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>Cross-filtering, context menu, tooltips</td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>Keyboard focus, high contrast</td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>Full Format Pane</td><td>&#10003;</td><td>&#10003;</td></tr>
+    </tbody>
+  </table>
+
+  <h2>2. Subscription and billing</h2>
+  <p>Pro subscriptions are purchased and managed through Microsoft AppSource. TCViz does not handle payments,
+  renewals or cancellations; billing is governed by Microsoft's marketplace terms.</p>
+  <p>Each Pro licence covers one named user. Sharing a single licence across several users is not permitted.</p>
+
+  <h2>3. Permitted use</h2>
+  <p>You may use Flow Chart within Microsoft Power BI for personal, internal business or commercial reporting,
+  subject to these terms and your Power BI licence. You may not:</p>
+  <ul>
+    <li>Reverse-engineer, decompile or attempt to extract the source code of the visual</li>
+    <li>Redistribute, resell or sublicense the visual outside the AppSource marketplace</li>
+    <li>Use the visual in a way that breaks applicable law or Microsoft's platform policies</li>
+  </ul>
+
+  <h2>4. Intellectual property</h2>
+  <p>Flow Chart and its associated assets are the intellectual property of TCViz. The visual is licensed to you
+  for use; it is not sold, and TCViz retains all ownership rights.</p>
+  <p>The source code is published on <a href="https://github.com/tinocallarisa-web/FlowChart" target="_blank" rel="noopener">GitHub</a> under its stated
+  licence, for reference and for certification review.</p>
+
+  <h2>5. Disclaimer of warranties</h2>
+  <p>Flow Chart is provided &ldquo;as is&rdquo;, without warranty of any kind, express or implied. TCViz makes no
+  guarantee of uninterrupted availability, fitness for a particular purpose, or compatibility with every Power BI
+  environment or dataset.</p>
+
+  <h2>6. Limitation of liability</h2>
+  <p>To the maximum extent permitted by applicable law, TCViz shall not be liable for any indirect, incidental,
+  special or consequential damages arising from the use or inability to use the visual, including data loss,
+  business interruption or loss of revenue.</p>
+
+  <h2>7. Changes to these terms</h2>
+  <p>TCViz may revise these terms from time to time. The &ldquo;Effective&rdquo; date above reflects the most
+  recent revision.</p>
+
+  <h2>8. Contact</h2>
+  <div class="contact-box">
+    <div class="icon">&#9993;</div>
+    <div>
+      <h3>Questions about these terms</h3>
+      <p>Write to <a href="mailto:support@tcviz.com">support@tcviz.com</a>. We respond within 5 business days.</p>
+    </div>
+  </div>
+
 </div>
-<footer>&copy; 2026 TCViz &middot; <a href="mailto:support@tcviz.com">support@tcviz.com</a></footer>
+
+<footer>
+  <div style="margin-bottom:10px;">
+    <a href="https://tinocallarisa-web.github.io/FlowChart/support.html">Support</a>
+    <a href="https://tinocallarisa-web.github.io/FlowChart/privacy.html">Privacy Policy</a>
+    <a href="https://tinocallarisa-web.github.io/FlowChart/terms.html">Terms of Use</a>
+    <a href="https://tinocallarisa-web.github.io/FlowChart/changelog.html">Changelog</a>
+    <a href="https://github.com/tinocallarisa-web/FlowChart" target="_blank" rel="noopener">GitHub</a>
+  </div>
+  <p>&copy; 2026 TCViz &middot; Flow Chart &middot; <a href="mailto:support@tcviz.com">support@tcviz.com</a></p>
+</footer>
+
 </body>
 </html>
