@@ -1,0 +1,48 @@
+Flow Chart 1.0.3.0 - GUID flowChart69C501A62F7E49748AD3DA7D4E840200
+Full notes: docs/CERTIFICATION-NOTES.md in the repo.
+
+REPO + URLs
+github.com/tinocallarisa-web/FlowChart, branch "certification" (same commit as main).
+Read-only invitations pending for OSDC1033 and pbicvsupport (2FA off).
+tinocallarisa-web.github.io/FlowChart/ + support, privacy, terms, changelog.html
+Video youtube.com/watch?v=wXvxscw7e4k
+
+WHY THIS RESUBMISSION
+1.0.1.0 was returned under 1200.1.1.3 (repo 1.0.0.0 vs package 1.0.1.0). Fixed, and
+changelog.html is generated from pbiviz.json, so the two cannot drift. 1.0.3.0 fixes
+three audit findings: ids from the data are HTML-escaped before going into attributes;
+the licence no longer resolves inside update(); and the purchase path is Power BI's own
+notification, not text in the chart.
+
+LICENCE
+IVisualLicenseManager only: getAvailableServicePlans() against Plan ID "flow-chart-tcviz",
+accepting Active and Warning (grace period). Requested once, deferred, never in the render
+path; any failure stays on Free. Where it cannot be queried (Publish to Web, embedding,
+export) the free experience renders and nobody is asked to buy.
+
+FREE VS PRO
+Free: every feature, capped at 9 nodes kept as a connected sub-tree from the root, with a
+neutral "Showing 9 of N nodes" note. No watermark. Pro: the same, every node.
+
+PRIVACY
+No network calls, no telemetry, no cookies, no local or session storage. Only the
+dataView. Level images only as data:image base64, never fetched. privileges is [].
+
+TESTING - FREE
+1. Import the _test build made with --free (real licence check, no active plan).
+2. Levels: 3+ fields plus a Value measure, dataset with more than 9 nodes.
+3. Expect 9 nodes as a connected sub-tree, the neutral count note, and Power BI's own
+   licence notification - not a message in the chart.
+4. Click a node and a link: other visuals cross-filter.
+5. Right-click a node: the context menu opens, also after several refreshes.
+6. Put a double quote in a level value: it renders as text, no broken markup.
+
+TESTING - PRO
+1. Import the _test build without --free (isPro forced).
+2. Same dataset: full diagram, the note disappears.
+3. Add Target: KPI badge shows value and up/down %.
+4. Add Swimlane: coloured bands. Open Variants, click one: it traces.
+5. Collapse a mid-level node: downstream values and badges recalculate.
+
+Rendering events on every path of update(). Known warning, not a gap: Localizations -
+single-language visual, stringResources empty on purpose.

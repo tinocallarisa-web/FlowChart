@@ -26,19 +26,15 @@ console.log("GUID real:  " + pbivizObj.visual.guid);
 console.log("Tier:       " + (forceFree ? "Free (real license check)" : "Pro (forzado)"));
 
 // Patch visual.ts — force isPro = true (unless --free)
-const LICENSE_BLOCK = `            // Production license check via Microsoft AppSource
-            try {
-                const licenseResult = await this.licenseManager.getAvailableServicePlans();
-                this.isPro = licenseResult.plans?.some(
-                    plan => plan.spIdentifier === SP_IDENTIFIER &&
-                            plan.state === ServicePlanState.Active
-                ) ?? false;
-            } catch (_) {
-                this.isPro = false;
-            }`;
+//
+// El ancla cambio en 1.0.3.0. Antes se parcheaba el bloque que resolvia la licencia
+// dentro de update(); ese bloque ya no existe ahi, porque la licencia salio del
+// camino critico del render a requestLicenseDeferred(). Ahora se parchea el
+// inicializador del campo, que es mas estable y ademas corta la peticion: el
+// propio requestLicenseDeferred() retorna de inmediato si isPro ya es true.
+const LICENSE_BLOCK = `    private isPro: boolean = false;`;
 
-const LICENSE_PATCH = `            // TEST BUILD — isPro forzado a true
-            this.isPro = true;`;
+const LICENSE_PATCH = `    private isPro: boolean = true; // TEST BUILD — isPro forzado`;
 
 let patchedTs = originalTs;
 if (!forceFree) {
@@ -51,7 +47,10 @@ if (!forceFree) {
 
 // Patch pbiviz.json — add _test to guid
 const realGuid       = pbivizObj.visual.guid;
-const testGuid       = realGuid + "_test";
+// Cada modo lleva su propio sufijo. Con el mismo, Power BI trata las dos builds
+// como el mismo visual y la segunda sobreescribe a la primera — y las notas de
+// certificacion piden probar Free y Pro, que asi no se pueden tener a la vez.
+const testGuid       = realGuid + (forceFree ? "_testfree" : "_test");
 const patchedPbiviz  = originalPbiviz.replace('"' + realGuid + '"', '"' + testGuid + '"');
 
 console.log("GUID test:  " + testGuid);

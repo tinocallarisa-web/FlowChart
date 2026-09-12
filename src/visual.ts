@@ -13,10 +13,15 @@ import ISelectionId = powerbi.visuals.ISelectionId;
 import DataView = powerbi.DataView;
 import DataViewTableRow = powerbi.DataViewTableRow;
 import IVisualLicenseManager = powerbi.extensibility.IVisualLicenseManager;
-import ServicePlanState = powerbi.ServicePlanState;
 
 const SP_IDENTIFIER = "flow-chart-tcviz";
 const MAX_FREE_NODES = 9;
+
+/** ServicePlanState es un const enum; los numeros hacen falta en runtime.
+ *  Warning es el periodo de gracia de pago: quien tiene un problema de
+ *  facturacion sin resolver no debe perder el diagrama completo. */
+const STATE_ACTIVE = 1;
+const STATE_WARNING = 2;
 
 import { VisualFormattingSettingsModel } from "./settings";
 
@@ -125,6 +130,10 @@ export class Visual implements IVisual {
     private isPro: boolean = false;
     private isLimited: boolean = false;
     private fullNodeCount: number = 0;
+    private lastOptions: VisualUpdateOptions | null = null;
+    private licenseRequested: boolean = false;
+    private licenseNotified: boolean = false;
+    private licenseEnvUnsupported: boolean = false;
 
     constructor(options: VisualConstructorOptions) {
         this.formattingSettingsService = new FormattingSettingsService();
@@ -166,52 +175,148 @@ export class Visual implements IVisual {
         this.updateMinimapViewport();
     }
 
-    public async update(options: VisualUpdateOptions): Promise<void> {
+    /**
+     * update() es SINCRONA a proposito.
+     *
+     * Antes era `async` y hacia `await licenseManager.getAvailableServicePlans()`
+     * entre renderingStarted y el dibujado, en cada update. Eso tenia dos costes.
+     * El diagrama no se pintaba hasta que la llamada de licencia resolvia, y Power
+     * BI llama a update() muy seguido al redimensionar: dos updates solapados
+     * podian emitir el renderingFinished del primero despues del renderingStarted
+     * del segundo, que es justo el desajuste que mira el validador.
+     *
+     * Ahora la licencia se resuelve en diferido y solo repinta si pasa de Free a
+     * Pro. La licencia nunca esta en el camino critico del render.
+     */
+    public update(options: VisualUpdateOptions): void {
         this.events.renderingStarted(options);
         try {
-            // Production license check via Microsoft AppSource
-            try {
-                const licenseResult = await this.licenseManager.getAvailableServicePlans();
-                this.isPro = licenseResult.plans?.some(
-                    plan => plan.spIdentifier === SP_IDENTIFIER &&
-                            plan.state === ServicePlanState.Active
-                ) ?? false;
-            } catch (_) {
-                this.isPro = false;
-            }
-
-            this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(
-                VisualFormattingSettingsModel,
-                options.dataViews && options.dataViews[0]
-            );
-
-            this.width = options.viewport.width;
-            this.height = options.viewport.height;
-            this.direction = this.formattingSettings?.layoutCard?.direction?.value?.value?.toString() ?? "horizontal";
-
-            const dataView = options.dataViews && options.dataViews[0];
-            if (!dataView || !dataView.table) {
-                this.renderEmpty();
-                this.events.renderingFinished(options);
-                return;
-            }
-
-            this.data = this.parseDataView(dataView);
-
-            // Free tier: cap the diagram to MAX_FREE_NODES nodes (kept connected via BFS from the roots)
-            this.fullNodeCount = this.data.nodes.length;
-            this.isLimited = !this.isPro && this.fullNodeCount > MAX_FREE_NODES;
-            if (this.isLimited) {
-                this.data = this.limitFreeTierNodes(this.data, MAX_FREE_NODES);
-            }
-
-            this.computeLayout();
-            this.render();
-
+            this.lastOptions = options;
+            this.draw(options);
             this.events.renderingFinished(options);
         } catch (e) {
             this.events.renderingFailed(options, String(e));
         }
+        // Fuera del try: que un fallo al pedir la licencia o al notificar no
+        // convierta un render correcto en renderingFailed.
+        this.requestLicenseDeferred();
+        this.syncLicenseNotification();
+    }
+
+    /** Todo el dibujado. No emite rendering events: los emite update(), y tambien
+     *  se llama desde applyLicense(), que repinta con las mismas options. */
+    private draw(options: VisualUpdateOptions): void {
+        this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(
+            VisualFormattingSettingsModel,
+            options.dataViews && options.dataViews[0]
+        );
+
+        this.width = options.viewport.width;
+        this.height = options.viewport.height;
+        this.direction = this.formattingSettings?.layoutCard?.direction?.value?.value?.toString() ?? "horizontal";
+
+        const dataView = options.dataViews && options.dataViews[0];
+        if (!dataView || !dataView.table) {
+            this.renderEmpty();
+            return;
+        }
+
+        this.data = this.parseDataView(dataView);
+
+        // Free tier: cap the diagram to MAX_FREE_NODES nodes (kept connected via BFS from the roots)
+        this.fullNodeCount = this.data.nodes.length;
+        this.isLimited = !this.isPro && this.fullNodeCount > MAX_FREE_NODES;
+        if (this.isLimited) {
+            this.data = this.limitFreeTierNodes(this.data, MAX_FREE_NODES);
+        }
+
+        this.computeLayout();
+        this.render();
+    }
+
+    /** Pide la licencia una vez, fuera del camino critico. Si no resuelve, se
+     *  queda en Free: un catch que inventa Pro oculta el fallo que importa. */
+    private requestLicenseDeferred(): void {
+        if (this.licenseRequested || this.isPro) return;
+        this.licenseRequested = true;
+
+        setTimeout(() => {
+            try {
+                // Las typings de powerbi-visuals-api no declaran las dos primeras
+                // propiedades, de ahi el cast.
+                const lm = this.licenseManager as unknown as {
+                    isLicenseUnsupportedEnv?: boolean;
+                    isLicenseInfoAvailable?: boolean;
+                    getAvailableServicePlans: () => {
+                        then: (ok: (r: unknown) => void, err: () => void) => void;
+                    };
+                };
+
+                // Publish to Web, embedding y exportacion a PDF no pueden consultar
+                // la licencia. Ahi se renderiza la experiencia gratuita y NO se pide
+                // comprar: quien ya paga no debe ver una llamada a comprar lo que
+                // tiene, y en ese entorno no hay forma de saber si la tiene.
+                if (lm?.isLicenseUnsupportedEnv === true || lm?.isLicenseInfoAvailable === false) {
+                    this.licenseEnvUnsupported = true;
+                    return;
+                }
+
+                // getAvailableServicePlans devuelve IPromise2, no una Promise: se
+                // consume con los dos callbacks de then, no con await ni catch.
+                lm.getAvailableServicePlans().then(
+                    (result: unknown) => {
+                        const plans = (result as { plans?: { spIdentifier?: string; state?: number }[] })?.plans ?? [];
+                        // Comparar el spIdentifier es lo unico que funciona: si la
+                        // oferta publica un plan gratuito, "tiene algun plan activo"
+                        // es cierto tambien para quien no ha pagado.
+                        this.applyLicense(plans.some(pl =>
+                            pl.spIdentifier === SP_IDENTIFIER &&
+                            ((pl.state as number) === STATE_ACTIVE ||
+                             (pl.state as number) === STATE_WARNING)));
+                    },
+                    () => { /* sin licencia resuelta: se queda en Free */ });
+            } catch (_) { /* se queda en Free */ }
+        }, 0);
+    }
+
+    /** Solo actua de Free a Pro. Si la licencia no resuelve, no toca el DOM. */
+    private applyLicense(isPro: boolean): void {
+        if (!isPro || this.isPro) return;
+        this.isPro = true;
+        if (!this.lastOptions) return;
+        try {
+            this.draw(this.lastOptions);
+            this.syncLicenseNotification();
+        } catch (_) { /* el diagrama gratuito ya pintado se queda */ }
+    }
+
+    /**
+     * La ruta de compra la pone Power BI, no el visual.
+     *
+     * Antes el grafico dibujaba en rojo "upgrade to Pro to see the full diagram" y
+     * no se llamaba a ninguna notificacion del host: el texto pedia actualizar y no
+     * habia donde hacerlo. notifyFeatureBlocked lleva el enlace de compra y se
+     * dispara solo cuando el limite muerde de verdad; cuando deja de morder, se
+     * limpia.
+     */
+    private syncLicenseNotification(): void {
+        if (this.licenseEnvUnsupported) return;
+        const lm = this.licenseManager as unknown as {
+            notifyFeatureBlocked?: (m: string) => void;
+            clearLicenseNotification?: () => void;
+        };
+        if (!lm) return;
+        try {
+            if (this.isLimited && !this.licenseNotified) {
+                this.licenseNotified = true;
+                lm.notifyFeatureBlocked?.(
+                    "This diagram has " + this.fullNodeCount + " nodes and the free tier " +
+                    "shows " + MAX_FREE_NODES + ". Pro renders every node.");
+            } else if (!this.isLimited && this.licenseNotified) {
+                this.licenseNotified = false;
+                lm.clearLicenseNotification?.();
+            }
+        } catch (_) { /* la notificacion no es critica para el render */ }
     }
 
     /** Keeps only the first `maxNodes` reachable from the root layer (BFS), so the
@@ -799,7 +904,7 @@ export class Visual implements IVisual {
             const strokeColor = isTopVariant ? topVariantColor : linkColor;
             l.displayColor = strokeColor;
             const linkAriaLabel = this.escapeHtml(`${s.label} to ${t.label}, ${this.formatValue(l.value, this.data.totalValue)}${isBackEdge ? ", rework" : ""}`);
-            return `<path class="flow-link${isBackEdge ? " flow-link-back" : ""}${isDominant ? " flow-link-dominant" : ""}${isTopVariant ? " flow-link-variant" : ""}" data-link-id="${l.id}" d="${path}" stroke="${strokeColor}" stroke-width="${strokeW}" fill="none" opacity="${opacity}"${dash} tabindex="0" role="button" aria-label="${linkAriaLabel}"></path>`;
+            return `<path class="flow-link${isBackEdge ? " flow-link-back" : ""}${isDominant ? " flow-link-dominant" : ""}${isTopVariant ? " flow-link-variant" : ""}" data-link-id="${this.escapeHtml(l.id)}" d="${path}" stroke="${strokeColor}" stroke-width="${strokeW}" fill="none" opacity="${opacity}"${dash} tabindex="0" role="button" aria-label="${linkAriaLabel}"></path>`;
         }).join("");
 
         const showBadge = this.formattingSettings?.nodeCard?.showBadge?.value ?? true;
@@ -892,13 +997,13 @@ export class Visual implements IVisual {
             const hasChildren = (childrenOf.get(n.id) || []).length > 0;
             const isCollapsed = this.collapsedNodes.has(n.id);
             const collapseToggle = hasChildren
-                ? `<g class="flow-collapse-toggle" data-node-id="${n.id}" tabindex="0" role="button" aria-label="${isCollapsed ? "Expand" : "Collapse"} ${this.escapeHtml(n.label)}" transform="translate(${n.width},${n.height / 2})" style="cursor:pointer;">
+                ? `<g class="flow-collapse-toggle" data-node-id="${this.escapeHtml(n.id)}" tabindex="0" role="button" aria-label="${isCollapsed ? "Expand" : "Collapse"} ${this.escapeHtml(n.label)}" transform="translate(${n.width},${n.height / 2})" style="cursor:pointer;">
                         <circle r="7" fill="#ffffff" stroke="${nodeFill}" stroke-width="1.5"></circle>
                         <text aria-hidden="true" x="0" y="0" dy="0.35em" text-anchor="middle" font-size="10" font-family="${fontFamily}" fill="${nodeFill}">${isCollapsed ? "+" : "−"}</text>
                     </g>`
                 : "";
             return `
-                <g class="flow-node" data-node-id="${n.id}" tabindex="0" role="button" aria-label="${nodeAriaLabel}" transform="translate(${n.x},${n.y})"${nodeFilterAttr}>
+                <g class="flow-node" data-node-id="${this.escapeHtml(n.id)}" tabindex="0" role="button" aria-label="${nodeAriaLabel}" transform="translate(${n.x},${n.y})"${nodeFilterAttr}>
                     <rect width="${n.width}" height="${n.height}" rx="${cornerRadius}" fill="${nodeFill}" opacity="0.95" ${nodeStroke}></rect>
                     ${image}
                     <text aria-hidden="true" x="${n.width - 6}" y="10" text-anchor="end" font-size="9" font-family="${fontFamily}" fill="${textColor}" opacity="0.7">${positionCode}</text>
@@ -1005,7 +1110,7 @@ export class Visual implements IVisual {
                 <button type="button" class="flow-fit" aria-label="Fit diagram to view" style="font:12px 'Segoe UI',sans-serif;padding:2px 8px;border:1px solid #ccc;border-radius:3px;background:#fff;cursor:pointer;">Fit</button>
                 ${variants.length ? `<button type="button" class="flow-variants-toggle" aria-label="Toggle top variants panel" aria-pressed="${this.variantsPanelOpen}" style="font:12px 'Segoe UI',sans-serif;padding:2px 8px;border:1px solid #ccc;border-radius:3px;background:${this.variantsPanelOpen ? "#e8f0fe" : "#fff"};cursor:pointer;">Variants</button>` : ""}
                 <button type="button" class="flow-tooltips-toggle" title="Toggle tooltips" aria-label="Toggle tooltips" aria-pressed="${this.tooltipsEnabled}" style="font:12px 'Segoe UI',sans-serif;padding:2px 8px;border:1px solid #ccc;border-radius:3px;background:${this.tooltipsEnabled ? "#fff" : "#e8f0fe"};cursor:pointer;">Tooltips</button>
-                ${this.isLimited ? `<span class="flow-free-limit-msg" style="font:11px 'Segoe UI',sans-serif;padding:3px 8px;color:#C9524A;font-weight:600;">Free: showing ${MAX_FREE_NODES} of ${this.fullNodeCount} nodes — upgrade to Pro to see the full diagram</span>` : ""}
+                ${this.isLimited ? `<span class="flow-free-limit-msg" style="font:11px 'Segoe UI',sans-serif;padding:3px 8px;color:#83827D;">Showing ${MAX_FREE_NODES} of ${this.fullNodeCount} nodes</span>` : ""}
             </div>
             ${variantsPanelHtml}
             <div class="flow-scroll" style="position:absolute;inset:0;overflow:auto;">

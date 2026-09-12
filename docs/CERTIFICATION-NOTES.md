@@ -1,4 +1,8 @@
-Flow Chart v1.0.2.0 — Certification Notes
+Flow Chart v1.0.3.0 — Certification Notes
+
+The 2.500-character version to paste into Partner Center is
+docs/CERTIFICATION-NOTES-SHORT.txt. This file is the full reference the reviewer reaches
+through the certification branch; do not paste it, it gets cut at 2.500 without warning.
 
 Certification branch: https://github.com/tinocallarisa-web/FlowChart/tree/certification
 
@@ -6,11 +10,23 @@ RESUBMISSION — WHAT CHANGED SINCE THE PREVIOUS REVIEW
 The previous submission (1.0.1.0) was returned under 1200.1.1.3: the pbiviz.json in the repository
 showed 1.0.0.0 while the submitted package was 1.0.1.0, because the certification branch had not
 been updated with the release commit. That is now fixed — the certification branch points at the
-same commit as main, and its pbiviz.json reports 1.0.2.0, matching the submitted package exactly.
-The version was incremented to 1.0.2.0 because 1.0.1.0 had already been consumed by the returned
-submission; 1.0.1.0 was never published and reached no customers, so its changes are documented
-under 1.0.2.0 in the changelog. Author contact email and apiVersion were corrected in the same
-release. Documentation pages were rewritten and expanded.
+same commit as main, and its pbiviz.json reports the submitted version exactly. The version was
+incremented to 1.0.2.0 because 1.0.1.0 had already been consumed by the returned submission;
+1.0.1.0 was never published and reached no customers, so its changes are documented under 1.0.2.0
+in the changelog. Author contact email and apiVersion were corrected in the same release.
+Documentation pages were rewritten and expanded.
+
+1.0.3.0 carries three further fixes, found in an internal audit rather than by a reviewer, and all
+three are visible in the diff:
+- Node and link ids are built from the values of the Levels columns and were written into element
+  attributes without escaping, while the diagram is assembled as an HTML string. A level value
+  containing a double quote closed the attribute and what followed was parsed as markup. The escape
+  helper already existed and was applied to the visible labels and the aria labels; it was missing
+  on exactly data-node-id and data-link-id.
+- The licence was resolved inside update() with await, between renderingStarted and the drawing, on
+  every update. See LICENSE VALIDATION below for how it works now.
+- The chart drew its own red "upgrade to Pro" line and never called any of the host's licence
+  notifications, so the text asked the reader to upgrade and offered nowhere to do it.
 
 SOURCE CODE REPOSITORY ACCESS
 Repository: https://github.com/tinocallarisa-web/FlowChart
@@ -26,13 +42,20 @@ Video: https://www.youtube.com/watch?v=wXvxscw7e4k
 
 LICENSE VALIDATION
 Resolved via the official IVisualLicenseManager API (getAvailableServicePlans), checked against
-Plan ID "flow-chart-tcviz". Async, off the render path. No external servers, no user data sent.
-Falls back to Free on any error.
+Plan ID "flow-chart-tcviz", accepting Active and Warning so a payment grace period does not cost
+the full diagram. Requested once, deferred with setTimeout, and never inside the render path:
+update() is synchronous and the licence only triggers a repaint if it resolves from Free to Pro.
+Where the licence cannot be queried — Publish to Web, embedding, export — isLicenseUnsupportedEnv
+and isLicenseInfoAvailable are honoured, the free diagram renders and nothing asks the viewer to
+buy, because there is no way to know there whether they already did. No external servers, no user
+data sent. Any failure stays on Free; no code path invents Pro.
 
 FREE VS PRO
 Free: all features unlocked (KPI badges, swimlanes, dominant path, variants, collapse/expand, zoom,
 minimap, search, full formatting). Diagrams capped at 9 nodes, kept as a connected sub-tree from the
-root, with a message reporting how many nodes were omitted.
+root, with a neutral "Showing 9 of N nodes" note in the toolbar. The purchase path is Power BI's own
+notifyFeatureBlocked, fired only when the cap actually bites; the visual draws no licensing UI of
+its own and there is no watermark.
 Pro: same features, unlimited nodes.
 
 PRIVACY / NETWORK
@@ -44,10 +67,14 @@ nothing fetched from URLs, nothing persisted outside the report.
 TESTING — FREE
 1. Import the _test build with --free flag applied (real license check, no active plan).
 2. Drag 3+ fields into Levels + a Value measure, using a dataset with 10+ nodes.
-3. Verify only 9 nodes render (connected sub-tree) with a "Free: showing 9 of N" message.
+3. Verify only 9 nodes render (connected sub-tree) with the neutral "Showing 9 of N nodes" note,
+   and that the call to upgrade arrives as Power BI's own notification rather than as text drawn
+   inside the chart.
 4. Click a node/link — verify cross-filtering on other visuals.
 5. Right-click a node — verify the context menu opens, and still opens correctly after the report
    has been refreshed several times (fixed in 1.0.2.0).
+6. Put a double quote inside a level value and verify it renders as text, with no broken markup:
+   node and link ids now reach element attributes HTML-escaped (fixed in 1.0.3.0).
 
 TESTING — PRO
 1. Import the _test build with isPro forced true.

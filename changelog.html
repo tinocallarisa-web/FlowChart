@@ -210,8 +210,34 @@
 
   <div class="rel">
     <div class="rel-head">
-      <span class="rel-ver">1.0.2.0</span>
+      <span class="rel-ver">1.0.3.0</span>
       <span class="tag tag-cur">Current</span>
+      <span class="rel-date">2026-09-12</span>
+    </div>
+
+    <h4><span class="tag tag-fix">Fixed</span></h4>
+    <ul>
+      <li><strong>Node and link ids taken from the data were written into element attributes without escaping.</strong> The ids are built from the values of the Levels columns, and the diagram is assembled as an HTML string. A level value containing a double quote closed the attribute and whatever followed was parsed as markup, so a crafted value could inject an event handler — the rejection cause Microsoft lists as a security issue. The escape helper already existed and was applied to the visible labels and the aria labels; it was missing on exactly the <code>data-node-id</code> and <code>data-link-id</code> attributes.</li>
+      <li><strong>The licence was resolved on the critical render path.</strong> <code>update()</code> was <code>async</code> and awaited <code>getAvailableServicePlans()</code> between <code>renderingStarted</code> and the drawing, on every update. The diagram did not paint until the licence call resolved, and because Power BI calls <code>update()</code> repeatedly while a visual is resized, two overlapping updates could emit the first <code>renderingFinished</code> after the second <code>renderingStarted</code>. The licence is now requested once, deferred, and only repaints if it resolves from Free to Pro; the drawing moved to a private <code>draw()</code> that emits no events of its own.</li>
+      <li><strong>A licence in its payment grace period was treated as absent.</strong> <code>Warning</code> is accepted alongside <code>Active</code>, so a billing problem being resolved no longer costs the full diagram.</li>
+      <li><strong>Publish to Web, embedding and export asked a paying customer to buy.</strong> Where the licence cannot be queried, <code>isLicenseUnsupportedEnv</code> and <code>isLicenseInfoAvailable</code> are honoured: the free diagram renders and nothing is shown about upgrading, because in that environment there is no way to know whether the viewer already paid.</li>
+    </ul>
+
+    <h4><span class="tag tag-chg">Changed</span></h4>
+    <ul>
+      <li><strong>The purchase path is Power BI's, not the visual's.</strong> The chart used to draw its own red line reading "Free: showing 9 of N nodes — upgrade to Pro to see the full diagram", while none of the host's licence notifications were ever called: the text asked the reader to upgrade and offered nowhere to do it. It is replaced by a neutral "Showing 9 of N nodes" note plus <code>notifyFeatureBlocked</code>, which carries the real purchase path and fires only when the limit actually bites. <code>clearLicenseNotification</code> clears it when it stops biting.</li>
+      <li><code>build-test.js</code> now patches the <code>isPro</code> field initializer instead of the licence block inside <code>update()</code>, which no longer exists there.</li>
+    </ul>
+
+    <h4><span class="tag tag-chg">Documentation</span></h4>
+    <ul>
+      <li><strong><code>docs/CERTIFICATION-NOTES-SHORT.txt</code> added.</strong> The Partner Center notes field saves 2.500 characters and discards the rest without warning; the full notes are 4.579, so the whole TESTING — FREE and TESTING — PRO sections were being lost, which is exactly what a reviewer marks as a soft failure when it is missing. The short file is 2.498 characters and keeps both testing sections intact.</li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="rel-head">
+      <span class="rel-ver">1.0.2.0</span>
       <span class="rel-date">2026-09-07</span>
     </div>
 
