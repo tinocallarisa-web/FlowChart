@@ -29,11 +29,8 @@ three are visible in the diff:
   notifications, so the text asked the reader to upgrade and offered nowhere to do it.
 
 SOURCE CODE REPOSITORY ACCESS
-Repository: https://github.com/tinocallarisa-web/FlowChart
-Read-only collaborator access has been granted to GitHub users "OSDC1033" and "pbicvsupport"
-(two-factor authentication requirement disabled for this repository so both accounts can accept
-without blockers). Please accept the pending collaborator invitations to browse the source. The
-certification branch above points to the exact commit submitted for review.
+Repository: https://github.com/tinocallarisa-web/FlowChart (public, no invitation needed).
+The certification branch points to the exact commit submitted for review.
 Support: https://tinocallarisa-web.github.io/FlowChart/support.html
 Privacy: https://tinocallarisa-web.github.io/FlowChart/privacy.html
 Terms: https://tinocallarisa-web.github.io/FlowChart/terms.html
@@ -64,8 +61,8 @@ cookies). Data processed comes only from the Power BI dataView (Levels, Level im
 Swimlane, Tooltip fields), including optional base64 level images supplied by the data model —
 nothing fetched from URLs, nothing persisted outside the report.
 
-TESTING — FREE
-1. Import the _test build with --free flag applied (real license check, no active plan).
+TESTING — FREE (the submitted package, account with no active plan)
+1. Import the submitted .pbiviz; the licence check runs for real.
 2. Drag 3+ fields into Levels + a Value measure, using a dataset with 10+ nodes.
 3. Verify only 9 nodes render (connected sub-tree) with the neutral "Showing 9 of N nodes" note,
    and that the call to upgrade arrives as Power BI's own notification rather than as text drawn
@@ -76,13 +73,15 @@ TESTING — FREE
 6. Put a double quote inside a level value and verify it renders as text, with no broken markup:
    node and link ids now reach element attributes HTML-escaped (fixed in 1.0.3.0).
 
-TESTING — PRO
-1. Import the _test build with isPro forced true.
+TESTING — PRO (the same package, account with an active "flow-chart-tcviz" plan)
+1. Import the submitted .pbiviz.
 2. Same dataset — verify the full diagram renders, no limit message.
 3. Add a Target measure — verify KPI badge (value + up/down %).
 4. Add a Swimlane field — verify colored bands.
 5. Open Variants panel, click a variant — verify it traces on the diagram.
 6. Collapse a mid-level node — verify downstream values/badges recalculate.
+Without an active plan, steps 3–6 can also be verified on Free with a dataset of 9 nodes or fewer:
+Free and Pro share every feature and differ only in the node count.
 
 CAPABILITIES
 All 5 required flags present (supportsHighlight, supportsSynchronizingFilterState,
