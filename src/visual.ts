@@ -15,6 +15,12 @@ import DataViewTableRow = powerbi.DataViewTableRow;
 import IVisualLicenseManager = powerbi.extensibility.IVisualLicenseManager;
 
 const SP_IDENTIFIER = "flow-chart-tcviz";
+
+// spIdentifier = Service ID completo (editor.oferta.plan); se acepta también el Plan ID solo
+function matchesPlan(spIdentifier: unknown, planId: string): boolean {
+    const sp = String(spIdentifier ?? "");
+    return sp === planId || sp.endsWith("." + planId);
+}
 const MAX_FREE_NODES = 9;
 
 /** ServicePlanState es un const enum; los numeros hacen falta en runtime.
@@ -134,6 +140,7 @@ export class Visual implements IVisual {
     private licenseRequested: boolean = false;
     private licenseNotified: boolean = false;
     private licenseEnvUnsupported: boolean = false;
+    private licenseResolved: boolean = false;
 
     constructor(options: VisualConstructorOptions) {
         this.formattingSettingsService = new FormattingSettingsService();
@@ -265,17 +272,21 @@ export class Visual implements IVisual {
                 // consume con los dos callbacks de then, no con await ni catch.
                 lm.getAvailableServicePlans().then(
                     (result: unknown) => {
+                        this.licenseResolved = true;
                         const plans = (result as { plans?: { spIdentifier?: string; state?: number }[] })?.plans ?? [];
                         // Comparar el spIdentifier es lo unico que funciona: si la
                         // oferta publica un plan gratuito, "tiene algun plan activo"
                         // es cierto tambien para quien no ha pagado.
                         this.applyLicense(plans.some(pl =>
-                            pl.spIdentifier === SP_IDENTIFIER &&
+                            matchesPlan(pl.spIdentifier, SP_IDENTIFIER) &&
                             ((pl.state as number) === STATE_ACTIVE ||
                              (pl.state as number) === STATE_WARNING)));
+                        // Free confirmado: ahora si puede avisar del limite.
+                        this.syncLicenseNotification();
                     },
-                    () => { /* sin licencia resuelta: se queda en Free */ });
-            } catch (_) { /* se queda en Free */ }
+                    // Sin licencia legible no se pide comprar: podria haberla pagado.
+                    () => { this.licenseEnvUnsupported = true; });
+            } catch (_) { this.licenseEnvUnsupported = true; }
         }, 0);
     }
 
@@ -300,7 +311,8 @@ export class Visual implements IVisual {
      * limpia.
      */
     private syncLicenseNotification(): void {
-        if (this.licenseEnvUnsupported) return;
+        // Hasta que la licencia responde no se sabe si el usuario paga.
+        if (this.licenseEnvUnsupported || !this.licenseResolved) return;
         const lm = this.licenseManager as unknown as {
             notifyFeatureBlocked?: (m: string) => void;
             clearLicenseNotification?: () => void;
@@ -311,7 +323,7 @@ export class Visual implements IVisual {
                 this.licenseNotified = true;
                 lm.notifyFeatureBlocked?.(
                     "This diagram has " + this.fullNodeCount + " nodes and the free tier " +
-                    "shows " + MAX_FREE_NODES + ". Pro renders every node.");
+                    "shows " + MAX_FREE_NODES + ". Pro removes the node cap.");
             } else if (!this.isLimited && this.licenseNotified) {
                 this.licenseNotified = false;
                 lm.clearLicenseNotification?.();

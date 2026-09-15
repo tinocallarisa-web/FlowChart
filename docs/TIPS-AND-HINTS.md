@@ -19,7 +19,7 @@ Minimum setup: drag **two or more fields** into **Levels** (in order — the fir
 
 - **Free vs Pro**
   - Free: full feature set, capped at **9 nodes** total
-  - Pro: unlimited nodes
+  - Pro: no node cap (Power BI row limit applies)
 - **Layout**: direction (horizontal/vertical), node gap, layer gap
 - **Nodes**: width, height, corner radius, font, image size, border, shadow (auto-disabled in high contrast)
 - **Value/KPI badge**: font, colors, background opacity, up/down KPI colors

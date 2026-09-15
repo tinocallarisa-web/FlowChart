@@ -16,7 +16,7 @@ CHAPTERS
 
 FREE VS PRO
 Free: full feature set, diagrams up to 9 nodes.
-Pro: unlimited nodes. Licensed through Microsoft AppSource — no extra setup, detected automatically once your subscription is active.
+Pro: no node cap (Power BI row limit applies). Licensed through Microsoft AppSource — no extra setup, detected automatically once your subscription is active.
 
 LINKS
 Support & FAQ: https://tinocallarisa-web.github.io/FlowChart/support.html

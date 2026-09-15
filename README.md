@@ -46,7 +46,7 @@ Full setup instructions, the complete Format Pane reference and the FAQ are in
 Every feature is unlocked in the Free tier. The only limit is size.
 
 - **Free** — diagrams up to 9 nodes, kept as a connected sub-tree from the root
-- **Pro** — unlimited nodes, licensed through Microsoft AppSource
+- **Pro** — no node cap (Power BI row limit applies), licensed through Microsoft AppSource
 
 See [terms.html](https://tinocallarisa-web.github.io/FlowChart/terms.html) for the full breakdown.
 

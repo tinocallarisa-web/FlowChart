@@ -1,4 +1,4 @@
-Flow Chart v1.0.3.0 — Certification Notes
+Flow Chart v1.0.4.0 — Certification Notes
 
 The 2.500-character version to paste into Partner Center is
 docs/CERTIFICATION-NOTES-SHORT.txt. This file is the full reference the reviewer reaches
@@ -6,7 +6,19 @@ through the certification branch; do not paste it, it gets cut at 2.500 without 
 
 Certification branch: https://github.com/tinocallarisa-web/FlowChart/tree/certification
 
-RESUBMISSION — WHAT CHANGED SINCE THE PREVIOUS REVIEW
+1.0.4.0 — LICENCE FIX
+1.0.3.0 is published. 1.0.4.0 changes only the licence check, and the diff shows it:
+- The Licensing API documentation defines spIdentifier as the Service ID generated in Partner
+  Center (publisher.offer.plan). The code compared it with the short Plan ID "flow-chart-tcviz",
+  which never matches, so a buyer stayed on the free tier. matchesPlan() now accepts the full
+  Service ID or the Plan ID on its own.
+- syncLicenseNotification() ran on every update, before getAvailableServicePlans() had answered, so
+  a large diagram could raise the purchase prompt for a user who owns Pro. It now waits for the
+  licence to resolve; if the licence cannot be read, no purchase prompt is shown.
+- Documentation no longer says "unlimited nodes": Pro removes the 9-node cap, and the Power BI data
+  row limit still applies.
+
+RESUBMISSION HISTORY (1.0.2.0 AND 1.0.3.0)
 The previous submission (1.0.1.0) was returned under 1200.1.1.3: the pbiviz.json in the repository
 showed 1.0.0.0 while the submitted package was 1.0.1.0, because the certification branch had not
 been updated with the release commit. That is now fixed — the certification branch points at the
@@ -53,7 +65,7 @@ minimap, search, full formatting). Diagrams capped at 9 nodes, kept as a connect
 root, with a neutral "Showing 9 of N nodes" note in the toolbar. The purchase path is Power BI's own
 notifyFeatureBlocked, fired only when the cap actually bites; the visual draws no licensing UI of
 its own and there is no watermark.
-Pro: same features, unlimited nodes.
+Pro: same features, no 9-node cap (Power BI data row limit still applies).
 
 PRIVACY / NETWORK
 No external network calls, no telemetry, no browser storage (no localStorage, no sessionStorage, no

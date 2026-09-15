@@ -210,8 +210,26 @@
 
   <div class="rel">
     <div class="rel-head">
-      <span class="rel-ver">1.0.3.0</span>
+      <span class="rel-ver">1.0.4.0</span>
       <span class="tag tag-cur">Current</span>
+      <span class="rel-date">2026-09-15</span>
+    </div>
+
+    <h4><span class="tag tag-fix">Fixed</span></h4>
+    <ul>
+      <li><strong>A paying user could stay on the free tier.</strong> The licence check compared <code>spIdentifier</code> with the short Plan ID (<code>flow-chart-tcviz</code>). The Licensing API returns the full Service ID (<code>publisher.offer.plan</code>), so the comparison never matched. It now accepts both the Service ID and the Plan ID on its own.</li>
+      <li><strong>The purchase notification could fire before the licence had answered.</strong> A large diagram on first paint raised Power BI's purchase prompt even for a user who owns Pro. The notification now waits for the licence to resolve, and if the licence cannot be read, nobody is asked to buy.</li>
+    </ul>
+
+    <h4><span class="tag tag-chg">Documentation</span></h4>
+    <ul>
+      <li>"Unlimited nodes" replaced with "no node cap". Pro removes the 9-node cap, but the Power BI data row limit still applies.</li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="rel-head">
+      <span class="rel-ver">1.0.3.0</span>
       <span class="rel-date">2026-09-12</span>
     </div>
 

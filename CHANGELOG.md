@@ -2,6 +2,22 @@
 
 All notable changes to the Flow Chart Power BI custom visual are documented here.
 
+## [1.0.4.0] - 2026-09-15
+
+### Fixed
+- **A paying user could stay on the free tier.** The licence check compared
+  `spIdentifier` with the short Plan ID (`flow-chart-tcviz`). The Licensing API returns
+  the full Service ID (`publisher.offer.plan`), so the comparison never matched. It now
+  accepts both the Service ID and the Plan ID on its own.
+- **The purchase notification could fire before the licence had answered.** A large
+  diagram on first paint raised Power BI's purchase prompt even for a user who owns
+  Pro. The notification now waits for the licence to resolve, and if the licence cannot
+  be read, nobody is asked to buy.
+
+### Documentation
+- "Unlimited nodes" replaced with "no node cap". Pro removes the 9-node cap, but the
+  Power BI data row limit still applies.
+
 ## [1.0.3.0] - 2026-09-12
 
 ### Fixed
