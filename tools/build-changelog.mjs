@@ -24,7 +24,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CHANGELOG = join(ROOT, 'CHANGELOG.md');
 const PBIVIZ = join(ROOT, 'pbiviz.json');
 const TEMPLATE = join(ROOT, 'tools', 'changelog.template.html');
-const OUTPUT = join(ROOT, 'changelog.html');
+const OUTPUT = join(ROOT, 'docs', 'changelog.html');
 
 const checkOnly = process.argv.includes('--check');
 
