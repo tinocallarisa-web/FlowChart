@@ -43,7 +43,10 @@ Drop a flat table into the visual with one field per hierarchy level, and it bui
 | Feature | Free | Pro |
 |---|:---:|:---:|
 | All diagram features (KPI, swimlanes, variants, golden path...) | ✅ | ✅ |
-| Diagram size | Up to 9 nodes | No node cap (Power BI row limit applies) |
+| Diagram size | **Every node, always** | Every node, always |
+| Collapse & expand branches | — | **✓** |
+| Node search | — | **✓** |
+| Variants panel | — | **✓** |
 
 ## Technical
 

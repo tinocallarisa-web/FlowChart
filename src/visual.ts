@@ -21,11 +21,18 @@ function matchesPlan(spIdentifier: unknown, planId: string): boolean {
     const sp = String(spIdentifier ?? "");
     return sp === planId || sp.endsWith("." + planId);
 }
-const MAX_FREE_NODES = 9;
 
 /** ServicePlanState es un const enum; los numeros hacen falta en runtime.
  *  Warning es el periodo de gracia de pago: quien tiene un problema de
  *  facturacion sin resolver no debe perder el diagrama completo. */
+/**
+ * Por encima de este tamaño un diagrama deja de leerse de un vistazo y las herramientas
+ * de escala —colapsar, buscar, variants— pasan de adorno a necesarias. NO es un tope:
+ * el diagrama se dibuja ENTERO siempre, con licencia y sin ella. Solo marca cuando esas
+ * herramientas empiezan a hacer falta, que es cuando se ofrecen en vista previa.
+ */
+const BIG_DIAGRAM_NODES = 9;
+
 const STATE_ACTIVE = 1;
 const STATE_WARNING = 2;
 
@@ -134,13 +141,21 @@ export class Visual implements IVisual {
     private swimlaneBands: { label: string; start: number; end: number; axisStart: number }[] = [];
     private licenseManager: IVisualLicenseManager;
     private isPro: boolean = false;
-    private isLimited: boolean = false;
     private fullNodeCount: number = 0;
     private lastOptions: VisualUpdateOptions | null = null;
     private licenseRequested: boolean = false;
     private licenseNotified: boolean = false;
     private licenseEnvUnsupported: boolean = false;
     private licenseResolved: boolean = false;
+    /** Edit mode, de options.viewMode. NO es Desktop contra Service: ambos lo informan. */
+    private editing = false;
+    /** Funciones Pro que el informe pide ahora mismo, por sus pozos. */
+    private attemptedPro: string[] = [];
+    private notifiedPro: string[] = [];
+    private licenseIconTimer: number | null = null;
+    private noticeShown = false;
+    private watermarkEl: HTMLDivElement | null = null;
+    private watermarkWhy: HTMLDivElement | null = null;
 
     constructor(options: VisualConstructorOptions) {
         this.formattingSettingsService = new FormattingSettingsService();
@@ -199,6 +214,11 @@ export class Visual implements IVisual {
         this.events.renderingStarted(options);
         try {
             this.lastOptions = options;
+            // ViewMode.View = 0. Edit e InFocusEdit son ambos edicion. Esto NO distingue
+            // Desktop de Service: los dos informan de los dos modos, y hacerlo por host
+            // dejaria la vista previa visible en un informe publicado.
+            const viewMode = (options as unknown as { viewMode?: number }).viewMode;
+            if (typeof viewMode === "number") { this.editing = viewMode !== 0; }
             this.draw(options);
             this.events.renderingFinished(options);
         } catch (e) {
@@ -230,15 +250,24 @@ export class Visual implements IVisual {
 
         this.data = this.parseDataView(dataView);
 
-        // Free tier: cap the diagram to MAX_FREE_NODES nodes (kept connected via BFS from the roots)
+        // El tope de nodos se ha ido en 1.1.0.0.
+        //
+        // Eran 9, y un organigrama, un proceso o un embudo reales pasan de 9 casi
+        // siempre: el usuario conectaba sus datos y veia el diagrama partido por la
+        // mitad. Un tope de nodos castiga justo a quien tiene datos de verdad, que es
+        // el que pagaria, mientras que a quien tiene ocho no le da ninguna razon para
+        // pagar. Ahora el tier gratuito dibuja el diagrama ENTERO y lo que se compra
+        // son las capas de analisis encima: swimlanes, imagenes, badge de KPI y
+        // tooltips. Ver freeSettings().
         this.fullNodeCount = this.data.nodes.length;
-        this.isLimited = !this.isPro && this.fullNodeCount > MAX_FREE_NODES;
-        if (this.isLimited) {
-            this.data = this.limitFreeTierNodes(this.data, MAX_FREE_NODES);
-        }
+
+        // Sin Pro no puede quedar una rama colapsada de cuando si lo habia: el diagrama
+        // gratuito se veria recortado sin ningun control para volver a abrirlo.
+        if (!this.proNow() && this.collapsedNodes.size > 0) { this.collapsedNodes.clear(); }
 
         this.computeLayout();
         this.render();
+        this.updateWatermark();
     }
 
     /** Pide la licencia una vez, fuera del camino critico. Si no resuelve, se
@@ -292,7 +321,20 @@ export class Visual implements IVisual {
 
     /** Solo actua de Free a Pro. Si la licencia no resuelve, no toca el DOM. */
     private applyLicense(isPro: boolean): void {
-        if (!isPro || this.isPro) return;
+        if (!isPro || this.isPro) {
+            // Tambien hay que repintar cuando resuelve a FREE.
+            //
+            // Power BI recrea la instancia en cada cambio de pagina, asi que al volver
+            // el primer render ocurre con la licencia sin resolver y la vista previa
+            // apagada. Si aqui solo se notificase, el usuario se quedaria sin previa
+            // hasta tocar un ajuste. Era correcto antes de que existiera la previa,
+            // porque nada de lo dibujado dependia de la licencia para un gratuito.
+            if (this.proNow() && this.lastOptions) {
+                try { this.draw(this.lastOptions); } catch (_) { /* se queda lo pintado */ }
+            }
+            this.syncLicenseNotification();
+            return;
+        }
         this.isPro = true;
         if (!this.lastOptions) return;
         try {
@@ -302,64 +344,133 @@ export class Visual implements IVisual {
     }
 
     /**
+     * Lo que se DIBUJA: Pro de verdad, o la vista previa con marca de agua.
+     *
+     * La previa vive solo en EDICION y solo cuando la licencia ya se resolvio. Sin lo
+     * primero, un informe publicado usaria funciones sin pagar; sin lo segundo, un
+     * cliente Pro veria marca de agua en el primer frame.
+     */
+    private proNow(): boolean {
+        if (this.isPro) { return true; }
+        return this.editing && this.licenseResolved && !this.licenseEnvUnsupported;
+    }
+
+    /** La marca solo aparece si hay alguna funcion Pro realmente pedida. */
+    private updateWatermark(): void {
+        if (!this.watermarkEl) {
+            this.watermarkEl = document.createElement("div");
+            this.watermarkEl.setAttribute("aria-hidden", "true");
+            this.watermarkEl.style.cssText =
+                "position:absolute;left:0;top:0;right:0;bottom:0;display:none;" +
+                "align-items:center;justify-content:center;flex-direction:column;" +
+                "text-align:center;pointer-events:none;z-index:5;" +
+                "font-family:'Segoe UI',sans-serif;font-weight:700;letter-spacing:0.06em;" +
+                "color:#FFFFFF;opacity:0.72;transform:rotate(-20deg);" +
+                "text-shadow:0 0 3px rgba(46,52,64,0.95),0 2px 6px rgba(46,52,64,0.75);";
+            const titulo = document.createElement("div");
+            titulo.textContent = "Pro preview";
+            this.watermarkWhy = document.createElement("div");
+            this.watermarkEl.appendChild(titulo);
+            this.watermarkEl.appendChild(this.watermarkWhy);
+            if (getComputedStyle(this.target).position === "static") {
+                this.target.style.position = "relative";
+            }
+        }
+        // El render reconstruye el contenido, asi que la marca se reinserta: encenderla
+        // sobre un nodo desconectado no pinta nada.
+        if (this.watermarkEl.parentNode !== this.target) {
+            this.target.appendChild(this.watermarkEl);
+        }
+        const activa = !this.isPro && this.proNow() && this.attemptedPro.length > 0;
+        this.watermarkEl.style.display = activa ? "flex" : "none";
+        if (!activa) { return; }
+
+        const etiquetas = this.attemptedPro.length <= 2
+            ? this.attemptedPro
+            : this.attemptedPro.slice(0, 2).concat([`+${this.attemptedPro.length - 2}`]);
+        if (this.watermarkWhy) { this.watermarkWhy.textContent = etiquetas.join(" · "); }
+
+        const size = Math.round(Math.max(26, Math.min(88, this.width / 7.5, this.height / 3.5)));
+        this.watermarkEl.style.fontSize = `${size}px`;
+        if (this.watermarkWhy) {
+            this.watermarkWhy.style.cssText =
+                `font-size:${Math.round(size * 0.32)}px;font-weight:600;`
+                + "margin-top:0.25em;opacity:0.95;";
+        }
+    }
+
+    private cancelLicenseIcon(): void {
+        if (this.licenseIconTimer !== null) {
+            window.clearTimeout(this.licenseIconTimer);
+            this.licenseIconTimer = null;
+        }
+    }
+
+    /**
      * La ruta de compra la pone Power BI, no el visual.
      *
-     * Antes el grafico dibujaba en rojo "upgrade to Pro to see the full diagram" y
-     * no se llamaba a ninguna notificacion del host: el texto pedia actualizar y no
-     * habia donde hacerlo. notifyFeatureBlocked lleva el enlace de compra y se
-     * dispara solo cuando el limite muerde de verdad; cuando deja de morder, se
-     * limpia.
+     * Hasta 1.0.4.0 esto solo llamaba a notifyFeatureBlocked. El mensaje decia "Pro
+     * removes the node cap" y NO HABIA NINGUN BOTON: notifyLicenseRequired, que es la
+     * llamada que lleva la barra de Upgrade, no se invocaba nunca. Era el unico visual
+     * de la cartera sin ruta de compra en ningun momento.
+     *
+     * Y el orden importa: Power BI muestra UNA notificacion a la vez y la ultima
+     * sustituye a la anterior, asi que la barra va DESPUES del banner, no antes.
      */
     private syncLicenseNotification(): void {
-        // Hasta que la licencia responde no se sabe si el usuario paga.
-        if (this.licenseEnvUnsupported || !this.licenseResolved) return;
         const lm = this.licenseManager as unknown as {
             notifyFeatureBlocked?: (m: string) => void;
-            clearLicenseNotification?: () => void;
+            notifyLicenseRequired?: (t: number) => void;
+            clearLicenseNotification?: () => unknown;
         };
-        if (!lm) return;
+        if (!lm) { return; }
         try {
-            if (this.isLimited && !this.licenseNotified) {
-                this.licenseNotified = true;
-                lm.notifyFeatureBlocked?.(
-                    "This diagram has " + this.fullNodeCount + " nodes and the free tier " +
-                    "shows " + MAX_FREE_NODES + ". Pro removes the node cap.");
-            } else if (!this.isLimited && this.licenseNotified) {
-                this.licenseNotified = false;
-                lm.clearLicenseNotification?.();
+            if (this.isPro || this.attemptedPro.length === 0) {
+                this.cancelLicenseIcon();
+                if (this.noticeShown) {
+                    this.noticeShown = false;
+                    this.notifiedPro = [];
+                    lm.clearLicenseNotification?.();
+                }
+                return;
             }
-        } catch (_) { /* la notificacion no es critica para el render */ }
+            // Sin licencia legible no se pide comprar: podria haberla pagado ya.
+            if (!this.licenseResolved || this.licenseEnvUnsupported) { return; }
+
+            const nuevas = this.attemptedPro.filter(a => this.notifiedPro.indexOf(a) === -1);
+            this.notifiedPro = this.attemptedPro.slice();
+            if (nuevas.length === 0) { return; }
+            this.noticeShown = true;
+
+            const una = nuevas.length === 1;
+            const lista = una ? nuevas[0]
+                : nuevas.slice(0, -1).join(", ") + " and " + nuevas[nuevas.length - 1];
+            const msg = `Flow Chart: ${lista} ${una ? "is" : "are"} part of the Pro plan, `
+                      + "shown here as a watermarked preview. Reading view shows the free result.";
+
+            const mostrar = () => {
+                try { lm.notifyFeatureBlocked?.(msg.slice(0, 500)); } catch (_) { /* best effort */ }
+                this.cancelLicenseIcon();
+                this.licenseIconTimer = window.setTimeout(() => {
+                    this.licenseIconTimer = null;
+                    if (this.isPro || this.attemptedPro.length === 0) { return; }
+                    // LicenseNotificationType.General es const enum: 0 en runtime.
+                    try { lm.notifyLicenseRequired?.(0); } catch (_) { /* best effort */ }
+                }, 10500);
+            };
+            const limpiado = lm.clearLicenseNotification?.();
+            if (limpiado && typeof (limpiado as { then?: unknown }).then === "function") {
+                (limpiado as Promise<unknown>).then(mostrar, mostrar);
+            } else { mostrar(); }
+        } catch (_) { /* nunca romper el render por un aviso */ }
     }
 
-    /** Keeps only the first `maxNodes` reachable from the root layer (BFS), so the
-     *  trimmed diagram stays a connected sub-tree instead of an arbitrary node cut. */
-    private limitFreeTierNodes(data: ParsedData, maxNodes: number): ParsedData {
-        const minLayer = Math.min(...data.nodes.map(n => n.layer));
-        const childrenOf = new Map<string, string[]>();
-        data.links.forEach(l => {
-            if (!childrenOf.has(l.sourceId)) childrenOf.set(l.sourceId, []);
-            childrenOf.get(l.sourceId).push(l.targetId);
-        });
-        const roots = data.nodes.filter(n => n.layer === minLayer).map(n => n.id);
-        const kept = new Set<string>();
-        const queue = [...roots];
-        while (queue.length && kept.size < maxNodes) {
-            const id = queue.shift();
-            if (kept.has(id)) continue;
-            kept.add(id);
-            (childrenOf.get(id) || []).forEach(cid => { if (!kept.has(cid)) queue.push(cid); });
-        }
-        return {
-            ...data,
-            nodes: data.nodes.filter(n => kept.has(n.id)),
-            links: data.links.filter(l => kept.has(l.sourceId) && kept.has(l.targetId))
-        };
-    }
 
     private renderEmpty(): void {
-        /* eslint-disable powerbi-visuals/no-inner-outer-html */
-        this.target.innerHTML = `<div style="padding:16px;color:#83827D;font:12px 'Segoe UI',sans-serif;">Drag one field per hierarchy level into "Levels" (in order), plus a Value measure.</div>`;
-        /* eslint-enable powerbi-visuals/no-inner-outer-html */
+        while (this.target.firstChild) { this.target.removeChild(this.target.firstChild); }
+        this.target.appendChild(this.htmlEl("div", {
+            style: "padding:16px;color:#83827D;font:12px 'Segoe UI',sans-serif;"
+        }, 'Drag one field per hierarchy level into "Levels" (in order), plus a Value measure.'));
     }
 
     private measureTextWidth(text: string, fontSize: number, fontFamily: string): number {
@@ -401,11 +512,34 @@ export class Visual implements IVisual {
         const columns = table.columns;
 
         const levelIdxs = columns.map((c, i) => (c.roles && c.roles["levels"] ? i : -1)).filter(i => i >= 0);
-        const levelImageIdxs = columns.map((c, i) => (c.roles && c.roles["levelImages"] ? i : -1)).filter(i => i >= 0);
+        // Las cuatro funciones Pro se detectan por su POZO, que es donde el usuario las
+        // pide. Un pozo enlazado no deja rastro en metadata.objects, asi que mirar ahi
+        // —como se hace con los ajustes del panel— no las veria nunca.
+        const pideImagenes = columns.some(c => c.roles && c.roles["levelImages"]);
+        const pideSwimlane = columns.some(c => c.roles && c.roles["swimlane"]);
+        const pideTarget   = columns.some(c => c.roles && c.roles["target"]);
+        const pideTooltips = columns.some(c => c.roles && c.roles["tooltips"]);
+        // El recuento decide si las herramientas de escala entran en juego. Las filas
+        // son una cota inferior barata del numero de nodos y basta para el umbral.
+        const pideDiagramaGrande = (table.rows || []).length > BIG_DIAGRAM_NODES;
+
+        this.attemptedPro = [];
+        if (pideSwimlane) { this.attemptedPro.push("swimlanes"); }
+        if (pideDiagramaGrande) { this.attemptedPro.push("large-diagram tools"); }
+        if (pideImagenes) { this.attemptedPro.push("node images"); }
+        if (pideTarget)   { this.attemptedPro.push("the KPI badge"); }
+        if (pideTooltips) { this.attemptedPro.push("extra tooltips"); }
+
+        // Con licencia o en vista previa se dibujan; sin ninguna de las dos, el pozo se
+        // ignora y el diagrama sale completo pero sin esa capa.
+        const conPro = this.proNow();
+
+        const levelImageIdxs = !conPro ? [] :
+            columns.map((c, i) => (c.roles && c.roles["levelImages"] ? i : -1)).filter(i => i >= 0);
         const valueIdx = columns.findIndex(c => c.roles && c.roles["value"]);
-        const targetIdx = columns.findIndex(c => c.roles && c.roles["target"]);
-        const swimlaneIdx = columns.findIndex(c => c.roles && c.roles["swimlane"]);
-        const tooltipIdxs = columns
+        const targetIdx = !conPro ? -1 : columns.findIndex(c => c.roles && c.roles["target"]);
+        const swimlaneIdx = !conPro ? -1 : columns.findIndex(c => c.roles && c.roles["swimlane"]);
+        const tooltipIdxs = !conPro ? [] : columns
             .map((c, i) => (c.roles && c.roles["tooltips"] ? i : -1))
             .filter(i => i >= 0);
 
@@ -875,10 +1009,10 @@ export class Visual implements IVisual {
 
         let backEdgeCount = 0;
 
-        const linkPaths = links.map(l => {
+        const linkPaths: SVGElement[] = links.map(l => {
             const s = nodeById.get(l.sourceId);
             const t = nodeById.get(l.targetId);
-            if (!s || !t) return "";
+            if (!s || !t) return null;
             const w = Math.max(1, (linkValue(l) / maxValue) * 8 * linkWidthBase / 2);
             const isBackEdge = t.layer <= s.layer;
             const isDominant = dominantLinkIds.has(l.id);
@@ -910,14 +1044,30 @@ export class Visual implements IVisual {
                     path = `M${x1},${y1} C${x1},${y1 + dy} ${x2},${y2 - dy} ${x2},${y2}`;
                 }
             }
-            const dash = isBackEdge ? ` stroke-dasharray="4 3"` : "";
             const opacity = isTopVariant ? "1" : (isDominant ? "0.95" : (highlightDominant ? "0.3" : "0.7"));
             const strokeW = isTopVariant ? w * dominantEmphasis * 1.15 : (isDominant ? w * dominantEmphasis : w);
             const strokeColor = isTopVariant ? topVariantColor : linkColor;
             l.displayColor = strokeColor;
-            const linkAriaLabel = this.escapeHtml(`${s.label} to ${t.label}, ${this.formatValue(l.value, this.data.totalValue)}${isBackEdge ? ", rework" : ""}`);
-            return `<path class="flow-link${isBackEdge ? " flow-link-back" : ""}${isDominant ? " flow-link-dominant" : ""}${isTopVariant ? " flow-link-variant" : ""}" data-link-id="${this.escapeHtml(l.id)}" d="${path}" stroke="${strokeColor}" stroke-width="${strokeW}" fill="none" opacity="${opacity}"${dash} tabindex="0" role="button" aria-label="${linkAriaLabel}"></path>`;
-        }).join("");
+            // aria-label y data-link-id van por setAttribute, que nunca interpreta markup:
+            // ya no hace falta escapar a mano, y por tanto no hay forma de olvidarlo.
+            const clases = "flow-link" + (isBackEdge ? " flow-link-back" : "")
+                + (isDominant ? " flow-link-dominant" : "")
+                + (isTopVariant ? " flow-link-variant" : "");
+            return this.svgEl("path", {
+                class: clases,
+                "data-link-id": l.id,
+                d: path,
+                stroke: strokeColor,
+                "stroke-width": strokeW,
+                fill: "none",
+                opacity,
+                "stroke-dasharray": isBackEdge ? "4 3" : null,
+                tabindex: "0",
+                role: "button",
+                "aria-label": `${s.label} to ${t.label}, `
+                    + `${this.formatValue(l.value, this.data.totalValue)}${isBackEdge ? ", rework" : ""}`
+            });
+        }).filter((e): e is SVGElement => e !== null);
 
         const showBadge = this.formattingSettings?.nodeCard?.showBadge?.value ?? true;
         const badgeFontFamily = this.formattingSettings?.nodeCard?.badgeFontFamily?.value?.value?.toString() ?? fontFamily;
@@ -933,12 +1083,18 @@ export class Visual implements IVisual {
         const shadowOffsetX = this.formattingSettings?.nodeCard?.shadowOffsetX?.value ?? 0;
         const shadowOffsetY = this.formattingSettings?.nodeCard?.shadowOffsetY?.value ?? 2;
         const shadowOpacity = (this.formattingSettings?.nodeCard?.shadowOpacity?.value ?? 35) / 100;
-        const nodeFilterAttr = showShadow ? ` filter="url(#flow-node-shadow)"` : "";
-        const nodeShadowDefs = showShadow
-            ? `<defs><filter id="flow-node-shadow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feDropShadow dx="${shadowOffsetX}" dy="${shadowOffsetY}" stdDeviation="${shadowBlur}" flood-color="${shadowColor}" flood-opacity="${shadowOpacity}"></feDropShadow>
-                </filter></defs>`
-            : "";
+        let shadowDefsEl: SVGElement | null = null;
+        if (showShadow) {
+            shadowDefsEl = this.svgEl("defs", {});
+            const filtro = this.svgEl("filter", {
+                id: "flow-node-shadow", x: "-50%", y: "-50%", width: "200%", height: "200%"
+            });
+            filtro.appendChild(this.svgEl("feDropShadow", {
+                dx: shadowOffsetX, dy: shadowOffsetY, stdDeviation: shadowBlur,
+                "flood-color": shadowColor, "flood-opacity": shadowOpacity
+            }));
+            shadowDefsEl.appendChild(filtro);
+        }
         const borderWidth = this.formattingSettings?.nodeCard?.borderWidth?.value ?? 0;
         const imageSize = this.formattingSettings?.nodeCard?.imageSize?.value ?? IMAGE_SIZE;
         const borderColor = this.formattingSettings?.nodeCard?.borderColor?.value?.value || "#FFFFFF";
@@ -955,7 +1111,6 @@ export class Visual implements IVisual {
         ].map((c, i) => c || LEVEL_PALETTE[i]);
 
         const nodeShapes = nodes.map(n => {
-            const label = this.escapeHtml(n.label);
             const nodeFill = isHighContrast
                 ? this.host.colorPalette.background.value
                 : (colorByLevel ? levelColors[n.layer % levelColors.length] : defaultColor);
@@ -968,7 +1123,7 @@ export class Visual implements IVisual {
             const imageOffset = n.image ? imageSize + IMAGE_PADDING : 0;
             const labelCenterX = imageOffset + (n.width - imageOffset) / 2;
             const labelY = hasBadge ? n.height / 2 - 8 : n.height / 2;
-            let badge = "";
+            const badgeEls: SVGElement[] = [];
             if (hasBadge) {
                 const actual = this.visibleInValue.get(n.id) || this.visibleOutValue.get(n.id) || 0;
                 const visibleTarget = this.visibleTargetValue.get(n.id) || 0;
@@ -983,20 +1138,22 @@ export class Visual implements IVisual {
                 const kpiColor = isUp ? kpiUpColor : kpiDownColor;
                 const pillFill = isKpi ? this.hexToRgba(kpiColor, 0.85) : this.hexToRgba(badgeBackgroundColor, badgeBackgroundOpacity);
                 const showPill = isKpi || badgeBackgroundOpacity > 0;
-                const badgeBg = showPill
-                    ? (() => {
-                        const textW = this.measureTextWidth(badgeText, badgeFontSize, badgeFontFamily);
-                        const padX = 6;
-                        return `<rect x="${labelCenterX - textW / 2 - padX}" y="${badgeY - badgeFontSize / 2 - 2}" width="${textW + padX * 2}" height="${badgeFontSize + 4}" rx="${(badgeFontSize + 4) / 2}" fill="${pillFill}"></rect>`;
-                    })()
-                    : "";
                 const textFill = isKpi ? "#FFFFFF" : badgeTextColor;
-                badge = `${badgeBg}<text aria-hidden="true" x="${labelCenterX}" y="${badgeY}" dy="0.35em" text-anchor="middle"
-                        font-size="${badgeFontSize}" font-family="${badgeFontFamily}" fill="${textFill}" opacity="0.95">${this.escapeHtml(badgeText)}</text>`;
+                if (showPill) {
+                    const textW = this.measureTextWidth(badgeText, badgeFontSize, badgeFontFamily);
+                    const padX = 6;
+                    badgeEls.push(this.svgEl("rect", {
+                        x: labelCenterX - textW / 2 - padX, y: badgeY - badgeFontSize / 2 - 2,
+                        width: textW + padX * 2, height: badgeFontSize + 4,
+                        rx: (badgeFontSize + 4) / 2, fill: pillFill
+                    }));
+                }
+                badgeEls.push(this.svgEl("text", {
+                    "aria-hidden": "true", x: labelCenterX, y: badgeY, dy: "0.35em",
+                    "text-anchor": "middle", "font-size": badgeFontSize,
+                    "font-family": badgeFontFamily, fill: textFill, opacity: "0.95"
+                }, badgeText));
             }
-            const image = n.image
-                ? `<image x="4" y="${(n.height - imageSize) / 2}" width="${imageSize}" height="${imageSize}" href="${n.image}" preserveAspectRatio="xMidYMid slice"></image>`
-                : "";
             const positionCode = `${n.layer + 1}.${n.order + 1}`;
             const visibleActual = this.visibleInValue.get(n.id) || this.visibleOutValue.get(n.id) || 0;
             const ariaParts = [`${n.label}, level ${n.layer + 1}`, `value ${this.formatValue(visibleActual, this.data.totalValue)}`];
@@ -1005,26 +1162,67 @@ export class Visual implements IVisual {
                 const pct = (visibleActual - visibleTargetAria) / visibleTargetAria * 100;
                 ariaParts.push(`${pct >= 0 ? "above" : "below"} target by ${Math.abs(pct).toFixed(1)} percent`);
             }
-            const nodeAriaLabel = this.escapeHtml(ariaParts.join(", "));
+
+            const g = this.svgEl("g", {
+                class: "flow-node", "data-node-id": n.id, tabindex: "0", role: "button",
+                "aria-label": ariaParts.join(", "),
+                transform: `translate(${n.x},${n.y})`,
+                filter: showShadow ? "url(#flow-node-shadow)" : null
+            });
+
+            const rect = this.svgEl("rect", {
+                width: n.width, height: n.height, rx: cornerRadius, fill: nodeFill, opacity: "0.95"
+            });
+            if (isHighContrast) {
+                rect.setAttribute("stroke", this.host.colorPalette.foreground.value);
+                rect.setAttribute("stroke-width", "1.5");
+            } else if (borderWidth > 0 || colorBorderByLevel) {
+                rect.setAttribute("stroke", effectiveBorderColor);
+                rect.setAttribute("stroke-width", String(Math.max(borderWidth, colorBorderByLevel ? 2 : 0)));
+            }
+            g.appendChild(rect);
+
+            // La imagen es un data URI del modelo. href por setAttribute: aunque llegara
+            // algo raro, no puede convertirse en markup.
+            if (n.image) {
+                g.appendChild(this.svgEl("image", {
+                    x: 4, y: (n.height - imageSize) / 2, width: imageSize, height: imageSize,
+                    href: n.image, preserveAspectRatio: "xMidYMid slice"
+                }));
+            }
+
+            g.appendChild(this.svgEl("text", {
+                "aria-hidden": "true", x: n.width - 6, y: 10, "text-anchor": "end",
+                "font-size": 9, "font-family": fontFamily, fill: textColor, opacity: "0.7"
+            }, positionCode));
+
+            g.appendChild(this.svgEl("text", {
+                "aria-hidden": "true", x: labelCenterX, y: labelY, dy: "0.35em",
+                "text-anchor": "middle", "font-size": fontSize,
+                "font-family": fontFamily, fill: textColor
+            }, n.label));
+
+            badgeEls.forEach(e => g.appendChild(e));
+
             const hasChildren = (childrenOf.get(n.id) || []).length > 0;
             const isCollapsed = this.collapsedNodes.has(n.id);
-            const collapseToggle = hasChildren
-                ? `<g class="flow-collapse-toggle" data-node-id="${this.escapeHtml(n.id)}" tabindex="0" role="button" aria-label="${isCollapsed ? "Expand" : "Collapse"} ${this.escapeHtml(n.label)}" transform="translate(${n.width},${n.height / 2})" style="cursor:pointer;">
-                        <circle r="7" fill="#ffffff" stroke="${nodeFill}" stroke-width="1.5"></circle>
-                        <text aria-hidden="true" x="0" y="0" dy="0.35em" text-anchor="middle" font-size="10" font-family="${fontFamily}" fill="${nodeFill}">${isCollapsed ? "+" : "−"}</text>
-                    </g>`
-                : "";
-            return `
-                <g class="flow-node" data-node-id="${this.escapeHtml(n.id)}" tabindex="0" role="button" aria-label="${nodeAriaLabel}" transform="translate(${n.x},${n.y})"${nodeFilterAttr}>
-                    <rect width="${n.width}" height="${n.height}" rx="${cornerRadius}" fill="${nodeFill}" opacity="0.95" ${nodeStroke}></rect>
-                    ${image}
-                    <text aria-hidden="true" x="${n.width - 6}" y="10" text-anchor="end" font-size="9" font-family="${fontFamily}" fill="${textColor}" opacity="0.7">${positionCode}</text>
-                    <text aria-hidden="true" x="${labelCenterX}" y="${labelY}" dy="0.35em" text-anchor="middle"
-                        font-size="${fontSize}" font-family="${fontFamily}" fill="${textColor}">${label}</text>
-                    ${badge}
-                    ${collapseToggle}
-                </g>`;
-        }).join("");
+            // Colapsar es Pro: con nueve nodos no hace falta, con doscientos es lo primero
+            // que se busca. El diagrama entero se dibuja igual, con licencia o sin ella.
+            if (hasChildren && this.proNow()) {
+                const tg = this.svgEl("g", {
+                    class: "flow-collapse-toggle", "data-node-id": n.id, tabindex: "0", role: "button",
+                    "aria-label": `${isCollapsed ? "Expand" : "Collapse"} ${n.label}`,
+                    transform: `translate(${n.width},${n.height / 2})`, style: "cursor:pointer;"
+                });
+                tg.appendChild(this.svgEl("circle", { r: 7, fill: "#ffffff", stroke: nodeFill, "stroke-width": "1.5" }));
+                tg.appendChild(this.svgEl("text", {
+                    "aria-hidden": "true", x: 0, y: 0, dy: "0.35em", "text-anchor": "middle",
+                    "font-size": 10, "font-family": fontFamily, fill: nodeFill
+                }, isCollapsed ? "+" : "−"));
+                g.appendChild(tg);
+            }
+            return g;
+        });
 
         this.contentWidth = maxX;
         this.contentHeight = maxY;
@@ -1033,39 +1231,70 @@ export class Visual implements IVisual {
 
         const showLegend = this.formattingSettings?.legendCard?.show?.value ?? true;
         const usedLevels = Array.from(new Set(nodes.map(n => n.layer))).sort((a, b) => a - b);
-        const legendItems = colorByLevel
-            ? usedLevels.map(li => {
-                const color = levelColors[li % levelColors.length];
-                return `<span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;">
-                            <span style="width:10px;height:10px;border-radius:2px;background:${color};display:inline-block;"></span>Level ${li + 1}
-                        </span>`;
-            }).join("")
-            : "";
-        const legendHtml = showLegend && legendItems
-            ? `<div class="flow-legend" style="position:absolute;bottom:0;left:0;z-index:2;background:rgba(255,255,255,0.9);font:11px 'Segoe UI',sans-serif;padding:4px 6px;color:#333;">${legendItems}</div>`
-            : "";
+        let legendEl: HTMLElement | null = null;
+        if (showLegend && colorByLevel && usedLevels.length) {
+            legendEl = this.htmlEl("div", {
+                class: "flow-legend",
+                style: "position:absolute;bottom:0;left:0;z-index:2;background:rgba(255,255,255,0.9);"
+                     + "font:11px 'Segoe UI',sans-serif;padding:4px 6px;color:#333;"
+            });
+            usedLevels.forEach(li => {
+                const item = this.htmlEl("span", {
+                    style: "display:inline-flex;align-items:center;gap:4px;margin-right:12px;"
+                });
+                item.appendChild(this.htmlEl("span", {
+                    style: `width:10px;height:10px;border-radius:2px;display:inline-block;`
+                         + `background:${levelColors[li % levelColors.length]};`
+                }));
+                item.appendChild(document.createTextNode(`Level ${li + 1}`));
+                legendEl.appendChild(item);
+            });
+        }
 
         const variants = this.data.variants;
-        const variantRows = variants.map((v, i) => {
-            const pct = this.data.totalValue > 0 ? (v.value / this.data.totalValue) * 100 : 0;
-            const isActive = this.tracedVariantPath === v.path;
-            return `
-                <div class="flow-variant-row" data-variant-index="${i}" style="cursor:pointer;padding:4px 6px;border-radius:3px;${isActive ? "background:#e8f0fe;" : ""}">
-                    <div style="font-size:11px;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:440px;" title="${this.escapeHtml(v.path)}">${this.escapeHtml(v.path)}</div>
-                    <div style="display:flex;align-items:center;gap:6px;">
-                        <div style="flex:1;height:6px;background:#eee;border-radius:3px;overflow:hidden;">
-                            <div style="width:${Math.min(100, pct)}%;height:100%;background:#2B6CB0;"></div>
-                        </div>
-                        <div style="font-size:10px;color:#666;white-space:nowrap;">${this.formatValue(v.value, this.data.totalValue)} · ${pct.toFixed(1)}%</div>
-                    </div>
-                </div>`;
-        }).join("");
-        const variantsPanelHtml = variants.length
-            ? `<div class="flow-variants-panel" style="display:${this.variantsPanelOpen ? "block" : "none"};position:absolute;top:34px;left:0;z-index:3;background:rgba(255,255,255,0.97);border:1px solid #ccc;border-radius:3px;padding:8px;width:460px;max-height:420px;overflow-y:auto;font-family:'Segoe UI',sans-serif;">
-                    <div style="font-size:11px;font-weight:600;color:#333;margin-bottom:4px;">Top variants (full paths)</div>
-                    ${variantRows}
-                </div>`
-            : "";
+        let variantsPanelEl: HTMLElement | null = null;
+        if (variants.length) {
+            variantsPanelEl = this.htmlEl("div", {
+                class: "flow-variants-panel",
+                style: `display:${this.variantsPanelOpen ? "block" : "none"};position:absolute;top:34px;`
+                     + "left:0;z-index:3;background:rgba(255,255,255,0.97);border:1px solid #ccc;"
+                     + "border-radius:3px;padding:8px;width:460px;max-height:420px;overflow-y:auto;"
+                     + "font-family:'Segoe UI',sans-serif;"
+            });
+            variantsPanelEl.appendChild(this.htmlEl("div", {
+                style: "font-size:11px;font-weight:600;color:#333;margin-bottom:4px;"
+            }, "Top variants (full paths)"));
+
+            variants.forEach((v, i) => {
+                const pct = this.data.totalValue > 0 ? (v.value / this.data.totalValue) * 100 : 0;
+                const isActive = this.tracedVariantPath === v.path;
+                const row = this.htmlEl("div", {
+                    class: "flow-variant-row", "data-variant-index": i,
+                    style: `cursor:pointer;padding:4px 6px;border-radius:3px;${isActive ? "background:#e8f0fe;" : ""}`
+                });
+                // v.path es la concatenacion de etiquetas del usuario: textContent y title,
+                // nunca markup.
+                const ruta = this.htmlEl("div", {
+                    title: v.path,
+                    style: "font-size:11px;color:#333;white-space:nowrap;overflow:hidden;"
+                         + "text-overflow:ellipsis;max-width:440px;"
+                }, v.path);
+                const barra = this.htmlEl("div", { style: "display:flex;align-items:center;gap:6px;" });
+                const pista = this.htmlEl("div", {
+                    style: "flex:1;height:6px;background:#eee;border-radius:3px;overflow:hidden;"
+                });
+                pista.appendChild(this.htmlEl("div", {
+                    style: `width:${Math.min(100, pct)}%;height:100%;background:#2B6CB0;`
+                }));
+                barra.appendChild(pista);
+                barra.appendChild(this.htmlEl("div", {
+                    style: "font-size:10px;color:#666;white-space:nowrap;"
+                }, `${this.formatValue(v.value, this.data.totalValue)} · ${pct.toFixed(1)}%`));
+                row.appendChild(ruta);
+                row.appendChild(barra);
+                variantsPanelEl.appendChild(row);
+            });
+        }
 
         const swimlaneLabelSize = this.formattingSettings?.swimlaneCard?.labelSize?.value ?? 11;
         const swimlaneFontFamily = this.formattingSettings?.swimlaneCard?.fontFamily?.value?.value?.toString() ?? "'Segoe UI',sans-serif";
@@ -1077,70 +1306,185 @@ export class Visual implements IVisual {
             this.formattingSettings?.swimlaneCard?.bandColor3?.value?.value,
             this.formattingSettings?.swimlaneCard?.bandColor4?.value?.value
         ].map((c, i) => c || LEVEL_PALETTE[i]);
-        const swimlaneBandsHtml = this.swimlaneBands.map((band, i) => {
+        const swimlaneBandEls: SVGElement[] = [];
+        this.swimlaneBands.forEach((band, i) => {
             const bg = this.hexToRgba(swimlaneBandColors[i % swimlaneBandColors.length], swimlaneBandOpacity);
             const axisStart = Math.max(0, band.axisStart - 14);
-            if (isHorizontal) {
-                return `
-                    <rect aria-hidden="true" x="${axisStart}" y="${band.start}" width="${maxX - axisStart}" height="${band.end - band.start}" fill="${bg}"></rect>
-                    ${band.label ? `<text aria-hidden="true" x="${axisStart + 4}" y="${band.start + 12}" font-size="${swimlaneLabelSize}" font-family="${swimlaneFontFamily}" fill="${swimlaneTextColor}" opacity="0.9">${this.escapeHtml(band.label)}</text>` : ""}`;
+            const horiz = isHorizontal;
+            swimlaneBandEls.push(this.svgEl("rect", {
+                "aria-hidden": "true",
+                x: horiz ? axisStart : band.start,
+                y: horiz ? band.start : axisStart,
+                width: horiz ? maxX - axisStart : band.end - band.start,
+                height: horiz ? band.end - band.start : maxY - axisStart,
+                fill: bg
+            }));
+            if (band.label) {
+                // La etiqueta es dato del usuario: va por textContent, no por markup.
+                swimlaneBandEls.push(this.svgEl("text", {
+                    "aria-hidden": "true",
+                    x: horiz ? axisStart + 4 : band.start + 4,
+                    y: horiz ? band.start + 12 : axisStart + 14,
+                    "font-size": swimlaneLabelSize,
+                    "font-family": swimlaneFontFamily,
+                    fill: swimlaneTextColor,
+                    opacity: "0.9"
+                }, band.label));
             }
-            return `
-                <rect aria-hidden="true" x="${band.start}" y="${axisStart}" width="${band.end - band.start}" height="${maxY - axisStart}" fill="${bg}"></rect>
-                ${band.label ? `<text aria-hidden="true" x="${band.start + 4}" y="${axisStart + 14}" font-size="${swimlaneLabelSize}" font-family="${swimlaneFontFamily}" fill="${swimlaneTextColor}" opacity="0.9">${this.escapeHtml(band.label)}</text>` : ""}`;
-        }).join("");
+        });
 
         const MINIMAP_MAX_W = 160;
         const MINIMAP_MAX_H = 100;
         this.minimapScale = nodes.length ? Math.min(MINIMAP_MAX_W / maxX, MINIMAP_MAX_H / maxY) : 1;
         const minimapW = Math.max(1, maxX * this.minimapScale);
         const minimapH = Math.max(1, maxY * this.minimapScale);
-        const minimapRects = nodes.map(n => {
-            const color = isHighContrast
-                ? this.host.colorPalette.foreground.value
-                : (colorByLevel ? levelColors[n.layer % levelColors.length] : defaultColor);
-            return `<rect x="${n.x * this.minimapScale}" y="${n.y * this.minimapScale}" width="${Math.max(1, n.width * this.minimapScale)}" height="${Math.max(1, n.height * this.minimapScale)}" fill="${color}" opacity="0.9"></rect>`;
-        }).join("");
         const showMinimap = nodes.length > 6;
-        const minimapHtml = showMinimap
-            ? `<div class="flow-minimap" aria-hidden="true" style="position:absolute;top:38px;left:4px;z-index:2;background:rgba(255,255,255,0.9);border:1px solid #ccc;border-radius:3px;padding:2px;">
-                    <svg class="flow-minimap-svg" width="${minimapW}" height="${minimapH}" viewBox="0 0 ${minimapW} ${minimapH}" xmlns="http://www.w3.org/2000/svg" style="display:block;cursor:pointer;">
-                        <rect x="0" y="0" width="${minimapW}" height="${minimapH}" fill="#f4f4f4"></rect>
-                        ${minimapRects}
-                        <rect class="minimap-viewport" fill="rgba(43,108,176,0.2)" stroke="#2B6CB0" stroke-width="1"></rect>
-                    </svg>
-                </div>`
-            : "";
+        let minimapEl: HTMLElement | null = null;
+        if (showMinimap) {
+            minimapEl = this.htmlEl("div", {
+                class: "flow-minimap", "aria-hidden": "true",
+                style: "position:absolute;top:38px;left:4px;z-index:2;background:rgba(255,255,255,0.9);"
+                     + "border:1px solid #ccc;border-radius:3px;padding:2px;"
+            });
+            const msvg = this.svgEl("svg", {
+                class: "flow-minimap-svg", width: minimapW, height: minimapH,
+                viewBox: `0 0 ${minimapW} ${minimapH}`, style: "display:block;cursor:pointer;"
+            });
+            msvg.appendChild(this.svgEl("rect", { x: 0, y: 0, width: minimapW, height: minimapH, fill: "#f4f4f4" }));
+            nodes.forEach(n => {
+                const color = isHighContrast
+                    ? this.host.colorPalette.foreground.value
+                    : (colorByLevel ? levelColors[n.layer % levelColors.length] : defaultColor);
+                msvg.appendChild(this.svgEl("rect", {
+                    x: n.x * this.minimapScale, y: n.y * this.minimapScale,
+                    width: Math.max(1, n.width * this.minimapScale),
+                    height: Math.max(1, n.height * this.minimapScale),
+                    fill: color, opacity: "0.9"
+                }));
+            });
+            msvg.appendChild(this.svgEl("rect", {
+                class: "minimap-viewport", fill: "rgba(43,108,176,0.2)",
+                stroke: "#2B6CB0", "stroke-width": "1"
+            }));
+            minimapEl.appendChild(msvg);
+        }
 
-        /* eslint-disable powerbi-visuals/no-inner-outer-html */
         this.target.style.position = "relative";
-        this.target.innerHTML = `
-            <div class="flow-toolbar" style="position:absolute;top:0;left:0;z-index:2;display:flex;gap:6px;padding:4px;background:rgba(255,255,255,0.9);width:max-content;">
-                <input type="text" class="flow-search" placeholder="Search node..." aria-label="Search node by name" style="font:12px 'Segoe UI',sans-serif;padding:2px 6px;border:1px solid #ccc;border-radius:3px;" />
-                <button type="button" class="flow-zoom-out" title="Zoom out" aria-label="Zoom out" style="font:14px 'Segoe UI',sans-serif;width:24px;padding:0;border:1px solid #ccc;border-radius:3px;background:#fff;cursor:pointer;">−</button>
-                <button type="button" class="flow-zoom-in" title="Zoom in" aria-label="Zoom in" style="font:14px 'Segoe UI',sans-serif;width:24px;padding:0;border:1px solid #ccc;border-radius:3px;background:#fff;cursor:pointer;">+</button>
-                <button type="button" class="flow-fit" aria-label="Fit diagram to view" style="font:12px 'Segoe UI',sans-serif;padding:2px 8px;border:1px solid #ccc;border-radius:3px;background:#fff;cursor:pointer;">Fit</button>
-                ${variants.length ? `<button type="button" class="flow-variants-toggle" aria-label="Toggle top variants panel" aria-pressed="${this.variantsPanelOpen}" style="font:12px 'Segoe UI',sans-serif;padding:2px 8px;border:1px solid #ccc;border-radius:3px;background:${this.variantsPanelOpen ? "#e8f0fe" : "#fff"};cursor:pointer;">Variants</button>` : ""}
-                <button type="button" class="flow-tooltips-toggle" title="Toggle tooltips" aria-label="Toggle tooltips" aria-pressed="${this.tooltipsEnabled}" style="font:12px 'Segoe UI',sans-serif;padding:2px 8px;border:1px solid #ccc;border-radius:3px;background:${this.tooltipsEnabled ? "#fff" : "#e8f0fe"};cursor:pointer;">Tooltips</button>
-                ${this.isLimited ? `<span class="flow-free-limit-msg" style="font:11px 'Segoe UI',sans-serif;padding:3px 8px;color:#83827D;">Showing ${MAX_FREE_NODES} of ${this.fullNodeCount} nodes</span>` : ""}
-            </div>
-            ${variantsPanelHtml}
-            <div class="flow-scroll" style="position:absolute;inset:0;overflow:auto;">
-                <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${maxX} ${maxY}" xmlns="http://www.w3.org/2000/svg" style="display:block;" role="group" aria-label="Flow diagram with ${nodes.length} nodes">
-                    ${nodeShadowDefs}
-                    <g class="swimlane-layer">${swimlaneBandsHtml}</g>
-                    <g class="links-layer">${linkPaths}</g>
-                    <g class="nodes-layer">${nodeShapes}</g>
-                </svg>
-            </div>
-            ${legendHtml}
-            ${minimapHtml}`;
-        /* eslint-enable powerbi-visuals/no-inner-outer-html */
+        while (this.target.firstChild) { this.target.removeChild(this.target.firstChild); }
+
+        const barra = this.htmlEl("div", {
+            class: "flow-toolbar",
+            style: "position:absolute;top:0;left:0;z-index:2;display:flex;gap:6px;padding:4px;"
+                 + "background:rgba(255,255,255,0.9);width:max-content;"
+        });
+        const ESTILO_BOTON = "font:12px 'Segoe UI',sans-serif;padding:2px 8px;border:1px solid #ccc;"
+                           + "border-radius:3px;cursor:pointer;";
+        if (this.proNow()) {
+            barra.appendChild(this.htmlEl("input", {
+                type: "text", class: "flow-search", placeholder: "Search node...",
+                "aria-label": "Search node by name",
+                style: "font:12px 'Segoe UI',sans-serif;padding:2px 6px;border:1px solid #ccc;border-radius:3px;"
+            }));
+        }
+        barra.appendChild(this.htmlEl("button", {
+            type: "button", class: "flow-zoom-out", title: "Zoom out", "aria-label": "Zoom out",
+            style: "font:14px 'Segoe UI',sans-serif;width:24px;padding:0;border:1px solid #ccc;"
+                 + "border-radius:3px;background:#fff;cursor:pointer;"
+        }, "−"));
+        barra.appendChild(this.htmlEl("button", {
+            type: "button", class: "flow-zoom-in", title: "Zoom in", "aria-label": "Zoom in",
+            style: "font:14px 'Segoe UI',sans-serif;width:24px;padding:0;border:1px solid #ccc;"
+                 + "border-radius:3px;background:#fff;cursor:pointer;"
+        }, "+"));
+        barra.appendChild(this.htmlEl("button", {
+            type: "button", class: "flow-fit", "aria-label": "Fit diagram to view",
+            style: ESTILO_BOTON + "background:#fff;"
+        }, "Fit"));
+        if (variants.length && this.proNow()) {
+            barra.appendChild(this.htmlEl("button", {
+                type: "button", class: "flow-variants-toggle",
+                "aria-label": "Toggle top variants panel",
+                "aria-pressed": String(this.variantsPanelOpen),
+                style: ESTILO_BOTON + `background:${this.variantsPanelOpen ? "#e8f0fe" : "#fff"};`
+            }, "Variants"));
+        }
+        barra.appendChild(this.htmlEl("button", {
+            type: "button", class: "flow-tooltips-toggle", title: "Toggle tooltips",
+            "aria-label": "Toggle tooltips", "aria-pressed": String(this.tooltipsEnabled),
+            style: ESTILO_BOTON + `background:${this.tooltipsEnabled ? "#fff" : "#e8f0fe"};`
+        }, "Tooltips"));
+        this.target.appendChild(barra);
+
+        if (variantsPanelEl) { this.target.appendChild(variantsPanelEl); }
+
+        const scroll = this.htmlEl("div", {
+            class: "flow-scroll", style: "position:absolute;inset:0;overflow:auto;"
+        });
+        const svg = this.svgEl("svg", {
+            width: svgWidth, height: svgHeight, viewBox: `0 0 ${maxX} ${maxY}`,
+            style: "display:block;", role: "group",
+            "aria-label": `Flow diagram with ${nodes.length} nodes`
+        });
+        if (shadowDefsEl) { svg.appendChild(shadowDefsEl); }
+
+        const capaSwim = this.svgEl("g", { class: "swimlane-layer" });
+        swimlaneBandEls.forEach(e => capaSwim.appendChild(e));
+        const capaLinks = this.svgEl("g", { class: "links-layer" });
+        linkPaths.forEach(e => capaLinks.appendChild(e));
+        const capaNodos = this.svgEl("g", { class: "nodes-layer" });
+        nodeShapes.forEach(e => capaNodos.appendChild(e));
+        svg.appendChild(capaSwim);
+        svg.appendChild(capaLinks);
+        svg.appendChild(capaNodos);
+
+        scroll.appendChild(svg);
+        this.target.appendChild(scroll);
+
+        if (legendEl) { this.target.appendChild(legendEl); }
+        if (minimapEl) { this.target.appendChild(minimapEl); }
 
         this.svgRoot = this.target.querySelector("svg");
         this.attachInteractions();
         this.updateMinimapViewport();
         this.applySelectionDimming();
+    }
+
+    // ── Construccion del DOM ──────────────────────────────────────────────────
+    //
+    // Hasta 1.0.4.0 el render montaba todo como texto y lo inyectaba con innerHTML,
+    // con la regla powerbi-visuals/no-inner-outer-html SUPRIMIDA a mano. Un visual
+    // hermano fue rechazado por XSS exactamente por eso, y la supresion es lo que ve
+    // el revisor: no audita si escapas bien, aplica la politica. Ademas invita a que
+    // el siguiente cambio meta un dato sin escapar sin que nadie se entere.
+    //
+    // Estos dos ayudantes cubren el 95% del render. Nada de lo que viene del usuario
+    // pasa ya por markup: va por textContent o por setAttribute.
+
+    /** Elemento SVG con atributos. Los null/undefined se omiten. */
+    private svgEl(tag: string, attrs: Record<string, string | number | null | undefined>,
+                  text?: string): SVGElement {
+        const el = document.createElementNS("http://www.w3.org/2000/svg", tag) as SVGElement;
+        for (const k of Object.keys(attrs)) {
+            const v = attrs[k];
+            if (v === null || v === undefined || v === "") { continue; }
+            el.setAttribute(k, String(v));
+        }
+        if (text !== undefined) { el.textContent = text; }
+        return el;
+    }
+
+    /** Elemento HTML con atributos y estilo en bloque. */
+    private htmlEl(tag: string, attrs: Record<string, string | number | null | undefined>,
+                   text?: string): HTMLElement {
+        const el = document.createElement(tag);
+        for (const k of Object.keys(attrs)) {
+            const v = attrs[k];
+            if (v === null || v === undefined || v === "") { continue; }
+            if (k === "style") { el.style.cssText = String(v); continue; }
+            el.setAttribute(k, String(v));
+        }
+        if (text !== undefined) { el.textContent = text; }
+        return el;
     }
 
     private updateSvgSize(): void {
@@ -1186,11 +1530,6 @@ export class Visual implements IVisual {
         return `rgba(${r},${g},${b},${alpha})`;
     }
 
-    private escapeHtml(text: string): string {
-        return text.replace(/[&<>"']/g, c => ({
-            "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
-        }[c]));
-    }
 
     private attachInteractions(): void {
         if (!this.svgRoot) return;

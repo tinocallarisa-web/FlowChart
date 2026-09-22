@@ -1,44 +1,44 @@
-Flow Chart 1.0.4.0 - GUID flowChart69C501A62F7E49748AD3DA7D4E840200
-Full notes: docs/CERTIFICATION-NOTES.md in the repo.
+Flow Chart 1.1.0.0 - GUID flowChart69C501A62F7E49748AD3DA7D4E840200
+Repo: github.com/tinocallarisa-web/FlowChart, branch certification (= main)
+Pages: tinocallarisa-web.github.io/FlowChart/ | Full notes: docs/
+Video: youtube.com/watch?v=wXvxscw7e4k
 
-REPO + URLs
-github.com/tinocallarisa-web/FlowChart (public), branch "certification" (same commit as main).
-tinocallarisa-web.github.io/FlowChart/ + support, privacy, terms, changelog.html
-Video youtube.com/watch?v=wXvxscw7e4k
+PLEASE READ FIRST - PRO PREVIEW (NEW IN 1.1.0.0)
+Without a licence, IN EDIT MODE ONLY, a Pro feature is drawn WORKING under a "Pro
+preview" watermark naming it. Intentional, not missing gating: it is how the user sees
+what they would be buying. In reading view, before the licence resolves, and where
+licences cannot be read (Publish to Web, embed, export) the FREE result is drawn with no
+watermark. The gate is options.viewMode, not Desktop vs Service.
 
-WHAT CHANGED IN 1.0.4.0
-Licence fix: spIdentifier is the full Service ID (publisher.offer.plan); we compared it
-with the short Plan ID, so buyers stayed on Free. The purchase notification now waits
-for the licence to resolve. No feature or data changes.
-
-LICENCE
-IVisualLicenseManager only: getAvailableServicePlans(), spIdentifier equal to or ending
-in ".flow-chart-tcviz", accepting Active and Warning (grace period). Requested once, deferred, never in the render
-path; any failure stays on Free. Where it cannot be queried (Publish to Web, embedding,
-export) the free experience renders and nobody is asked to buy.
+WHAT CHANGED IN 1.1.0.0
+1. NO innerHTML AND NO LINT SUPPRESSION. The render built the DOM as text and injected
+   it with innerHTML, with powerbi-visuals/no-inner-outer-html disabled by hand. It now
+   uses createElement/createElementNS throughout, and escapeHtml() is gone: labels go by
+   textContent and ids by setAttribute, which never interpret markup.
+2. THE NODE CAP IS GONE. Free drew 9 nodes of N - a flow that does not exist. Free now
+   draws the WHOLE diagram, published reports included.
+3. NO PURCHASE PATH. Only notifyFeatureBlocked was called, so the user was asked to buy
+   with no button. Order: clear -> banner -> Upgrade bar.
 
 FREE VS PRO
-Free: every feature, capped at 9 nodes kept as a connected sub-tree from the root, with a
-neutral "Showing 9 of N nodes" note. No watermark. Pro: the same, no node cap.
+Free: the complete diagram - nodes, links, layout, legend, zoom, fit, tooltips. Pro:
+collapse/expand, node search, Variants, swimlanes, node images, KPI badge, extra
+tooltips. Nothing that misrepresents the data is gated.
+
+LICENCE
+IVisualLicenseManager only. spIdentifier equal to or ending in ".flow-chart-tcviz",
+Active and Warning accepted. Requested once, deferred, never in the render path; any
+failure stays Free. Where it cannot be read nobody is asked to buy.
 
 PRIVACY
-No network calls, no telemetry, no cookies, no local or session storage. Only the
-dataView. Level images only as data:image base64, never fetched. privileges is [].
+No network calls, telemetry, cookies or storage; privileges: []. Level images only as
+data:image base64, never fetched.
 
-TESTING - FREE (submitted package, no active plan)
-1. Levels: 3+ fields plus a Value measure, dataset with more than 9 nodes.
-2. Expect 9 nodes as a connected sub-tree, the neutral count note, and Power BI's own
-   licence notification - not a message in the chart.
-3. Click a node and a link: other visuals cross-filter.
-4. Right-click a node: the context menu opens, also after several refreshes.
-5. Put a double quote in a level value: it renders as text, no broken markup.
-
-TESTING - PRO (same package, active "flow-chart-tcviz" plan)
-1. Same dataset: full diagram, the note disappears.
-2. Add Target: KPI badge shows value and up/down %.
-3. Add Swimlane: coloured bands. Open Variants, click one: it traces.
-4. Collapse a mid-level node: downstream values and badges recalculate.
-Without a plan, steps 2-4 also work on Free with 9 nodes or fewer.
-
-Rendering events on every path of update(). Known warning, not a gap: Localizations -
-single-language visual, stringResources empty on purpose.
+TESTING - FREE (no active plan)
+1. Levels: 3+ fields and a Value measure, MORE than 9 nodes.
+2. The whole diagram renders. In EDIT mode the scale tools (search, collapse handles,
+   Variants) appear under the watermark, a banner names it, and after ~10 s the Upgrade
+   bar appears.
+3. Drag a field to Swimlane, Level images, Target or Tooltips: each renders WORKING
+   under the watermark. Remove it and both go.
+4. Reading view: the whole diagram, no scale tools, no watermark, no notice.

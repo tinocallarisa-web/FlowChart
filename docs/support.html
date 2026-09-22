@@ -447,16 +447,25 @@ dominant path and the selected node are distinguished by thicker outlines, not b
 <table>
   <thead><tr><th>&nbsp;</th><th>Free <span class="badge badge-free">Free</span></th><th>Pro <span class="badge badge-pro">Pro</span></th></tr></thead>
   <tbody>
-    <tr><td>Nodes per diagram</td><td>Up to 9</td><td>No node cap (Power BI row limit applies)</td></tr>
-    <tr><td>KPI badges, swimlanes, dominant path, variants</td><td>Included</td><td>Included</td></tr>
-    <tr><td>Collapse / expand, zoom, minimap, search</td><td>Included</td><td>Included</td></tr>
-    <tr><td>Full Format Pane</td><td>Included</td><td>Included</td></tr>
+    <tr><td>Nodes per diagram</td><td><strong>Every node, always</strong></td><td>Every node, always</td></tr>
+    <tr><td>Layout, links, legend, zoom, fit, minimap</td><td>Included</td><td>Included</td></tr>
     <tr><td>Cross-filtering, tooltips, keyboard, high contrast</td><td>Included</td><td>Included</td></tr>
+    <tr><td>Collapse &amp; expand branches</td><td>&mdash;</td><td>Included</td></tr>
+    <tr><td>Node search</td><td>&mdash;</td><td>Included</td></tr>
+    <tr><td>Variants panel</td><td>&mdash;</td><td>Included</td></tr>
+    <tr><td>Swimlanes</td><td>&mdash;</td><td>Included</td></tr>
+    <tr><td>Node images</td><td>&mdash;</td><td>Included</td></tr>
+    <tr><td>KPI badge (Target)</td><td>&mdash;</td><td>Included</td></tr>
+    <tr><td>Extra tooltip fields</td><td>&mdash;</td><td>Included</td></tr>
   </tbody>
 </table>
-<p>Every feature is unlocked in the Free tier. The only limit is size: Free renders up to nine nodes, kept as a
-connected sub-tree from the root so the diagram still makes sense, with a message telling you how many nodes
-were left out. Pro removes the limit.</p>
+<p><strong>The free tier draws your whole diagram &mdash; every node, every link, in a published report too.</strong>
+Until version 1.1.0.0 it stopped at nine nodes, which is not a smaller diagram but a picture of a flow that does not
+exist. What Pro adds is the layer on top: the tools that only start to matter once a diagram is too big to read at a
+glance, and the wells that turn it into an analysis.</p>
+<p>While you edit a report without a licence, a Pro feature you turn on is drawn <strong>working</strong>, under a
+&ldquo;Pro preview&rdquo; watermark naming it, so you can see exactly what you would be buying. Reading view draws
+the free result with no watermark, so a published report never uses a feature you have not paid for.</p>
 <p>Pro is licensed through Microsoft AppSource. The licence is checked with the official Power BI licensing API,
 asynchronously and off the rendering path, and falls back to Free if the check cannot be completed. No external
 server is involved. See the <a href="terms.html">Terms of Use</a> for what each tier includes.</p>
@@ -480,10 +489,11 @@ server is involved. See the <a href="terms.html">Terms of Use</a> for what each 
 </details>
 
 <details>
-  <summary>Why do I only see nine nodes?</summary>
+  <summary>Is the diagram limited in the free tier?</summary>
   <div class="faq-body">
-    <p>That is the Free tier limit. The nine nodes shown are a connected sub-tree from the root rather than an
-    arbitrary slice, and a message reports how many were omitted. Pro removes the limit.</p>
+    <p>No. Since version 1.1.0.0 the free tier draws every node, in Power BI Desktop and in a published report
+    alike. Earlier versions stopped at nine. If a diagram still looks cut off, use <strong>Fit</strong> in the
+    toolbar, or check the Power BI row limit for very large models.</p>
   </div>
 </details>
 

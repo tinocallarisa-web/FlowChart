@@ -6,7 +6,7 @@
             "kind": "Grouping"
         },
         {
-            "displayName": "Level images (base64, optional, one per level)",
+            "displayName": "Level images (Pro)",
             "name": "levelImages",
             "kind": "Measure"
         },
@@ -16,17 +16,17 @@
             "kind": "Measure"
         },
         {
-            "displayName": "Target (optional, enables KPI badge)",
+            "displayName": "Target — KPI badge (Pro)",
             "name": "target",
             "kind": "Measure"
         },
         {
-            "displayName": "Swimlane (optional)",
+            "displayName": "Swimlane (Pro)",
             "name": "swimlane",
             "kind": "Grouping"
         },
         {
-            "displayName": "Tooltip fields",
+            "displayName": "Tooltip fields (Pro)",
             "name": "tooltips",
             "kind": "Measure"
         }

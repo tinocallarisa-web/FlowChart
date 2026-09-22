@@ -1,10 +1,43 @@
-Flow Chart v1.0.4.0 — Certification Notes
+Flow Chart v1.1.0.0 — Certification Notes
 
 The 2.500-character version to paste into Partner Center is
 docs/CERTIFICATION-NOTES-SHORT.txt. This file is the full reference the reviewer reaches
 through the certification branch; do not paste it, it gets cut at 2.500 without warning.
 
 Certification branch: https://github.com/tinocallarisa-web/FlowChart/tree/certification
+
+1.1.0.0 — CERTIFICATION BLOCKER, FREE/PRO SPLIT AND THE PURCHASE PATH
+
+1. NO innerHTML ANYWHERE, AND NO LINT SUPPRESSION.
+   The render built the whole DOM as a string and injected it with innerHTML, wrapped in
+   /* eslint-disable powerbi-visuals/no-inner-outer-html */. A sibling visual was rejected
+   under the XSS policy for exactly that pattern. The toolbar, the SVG, nodes, links,
+   swimlanes, legend, minimap and the variants panel are now built with createElement and
+   createElementNS.
+   escapeHtml() was removed entirely rather than kept "just in case": while an escaping
+   helper exists, escaping stays the responsibility of whoever writes the next line, and
+   forgetting once is an XSS. Labels now go through textContent and identifiers through
+   setAttribute, neither of which ever interprets markup.
+
+2. THE 9-NODE CAP IS GONE. See FREE VS PRO below.
+
+3. THERE WAS NO PURCHASE PATH AT ALL.
+   The visual called notifyFeatureBlocked() and nothing else. notifyLicenseRequired() — the
+   call that carries the Upgrade bar — was never invoked, so the message read "Pro removes
+   the node cap" with no button anywhere to act on it. Power BI shows one licence
+   notification at a time and the last call replaces the previous one, so the order matters:
+   clearLicenseNotification() → the banner naming the feature → and, after ~10 s, the
+   Upgrade bar.
+
+4. PRO PREVIEW. Without a licence, in EDIT MODE ONLY, a Pro feature is drawn working under
+   a "Pro preview" watermark naming it. Reading view, the frames before the licence
+   resolves, and any environment where licences cannot be read all draw the free result with
+   no watermark and no prompt. The gate is options.viewMode, not Desktop against Service:
+   both hosts report both modes, and gating by host would leave the preview visible in a
+   published report. It is granted per feature, not in bulk.
+
+5. A collapsed branch could survive the loss of a licence, leaving the diagram trimmed with
+   no control to reopen it. The collapsed state is cleared when Pro is not in effect.
 
 1.0.4.0 — LICENCE FIX
 1.0.3.0 is published. 1.0.4.0 changes only the licence check, and the diff shows it:
@@ -15,7 +48,7 @@ Certification branch: https://github.com/tinocallarisa-web/FlowChart/tree/certif
 - syncLicenseNotification() ran on every update, before getAvailableServicePlans() had answered, so
   a large diagram could raise the purchase prompt for a user who owns Pro. It now waits for the
   licence to resolve; if the licence cannot be read, no purchase prompt is shown.
-- Documentation no longer says "unlimited nodes": Pro removes the 9-node cap, and the Power BI data
+- Documentation no longer says "unlimited nodes": the Power BI data
   row limit still applies.
 
 RESUBMISSION HISTORY (1.0.2.0 AND 1.0.3.0)
@@ -59,13 +92,16 @@ and isLicenseInfoAvailable are honoured, the free diagram renders and nothing as
 buy, because there is no way to know there whether they already did. No external servers, no user
 data sent. Any failure stays on Free; no code path invents Pro.
 
-FREE VS PRO
-Free: all features unlocked (KPI badges, swimlanes, dominant path, variants, collapse/expand, zoom,
-minimap, search, full formatting). Diagrams capped at 9 nodes, kept as a connected sub-tree from the
-root, with a neutral "Showing 9 of N nodes" note in the toolbar. The purchase path is Power BI's own
-notifyFeatureBlocked, fired only when the cap actually bites; the visual draws no licensing UI of
-its own and there is no watermark.
-Pro: same features, no 9-node cap (Power BI data row limit still applies).
+FREE VS PRO (changed in 1.1.0.0)
+Free: THE COMPLETE DIAGRAM — every node, every link, always, including in a published report.
+Layout, legend, zoom, fit, tooltips, cross-filtering, keyboard and high contrast.
+Pro: the layer on top — collapse and expand branches, the node search, the Variants panel,
+swimlanes, node images, the KPI badge and extra tooltip fields.
+
+Until 1.0.4.0 the free tier drew 9 nodes of N. A diagram cut in half is not a smaller diagram: it
+shows a flow that does not exist and says nothing about it. Nothing that would misrepresent the
+data is behind the licence now; what is gated are the tools that only matter at scale and the
+analyst wells.
 
 PRIVACY / NETWORK
 No external network calls, no telemetry, no browser storage (no localStorage, no sessionStorage, no
@@ -75,25 +111,29 @@ nothing fetched from URLs, nothing persisted outside the report.
 
 TESTING — FREE (the submitted package, account with no active plan)
 1. Import the submitted .pbiviz; the licence check runs for real.
-2. Drag 3+ fields into Levels + a Value measure, using a dataset with 10+ nodes.
-3. Verify only 9 nodes render (connected sub-tree) with the neutral "Showing 9 of N nodes" note,
-   and that the call to upgrade arrives as Power BI's own notification rather than as text drawn
-   inside the chart.
-4. Click a node/link — verify cross-filtering on other visuals.
-5. Right-click a node — verify the context menu opens, and still opens correctly after the report
-   has been refreshed several times (fixed in 1.0.2.0).
-6. Put a double quote inside a level value and verify it renders as text, with no broken markup:
-   node and link ids now reach element attributes HTML-escaped (fixed in 1.0.3.0).
+2. Drag 3+ fields into Levels plus a Value measure, with MORE than 9 nodes.
+3. Verify the WHOLE diagram renders — no cap, no truncation note.
+4. In EDIT mode, verify the scale tools (search box, the collapse handles on nodes, the Variants
+   button) appear under a "Pro preview" watermark naming the feature, that Power BI's own banner
+   fires, and that after roughly ten seconds the Upgrade bar appears. Until 1.0.4.0 there was no
+   Upgrade bar at all: notifyLicenseRequired was never called.
+5. Drag a field to Swimlane, Level images, Target or Tooltip fields — each renders WORKING under
+   the watermark. Remove it and both watermark and notice go.
+6. Switch to reading view — the whole diagram, with no scale tools, no watermark and no notice.
+7. Switch to another report page and back — the state is kept.
+8. Click a node or a link — verify cross-filtering on other visuals.
+9. Right-click a node — verify the context menu opens, and still opens after several refreshes
+   (fixed in 1.0.2.0).
+10. Put a double quote and a <script> tag inside a level value — both render as literal text.
+    Since 1.1.0.0 there is no innerHTML anywhere: labels go through textContent and identifiers
+    through setAttribute, neither of which interprets markup.
 
 TESTING — PRO (the same package, account with an active "flow-chart-tcviz" plan)
-1. Import the submitted .pbiviz.
-2. Same dataset — verify the full diagram renders, no limit message.
-3. Add a Target measure — verify KPI badge (value + up/down %).
-4. Add a Swimlane field — verify colored bands.
-5. Open Variants panel, click a variant — verify it traces on the diagram.
-6. Collapse a mid-level node — verify downstream values/badges recalculate.
-Without an active plan, steps 3–6 can also be verified on Free with a dataset of 9 nodes or fewer:
-Free and Pro share every feature and differ only in the node count.
+1. The same features render with no watermark and no notice.
+2. Add a Target measure — verify the KPI badge (value plus up/down %).
+3. Add a Swimlane field — verify the coloured bands.
+4. Open the Variants panel and click a variant — verify it traces on the diagram.
+5. Collapse a mid-level node — verify downstream values and badges recalculate.
 
 CAPABILITIES
 All 5 required flags present (supportsHighlight, supportsSynchronizingFilterState,

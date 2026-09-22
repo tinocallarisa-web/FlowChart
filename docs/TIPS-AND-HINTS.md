@@ -18,8 +18,9 @@ Minimum setup: drag **two or more fields** into **Levels** (in order — the fir
 ## Format Pane
 
 - **Free vs Pro**
-  - Free: full feature set, capped at **9 nodes** total
-  - Pro: no node cap (Power BI row limit applies)
+  - **Free: the complete diagram — every node, every link, always.** Layout, legend, zoom, fit and tooltips. There is no node cap, and a published report is never trimmed.
+  - **Pro: the layer on top.** Collapse and expand branches, the node search, the Variants panel, swimlanes, node images, the KPI badge and extra tooltip fields.
+  - Editing without a licence, a Pro feature you turn on is drawn **working** under a *Pro preview* watermark naming it, and Power BI shows its own Upgrade notice. Reading view draws the free result with no watermark, so a published report never uses a feature you have not paid for.
 - **Layout**: direction (horizontal/vertical), node gap, layer gap
 - **Nodes**: width, height, corner radius, font, image size, border, shadow (auto-disabled in high contrast)
 - **Value/KPI badge**: font, colors, background opacity, up/down KPI colors
@@ -41,6 +42,6 @@ Minimum setup: drag **two or more fields** into **Levels** (in order — the fir
 ## Troubleshooting
 
 - **Nothing renders**: check that at least 2 fields are in Levels and a measure is in Value.
-- **Diagram looks cut off**: you're on the Free tier and the dataset has more than 9 nodes — upgrade to Pro for the full diagram.
+- **Diagram looks cut off**: it is not the licence. The free tier draws every node. Use **Fit** in the toolbar, or check the Power BI row limit for very large models.
 - **A node isn't in the swimlane band I expect**: a node only joins a band if *every* row feeding it shares the same swimlane value; otherwise it stays neutral.
 - **Page tooltip doesn't trigger on a node with 3+ hierarchy levels**: known limitation — falls back to the basic tooltip. Page tooltips work correctly on links.

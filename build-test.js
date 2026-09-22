@@ -2,7 +2,7 @@
  * build-test.js
  * Genera un .pbiviz con isPro=true y guid_test para pruebas en Power BI Desktop.
  * USO: node build-test.js [--free]
- *   --free  Deja isPro sin forzar (prueba la experiencia Free real, con el limite de nodos).
+ *   --free  Deja isPro sin forzar. Es el UNICO modo con vista previa Pro, marca de agua y avisos.
  *
  * Reglas del skill pbiviz-appsource:
  * - Parchea -> empaqueta -> RESTAURA. El fuente siempre queda en estado produccion.

@@ -22,8 +22,15 @@ FIELD WELLS
 FORMAT PANE
 -----------
 Free vs Pro
-    Free ... full feature set, capped at 9 nodes total
-    Pro .... no node cap (Power BI row limit applies)
+    FREE ... the complete diagram: every node, every link, always. Layout,
+             legend, zoom, fit, tooltips. No node cap, and a published report
+             is never trimmed.
+    PRO .... the layer on top: collapse/expand branches, node search, the
+             Variants panel, swimlanes, node images, the KPI badge and extra
+             tooltip fields.
+             Editing without a licence, a Pro feature you turn on is drawn
+             WORKING under a "Pro preview" watermark naming it. Reading view
+             draws the free result with no watermark.
 Layout ..... direction (horizontal/vertical), node gap, layer gap
 Nodes ...... width, height, corner radius, font, image size, border, shadow
 Badge/KPI .. font, colors, background opacity, up/down KPI colors
@@ -52,8 +59,8 @@ TROUBLESHOOTING
 ----------------
 . Nothing renders ................ check Levels has 2+ fields and Value
                                      has a measure
-. Diagram looks cut off ........... Free tier + more than 9 nodes; upgrade
-                                     to Pro for the full diagram
+. Diagram looks cut off ........... not the licence: the free tier draws
+                                     every node. Use Fit in the toolbar
 . Node not in expected swimlane ... a node only joins a band if EVERY row
                                      feeding it shares the same swimlane
                                      value; otherwise it stays neutral

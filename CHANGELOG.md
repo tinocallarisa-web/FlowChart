@@ -2,6 +2,21 @@
 
 All notable changes to the Flow Chart Power BI custom visual are documented here.
 
+## [1.1.0.0] - 2026-09-22
+
+### Changed
+- **The nine-node cap is gone. The free tier now draws the whole diagram, always.** An org chart, a process or a sales funnel go past nine nodes almost every time, so the free tier handed back a diagram cut in half — a picture of a flow that does not exist, with nothing saying so. A node cap punishes exactly the person who has real data and would pay, while giving someone with eight nodes no reason to. What is bought now is the layer on top: the tools that only matter at scale, and the analyst wells.
+- **Free vs Pro.** Free: the complete diagram, nodes, links, layout, legend, zoom, fit and tooltips. Pro: collapse and expand branches, the node search, the Variants panel, swimlanes, node images, the KPI badge and extra tooltip fields. Nothing that would misrepresent the data is behind the licence.
+
+### Fixed
+- **There was no purchase path at all.** The visual called `notifyFeatureBlocked()` and nothing else: the message read "Pro removes the node cap" and there was no button anywhere, because `notifyLicenseRequired()` — the call that carries the Upgrade bar — was never invoked. It was the only visual in the portfolio without a way to buy. The sequence is now `clearLicenseNotification()` → the banner naming the feature → and, after ~10 s, the Upgrade bar.
+- **No `innerHTML` anywhere, and no lint suppression.** The render built the whole DOM as text and injected it with `innerHTML`, with `powerbi-visuals/no-inner-outer-html` disabled by hand — the exact pattern a sibling visual was rejected for under the XSS policy. The toolbar, the SVG, nodes, links, swimlanes, legend, minimap and the variants panel are now built with `createElement` and `createElementNS`. `escapeHtml()` was removed entirely: while an escaping helper exists, escaping stays the responsibility of whoever writes the next line, and forgetting once is an XSS. Labels now go through `textContent` and identifiers through `setAttribute`, neither of which ever interprets markup.
+- **A collapsed branch could survive the loss of a licence**, leaving the diagram trimmed with no control to reopen it. The collapsed state is cleared when Pro is not in effect.
+
+### Added
+- **Pro preview.** Without a licence, and **in edit mode only**, a Pro feature is drawn *working* under a "Pro preview" watermark naming it, with Power BI's own purchase notice. Reading view — and any environment where licences cannot be read — draws the free result with no watermark, so a published report never uses an unpaid feature. Granted per feature. Above nine nodes the scale tools appear in preview, which is where they start to matter.
+- The four Pro wells now say so: `Swimlane (Pro)`, `Level images (Pro)`, `Target — KPI badge (Pro)`, `Tooltip fields (Pro)`.
+
 ## [1.0.4.0] - 2026-09-15
 
 ### Fixed
