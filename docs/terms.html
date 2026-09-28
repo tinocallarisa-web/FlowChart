@@ -211,44 +211,49 @@
 
   <div class="card">
     <h3>Free tier <span class="badge badge-free">Free</span></h3>
-    <p>Available to every Power BI user at no charge, with <strong>every feature unlocked</strong>:</p>
+    <p>Available to every Power BI user at no charge. <strong>The diagram is always drawn whole:</strong>
+    there is no node cap, nothing is hidden and nothing is watermarked in a published report.</p>
     <ul>
       <li>Data-driven process diagram built from the Levels field wells, with automatic branch merging</li>
       <li>Horizontal or vertical layout, per-layer centring and crossing-minimisation</li>
       <li>Cycle detection, drawn as discontinuous loops</li>
       <li>Dominant path emphasis and top end-to-end variant highlighting</li>
-      <li>Variants panel with the top 8 paths by value</li>
-      <li>Collapse and expand branches, with cascading value recalculation</li>
-      <li>Zoom, native scroll, minimap, in-diagram search and fit to view</li>
-      <li>KPI badges (value against target, with variation %)</li>
-      <li>Swimlane bands across the levels</li>
-      <li>Level images from base64 strings in your model</li>
+      <li>Zoom, native scroll, minimap and fit to view</li>
       <li>Native selection, cross-filtering, context menu, standard and report page tooltips</li>
       <li>Keyboard focus and high contrast support</li>
       <li>The complete Format Pane: layout, nodes, badges, value format, links, swimlanes, legend, data colours</li>
     </ul>
-    <p><strong>The only limit is size:</strong> a Free diagram renders up to <strong>9 nodes</strong>, kept as a
-    connected sub-tree from the root so the diagram remains coherent, with a message reporting how many nodes
-    were omitted.</p>
 
     <h3 style="margin-top:20px;">Pro tier <span class="badge badge-pro">Pro</span></h3>
-    <p>Requires an active AppSource subscription. Identical to Free in every feature, with the node limit
-    removed: <strong>the 9-node cap</strong> (the Power BI data row limit still applies).</p>
+    <p>Requires an active AppSource subscription. Pro does not reveal data the Free tier withholds &mdash;
+    it adds the tools that only start to matter once a diagram is large, and the analyst field wells:</p>
+    <ul>
+      <li>Collapse and expand branches, with cascading value recalculation</li>
+      <li>In-diagram node search</li>
+      <li>Variants panel with the top 8 end-to-end paths by value</li>
+      <li>Swimlane bands across the levels</li>
+      <li>Level images from base64 strings in your model</li>
+      <li>KPI badges (value against target, with variation %)</li>
+      <li>Extra tooltip fields</li>
+    </ul>
+    <p>While you edit a report without a licence, a Pro feature you turn on is drawn <em>working</em> under a
+    &ldquo;Pro preview&rdquo; watermark naming it. Reading view always shows the Free result.</p>
   </div>
 
   <table>
     <thead><tr><th>Feature</th><th>Free</th><th>Pro</th></tr></thead>
     <tbody>
-      <tr><td>Nodes per diagram</td><td>Up to 9</td><td>No node cap (Power BI row limit applies)</td></tr>
+      <tr><td>Nodes per diagram</td><td>No cap (Power BI row limit applies)</td><td>No cap (Power BI row limit applies)</td></tr>
       <tr><td>Process diagram, branch merging, cycle detection</td><td>&#10003;</td><td>&#10003;</td></tr>
       <tr><td>Dominant path and top variant highlighting</td><td>&#10003;</td><td>&#10003;</td></tr>
-      <tr><td>Variants panel (top 8 paths)</td><td>&#10003;</td><td>&#10003;</td></tr>
-      <tr><td>Collapse / expand with value recalculation</td><td>&#10003;</td><td>&#10003;</td></tr>
-      <tr><td>Zoom, minimap, search, fit to view</td><td>&#10003;</td><td>&#10003;</td></tr>
-      <tr><td>KPI badges and swimlanes</td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>Zoom, minimap, fit to view</td><td>&#10003;</td><td>&#10003;</td></tr>
       <tr><td>Cross-filtering, context menu, tooltips</td><td>&#10003;</td><td>&#10003;</td></tr>
       <tr><td>Keyboard focus, high contrast</td><td>&#10003;</td><td>&#10003;</td></tr>
       <tr><td>Full Format Pane</td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>Collapse / expand with value recalculation</td><td>&mdash;</td><td>&#10003;</td></tr>
+      <tr><td>Node search</td><td>&mdash;</td><td>&#10003;</td></tr>
+      <tr><td>Variants panel (top 8 paths)</td><td>&mdash;</td><td>&#10003;</td></tr>
+      <tr><td>Swimlanes, level images, KPI badges, extra tooltips</td><td>&mdash;</td><td>&#10003;</td></tr>
     </tbody>
   </table>
 

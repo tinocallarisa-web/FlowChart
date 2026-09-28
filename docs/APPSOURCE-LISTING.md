@@ -42,7 +42,7 @@ THE DIAGRAM
 • Colour by level or a single colour, with a legend
 • Zoom, fit and a minimap for diagrams that outgrow the canvas
 
-INTEGRATED WITH POWER BI
+NATIVE INTEGRATION
 
 • Click a node or a link to cross-filter the report; the rest of the page follows
 • Filters from other visuals are reflected in the diagram
