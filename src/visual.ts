@@ -198,6 +198,8 @@ export class Visual implements IVisual {
     private fittedKey = "";
     /** Firma de los datos, la dirección y el tamaño del visual: lo único que justifica reajustar. */
     private dataKey = "";
+    /** Tamaño del visual con el que se ajustó por última vez. */
+    private fitSize: { w: number; h: number } | null = null;
 
     constructor(options: VisualConstructorOptions) {
         this.formattingSettingsService = new FormattingSettingsService();
@@ -313,7 +315,12 @@ export class Visual implements IVisual {
 
         this.data = this.parseDataView(dataView);
         const filas = dataView.table.rows || [];
-        this.dataKey = [filas.length, this.levelNames.join("/"), this.direction, Math.round(this.width), Math.round(this.height),
+        // El tamaño entra en la firma solo si cambia más de un 15 %: al volver a una página Power BI informa primero de un
+        // tamaño provisional y luego del definitivo, y reajustar con cada uno se veía como un salto.
+        const cambioGrande = !this.fitSize || Math.abs(this.width - this.fitSize.w) > this.fitSize.w * 0.15
+            || Math.abs(this.height - this.fitSize.h) > this.fitSize.h * 0.15;
+        if (cambioGrande) this.fitSize = { w: this.width, h: this.height };
+        this.dataKey = [filas.length, this.levelNames.join("/"), this.direction, Math.round(this.fitSize.w), Math.round(this.fitSize.h),
             String(filas[0]?.[0] ?? ""), String(filas[filas.length - 1]?.[0] ?? "")].join("|");
         // Con un solo nivel, o sin filas que formen una cadena, no hay diagrama: se explica qué falta.
         if (this.data.nodes.length === 0) {
