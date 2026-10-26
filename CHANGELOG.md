@@ -2,6 +2,29 @@
 
 All notable changes to the Flow Chart Power BI custom visual are documented here.
 
+## [1.2.0.0] - 2026-10 (in progress)
+
+### Added
+- **Twelve languages.** English, Spanish, French, German, Italian, Portuguese (Brazil and Portugal), Dutch, Polish, Japanese, Simplified Chinese and Korean — the Format pane, the toolbar, tooltips, messages, the start screen and the setup tips. Until now the visual was in English only.
+- **Style templates (free):** Default, Clean, Outline, Contrast, Compact and Minimal. A template only fills settings you have not changed yourself.
+- **Setup tips while you edit (free):** which wells are filled, the templates in one click, and link labels, level headers and direction as one-click switches. Close them with ✕; *Format → Style template → Show setup tips* brings them back. Never shown in reading view.
+- **Start screen** of the TCViz series when the visual has no fields: the three steps and links to the guide, the product page and the video, in three sizes. Links open only on a click, through Power BI. With a single level it says that a flow needs a second one.
+- **Link labels (free):** the value, its share of the total, or both, on each link. When two labels would overlap, the larger link keeps its label.
+- **Level headers (free):** the name of each Levels field above (or beside) its column of nodes.
+- **Background grid (free)** and **step numbers on or off** (*Nodes → Step number*).
+- **Legend options:** position (bottom left, bottom right, top right), text size and color, and the field names instead of "Level 1, 2, 3".
+- **Color rules (Pro):** up to three rules that paint a node by its value, its share of the total or its variance against Target.
+- **Format on the canvas:** in format mode, click a node, a link, a link label, the legend, a level header or the toolbar to format it there.
+- **Keyboard:** one tab stop for the diagram; the arrow keys move along the flow and within a level, Home and End go to the first and last step. Visible focus ring.
+
+### Changed
+- **Numbers use the format of your model by default** (*Value format → Model format*), dynamic format strings included, in the report's language. Reports that never chose a format will show the measure's own format after the update; the previous options are still there.
+- **Large diagrams fit the visual when they load** (*Layout → Fit large diagrams to the visual*), instead of opening at 100% with most of the diagram out of view.
+- **Smaller visuals:** below 320 px wide the toolbar keeps only *Fit*; the minimap hides below 360 × 240 and the legend below 140 px high. The minimap moved to the bottom right, where it no longer covers the first node.
+- **Pro preview** while editing without a licence now draws the Pro layers on the five largest nodes, two swimlanes and three variants, under the watermark — enough to see them working on your data. Reading view is unchanged: the free diagram.
+- New icon of the TCViz series.
+- Tooling: powerbi-visuals-tools 7.2.1, ESLint with the certification plugin, `hostCapabilities.allowInteractions`.
+
 ## [1.1.0.0] - 2026-09-22
 
 ### Changed

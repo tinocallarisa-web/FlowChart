@@ -703,6 +703,10 @@ export class Visual implements IVisual {
         const prefix = fmt?.prefix?.value ?? "";
         const suffix = fmt?.suffix?.value ?? "";
 
+        // Separadores del idioma del informe en todos los formatos (antes solo en Thousands, y con el del navegador).
+        const dec = Math.max(0, Math.min(10, decimals));
+        const num = (v: number, grupos = true) => v.toLocaleString(this.host?.locale || undefined,
+            { minimumFractionDigits: dec, maximumFractionDigits: dec, useGrouping: grupos });
         let body: string;
         if (type === "model") {
             // El formato de la medida (también el dinámico) y el idioma del informe, como un visual nativo.
@@ -720,17 +724,17 @@ export class Visual implements IVisual {
             }
         } else if (type === "compact") {
             const abs = Math.abs(value);
-            if (abs >= 1e6) body = (value / 1e6).toFixed(decimals) + "M";
-            else if (abs >= 1e3) body = (value / 1e3).toFixed(decimals) + "K";
-            else body = value.toFixed(decimals);
+            if (abs >= 1e6) body = num(value / 1e6) + "M";
+            else if (abs >= 1e3) body = num(value / 1e3) + "K";
+            else body = num(value);
         } else if (type === "percent") {
             const base = percentBase && percentBase > 0 ? percentBase : (this.data?.totalValue || 0);
             const pct = base > 0 ? (value / base) * 100 : 0;
-            body = pct.toFixed(decimals) + "%";
+            body = num(pct) + "%";
         } else if (type === "plain") {
-            body = value.toFixed(decimals);
+            body = num(value, false);
         } else {
-            body = value.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+            body = num(value);
         }
         return `${prefix}${body}${suffix}`;
     }
@@ -1811,8 +1815,8 @@ export class Visual implements IVisual {
             barra.appendChild(this.htmlEl("button", {
                 type: "button", class: "flow-tooltips-toggle", title: this.t("UI_TooltipsAria", "Toggle tooltips"),
                 "aria-label": this.t("UI_TooltipsAria", "Toggle tooltips"), "aria-pressed": String(this.tooltipsEnabled),
-                style: ESTILO_BOTON + `background:${this.tooltipsEnabled ? "#fff" : "#e8f0fe"};`
-            }, this.t("UI_Tooltips", "Tooltips")));
+                style: ESTILO_BOTON + `background:${this.tooltipsEnabled ? "#fff" : "#e8f0fe"};padding:2px 6px;`
+            }, "ⓘ"));  // ⓘ: el texto traducido ("Información sobre herramientas") no cabe en la barra; va en title y aria-label
         }
         this.subSelectable(barra, "layoutSettings", this.t("Obj_layoutSettings", "Layout"), powerbi.visuals.SubSelectionStylesType.Shape);
         this.target.appendChild(barra);

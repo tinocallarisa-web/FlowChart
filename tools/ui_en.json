@@ -42,7 +42,6 @@
  "UI_VariantsAria": "Toggle top variants panel",
  "UI_Variants": "Variants",
  "UI_TooltipsAria": "Toggle tooltips",
- "UI_Tooltips": "Tooltips",
  "UI_AriaDiagram": "Flow diagram with {0} nodes. Use the arrow keys to move between steps.",
  "UI_Tip_Target": "Target",
  "UI_Tip_Variance": "Variance",
