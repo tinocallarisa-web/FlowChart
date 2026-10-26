@@ -16,6 +16,7 @@ All notable changes to the Flow Chart Power BI custom visual are documented here
 - **Image background and shape (free):** *Nodes → Image background* puts a color behind node images, and *Image shape* (rounded, circle, square) also crops the image.
 - **Legend options:** position (bottom left, bottom right, top right), text size and color, and the field names instead of "Level 1, 2, 3".
 - **Color rules (Pro):** up to three rules that paint a node by its value, its share of the total or its variance against Target.
+- **Toolbar and minimap options (free):** *Layout → Toolbar* and *Minimap* show or hide them, and *Toolbar size* scales the search box and buttons.
 - **Format on the canvas:** in format mode, click a node, a link, a link label, the legend, a level header or the toolbar to format it there.
 - **Keyboard:** one tab stop for the diagram; the arrow keys move along the flow and within a level, Home and End go to the first and last step. Visible focus ring.
 
@@ -24,7 +25,7 @@ All notable changes to the Flow Chart Power BI custom visual are documented here
 - **Large diagrams fit the visual when they load** (*Layout → Fit large diagrams to the visual*), instead of opening at 100% with most of the diagram out of view.
 - **Node name and value are centered together** in the node, with the same margin above and below; the value no longer sits on the bottom edge.
 - **The diagram is centered by the visual**, horizontally and vertically, and zooming grows it from the center. Before, zooming in pushed it down.
-- **Smaller visuals:** below 320 px wide the toolbar keeps only *Fit*; the minimap hides below 360 × 240 and the legend below 140 px high. The minimap moved to the bottom right, where it no longer covers the first node.
+- **Smaller visuals:** below 320 px wide the toolbar keeps only *Fit*; the minimap hides below 360 × 240 and the legend below 140 px high. The minimap moved to the top right, where it no longer covers the first or the last nodes (bottom right if the legend is at the top right).
 - **Pro preview** while editing without a licence now draws the Pro layers on the five largest nodes, two swimlanes and three variants, under the watermark — enough to see them working on your data. Reading view is unchanged: the free diagram.
 - New icon of the TCViz series.
 - Tooling: powerbi-visuals-tools 7.2.1, ESLint with the certification plugin, `hostCapabilities.allowInteractions`.

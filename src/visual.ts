@@ -1161,7 +1161,7 @@ export class Visual implements IVisual {
         }
 
         // Hueco para la barra de herramientas, que flota arriba a la izquierda: sin él tapaba la primera fila.
-        const TOOLBAR_H = 30;
+        const TOOLBAR_H = this.toolbarShown() ? Math.round(this.toolbarSize() * 2.5) : 0;
         nodes.forEach(n => { n.y += TOOLBAR_H; });
         if (isHorizontal) this.swimlaneBands.forEach(b => { b.start += TOOLBAR_H; b.end += TOOLBAR_H; });
 
@@ -1673,7 +1673,7 @@ export class Visual implements IVisual {
         if (variants.length) {
             variantsPanelEl = this.htmlEl("div", {
                 class: "flow-variants-panel",
-                style: `display:${this.variantsPanelOpen ? "block" : "none"};position:absolute;top:34px;`
+                style: `display:${this.variantsPanelOpen ? "block" : "none"};position:absolute;top:${Math.round(this.toolbarSize() * 2.5) + 4}px;`
                      + "left:0;z-index:3;background:rgba(255,255,255,0.97);border:1px solid #ccc;"
                      + "border-radius:3px;padding:8px;width:460px;max-height:420px;overflow-y:auto;"
                      + "font-family:'Segoe UI',sans-serif;"
@@ -1756,13 +1756,15 @@ export class Visual implements IVisual {
         const minimapW = Math.max(1, maxX * this.minimapScale);
         const minimapH = Math.max(1, maxY * this.minimapScale);
         // En un visual pequeño el minimapa taparía el diagrama.
-        const showMinimap = nodes.length > 6 && this.width >= 360 && this.height >= 240;
+        const showMinimap = (this.formattingSettings?.layoutCard?.showMinimap?.value ?? true)
+            && nodes.length > 6 && this.width >= 360 && this.height >= 240;
         let minimapEl: HTMLElement | null = null;
         if (showMinimap) {
             minimapEl = this.htmlEl("div", {
                 class: "flow-minimap", "aria-hidden": "true",
                 // Abajo a la derecha: arriba a la izquierda tapaba el primer nodo y su cabecera.
-                style: `position:absolute;${legendPos === "bottomRight" ? "top:38px" : "bottom:4px"};right:4px;z-index:2;background:${panelBg};`
+                // Arriba a la derecha (abajo tapaba los últimos nodos); abajo si la leyenda ocupa esa esquina.
+                style: `position:absolute;${legendPos === "topRight" ? "bottom:4px" : "top:4px"};right:4px;z-index:2;background:${panelBg};`
                      + "border:1px solid #ccc;border-radius:3px;padding:2px;"
             });
             const msvg = this.svgEl("svg", {
@@ -1796,7 +1798,8 @@ export class Visual implements IVisual {
             style: "position:absolute;top:0;left:0;z-index:2;display:flex;gap:6px;padding:4px;"
                  + `background:${panelBg};width:max-content;`
         });
-        const ESTILO_BOTON = "font:12px 'Segoe UI',sans-serif;padding:2px 8px;border:1px solid #ccc;"
+        const ts = this.toolbarSize();
+        const ESTILO_BOTON = `font:${ts}px 'Segoe UI',sans-serif;padding:2px 8px;border:1px solid #ccc;`
                            + "border-radius:3px;cursor:pointer;";
         // Visual estrecho: solo Ajustar, para no tapar el diagrama.
         const estrecho = this.width < 320;
@@ -1804,18 +1807,18 @@ export class Visual implements IVisual {
             barra.appendChild(this.htmlEl("input", {
                 type: "text", class: "flow-search", placeholder: this.t("UI_Search", "Search node..."),
                 "aria-label": this.t("UI_SearchAria", "Search node by name"),
-                style: "font:12px 'Segoe UI',sans-serif;padding:2px 6px;border:1px solid #ccc;border-radius:3px;"
+                style: `font:${ts}px 'Segoe UI',sans-serif;padding:2px 6px;border:1px solid #ccc;border-radius:3px;width:${ts * 9}px;`
             }));
         }
         if (!estrecho) {
             barra.appendChild(this.htmlEl("button", {
                 type: "button", class: "flow-zoom-out", title: this.t("UI_ZoomOut", "Zoom out"), "aria-label": this.t("UI_ZoomOut", "Zoom out"),
-                style: "font:14px 'Segoe UI',sans-serif;width:24px;padding:0;border:1px solid #ccc;"
+                style: `font:${ts + 2}px 'Segoe UI',sans-serif;width:${Math.round(ts * 2)}px;padding:0;border:1px solid #ccc;`
                      + "border-radius:3px;background:#fff;cursor:pointer;"
             }, "−"));
             barra.appendChild(this.htmlEl("button", {
                 type: "button", class: "flow-zoom-in", title: this.t("UI_ZoomIn", "Zoom in"), "aria-label": this.t("UI_ZoomIn", "Zoom in"),
-                style: "font:14px 'Segoe UI',sans-serif;width:24px;padding:0;border:1px solid #ccc;"
+                style: `font:${ts + 2}px 'Segoe UI',sans-serif;width:${Math.round(ts * 2)}px;padding:0;border:1px solid #ccc;`
                      + "border-radius:3px;background:#fff;cursor:pointer;"
             }, "+"));
         }
@@ -1839,7 +1842,7 @@ export class Visual implements IVisual {
             }, "ⓘ"));  // ⓘ: el texto traducido ("Información sobre herramientas") no cabe en la barra; va en title y aria-label
         }
         this.subSelectable(barra, "layoutSettings", this.t("Obj_layoutSettings", "Layout"), powerbi.visuals.SubSelectionStylesType.Shape);
-        this.target.appendChild(barra);
+        if (this.toolbarShown()) this.target.appendChild(barra);
 
         if (variantsPanelEl) { this.target.appendChild(variantsPanelEl); }
 
@@ -2262,6 +2265,10 @@ export class Visual implements IVisual {
             (el as HTMLElement).style.opacity = match ? "1" : "0.08";
         });
     }
+
+    /** Barra de herramientas: visible y tamaño de letra (Diseño → Barra de herramientas, Tamaño de la barra). */
+    private toolbarShown(): boolean { return this.formattingSettings?.layoutCard?.showToolbar?.value ?? true; }
+    private toolbarSize(): number { return Math.max(8, Math.min(20, this.formattingSettings?.layoutCard?.toolbarSize?.value ?? 12)); }
 
     // ── Reglas de color (Pro) ────────────────────────────────────────────────
 

@@ -2374,5 +2374,41 @@
   "四角",
   "方形",
   "사각형"
+ ],
+ "Toolbar": [
+  "Barra de herramientas",
+  "Barra de ferramentas",
+  "Barre d’outils",
+  "Symbolleiste",
+  "Barra degli strumenti",
+  "Werkbalk",
+  "Pasek narzędzi",
+  "ツール バー",
+  "工具栏",
+  "도구 모음"
+ ],
+ "Toolbar size": [
+  "Tamaño de la barra",
+  "Tamanho da barra",
+  "Taille de la barre",
+  "Größe der Symbolleiste",
+  "Dimensione barra",
+  "Grootte van werkbalk",
+  "Rozmiar paska",
+  "ツール バーのサイズ",
+  "工具栏大小",
+  "도구 모음 크기"
+ ],
+ "Minimap": [
+  "Minimapa",
+  "Minimapa",
+  "Mini-carte",
+  "Minikarte",
+  "Minimappa",
+  "Minikaart",
+  "Minimapa",
+  "ミニマップ",
+  "小地图",
+  "미니맵"
  ]
 }

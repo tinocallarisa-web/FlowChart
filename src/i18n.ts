@@ -56,6 +56,18 @@ export const I18N: Record<string, I18nCard> = {
                 "k": "Prop_layoutSettings_fitOnLoad",
                 "e": {}
             },
+            "showToolbar": {
+                "k": "Prop_layoutSettings_showToolbar",
+                "e": {}
+            },
+            "toolbarSize": {
+                "k": "Prop_layoutSettings_toolbarSize",
+                "e": {}
+            },
+            "showMinimap": {
+                "k": "Prop_layoutSettings_showMinimap",
+                "e": {}
+            },
             "showLevelHeaders": {
                 "k": "Prop_layoutSettings_showLevelHeaders",
                 "e": {}

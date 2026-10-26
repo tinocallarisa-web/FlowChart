@@ -155,6 +155,27 @@
                         "bool": true
                     }
                 },
+                "showToolbar": {
+                    "displayName": "Toolbar",
+                    "displayNameKey": "Prop_layoutSettings_showToolbar",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "toolbarSize": {
+                    "displayName": "Toolbar size",
+                    "displayNameKey": "Prop_layoutSettings_toolbarSize",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "showMinimap": {
+                    "displayName": "Minimap",
+                    "displayNameKey": "Prop_layoutSettings_showMinimap",
+                    "type": {
+                        "bool": true
+                    }
+                },
                 "showLevelHeaders": {
                     "displayName": "Level headers",
                     "displayNameKey": "Prop_layoutSettings_showLevelHeaders",
