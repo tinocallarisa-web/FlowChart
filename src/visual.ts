@@ -1255,21 +1255,8 @@ export class Visual implements IVisual {
         let maxX = Math.max(...nodes.map(n => n.x + n.width)) + MARGIN + (isHorizontal ? 0 : loopBuffer);
         let maxY = Math.max(...nodes.map(n => n.y + n.height)) + MARGIN + (isHorizontal ? loopBuffer : 0);
 
-        // Center the diagram within the viewport when it is smaller than the visible area,
-        // so small diagrams don't sit flush against the top/left leaving unused space.
-        // Applied only once per layout pass (not on every collapse-triggered re-render),
-        // otherwise the shift would compound and drift the diagram further each time.
-        const centerShiftY = !this.centeringApplied && isHorizontal ? Math.max(0, (this.height - maxY) / 2) : 0;
-        const centerShiftX = !this.centeringApplied && !isHorizontal ? Math.max(0, (this.width - maxX) / 2) : 0;
-        if (centerShiftX || centerShiftY) {
-            this.data.nodes.forEach(n => { n.x += centerShiftX; n.y += centerShiftY; });
-            this.swimlaneBands.forEach(b => {
-                b.start += isHorizontal ? centerShiftY : centerShiftX;
-                b.end += isHorizontal ? centerShiftY : centerShiftX;
-            });
-            maxX += centerShiftX;
-            maxY += centerShiftY;
-        }
+        // Centrado: lo hace el contenedor (flex + margin:auto), no un desplazamiento de los nodos. Antes se sumaba un
+        // hueco arriba calculado al 100 % y, al ampliar, ese hueco crecía con el zoom y empujaba el diagrama hacia abajo.
         this.centeringApplied = true;
 
         const isHighContrast = this.host.colorPalette.isHighContrast;
@@ -1824,11 +1811,11 @@ export class Visual implements IVisual {
         if (variantsPanelEl) { this.target.appendChild(variantsPanelEl); }
 
         const scroll = this.htmlEl("div", {
-            class: "flow-scroll", style: "position:absolute;inset:0;overflow:auto;"
+            class: "flow-scroll", style: "position:absolute;inset:0;overflow:auto;display:flex;"
         });
         const svg = this.svgEl("svg", {
             width: svgWidth, height: svgHeight, viewBox: `0 0 ${maxX} ${maxY}`,
-            style: "display:block;", role: "group",
+            style: "display:block;margin:auto;flex-shrink:0;", role: "group",
             "aria-label": this.t("UI_AriaDiagram", "Flow diagram with {0} nodes. Use the arrow keys to move between steps.").replace("{0}", String(nodes.length))
         });
         if (shadowDefsEl) { svg.appendChild(shadowDefsEl); }
