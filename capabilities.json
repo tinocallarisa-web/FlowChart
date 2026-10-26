@@ -2,39 +2,176 @@
     "dataRoles": [
         {
             "displayName": "Levels (drag one field per level, in order)",
+            "displayNameKey": "Role_levels",
+            "description": "One field per step of the process, in order. Two levels at least.",
+            "descriptionKey": "Role_levels_Desc",
             "name": "levels",
             "kind": "Grouping"
         },
         {
             "displayName": "Level images (Pro)",
+            "displayNameKey": "Role_levelImages",
+            "description": "A Base64 image per level, already in your model.",
+            "descriptionKey": "Role_levelImages_Desc",
             "name": "levelImages",
             "kind": "Measure"
         },
         {
             "displayName": "Value",
+            "displayNameKey": "Role_value",
+            "description": "Sizes the links. Without it, each row counts 1.",
+            "descriptionKey": "Role_value_Desc",
             "name": "value",
             "kind": "Measure"
         },
         {
             "displayName": "Target — KPI badge (Pro)",
+            "displayNameKey": "Role_target",
+            "description": "Each node shows actual against target.",
+            "descriptionKey": "Role_target_Desc",
             "name": "target",
             "kind": "Measure"
         },
         {
             "displayName": "Swimlane (Pro)",
+            "displayNameKey": "Role_swimlane",
+            "description": "Bands by department, region or phase.",
+            "descriptionKey": "Role_swimlane_Desc",
             "name": "swimlane",
             "kind": "Grouping"
         },
         {
             "displayName": "Tooltip fields (Pro)",
+            "displayNameKey": "Role_tooltips",
+            "description": "Extra values in the tooltip.",
+            "descriptionKey": "Role_tooltips_Desc",
             "name": "tooltips",
             "kind": "Measure"
         }
     ],
     "objects": {
-        "dataPoint": {
+        "general": {
             "properties": {
-                "defaultColor": {
+                "formatString": {
+                    "type": {
+                        "formatting": {
+                            "formatString": true
+                        }
+                    }
+                }
+            }
+        },
+        "style": {
+            "displayName": "Style template",
+            "displayNameKey": "Obj_style",
+            "properties": {
+                "template": {
+                    "displayName": "Template",
+                    "displayNameKey": "Prop_style_template",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "default",
+                                "displayName": "Default",
+                                "displayNameKey": "Enum_style_template_Default"
+                            },
+                            {
+                                "value": "clean",
+                                "displayName": "Clean",
+                                "displayNameKey": "Enum_style_template_Clean"
+                            },
+                            {
+                                "value": "outline",
+                                "displayName": "Outline",
+                                "displayNameKey": "Enum_style_template_Outline"
+                            },
+                            {
+                                "value": "contrast",
+                                "displayName": "Contrast",
+                                "displayNameKey": "Enum_style_template_Contrast"
+                            },
+                            {
+                                "value": "compact",
+                                "displayName": "Compact",
+                                "displayNameKey": "Enum_style_template_Compact"
+                            },
+                            {
+                                "value": "minimal",
+                                "displayName": "Minimal",
+                                "displayNameKey": "Enum_style_template_Minimal"
+                            }
+                        ]
+                    }
+                },
+                "guide": {
+                    "displayName": "Show setup tips",
+                    "displayNameKey": "Prop_style_guide",
+                    "type": {
+                        "bool": true
+                    }
+                }
+            }
+        },
+        "layoutSettings": {
+            "displayName": "Layout",
+            "displayNameKey": "Obj_layoutSettings",
+            "properties": {
+                "direction": {
+                    "displayName": "Direction",
+                    "displayNameKey": "Prop_layoutSettings_direction",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "horizontal",
+                                "displayName": "Left to right",
+                                "displayNameKey": "Enum_layoutSettings_direction_Horizontal"
+                            },
+                            {
+                                "value": "vertical",
+                                "displayName": "Top to bottom",
+                                "displayNameKey": "Enum_layoutSettings_direction_Vertical"
+                            }
+                        ]
+                    }
+                },
+                "nodeGap": {
+                    "displayName": "Spacing between nodes",
+                    "displayNameKey": "Prop_layoutSettings_nodeGap",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "layerGap": {
+                    "displayName": "Spacing between levels",
+                    "displayNameKey": "Prop_layoutSettings_layerGap",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "fitOnLoad": {
+                    "displayName": "Fit large diagrams to the visual",
+                    "displayNameKey": "Prop_layoutSettings_fitOnLoad",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "showLevelHeaders": {
+                    "displayName": "Level headers",
+                    "displayNameKey": "Prop_layoutSettings_showLevelHeaders",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "headerSize": {
+                    "displayName": "Header size",
+                    "displayNameKey": "Prop_layoutSettings_headerSize",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "headerColor": {
+                    "displayName": "Header color",
+                    "displayNameKey": "Prop_layoutSettings_headerColor",
                     "type": {
                         "fill": {
                             "solid": {
@@ -43,48 +180,87 @@
                         }
                     }
                 },
-                "colorByLevel": {
+                "showGrid": {
+                    "displayName": "Background grid",
+                    "displayNameKey": "Prop_layoutSettings_showGrid",
                     "type": {
                         "bool": true
                     }
                 },
-                "levelColor1": { "type": { "fill": { "solid": { "color": true } } } },
-                "levelColor2": { "type": { "fill": { "solid": { "color": true } } } },
-                "levelColor3": { "type": { "fill": { "solid": { "color": true } } } },
-                "levelColor4": { "type": { "fill": { "solid": { "color": true } } } },
-                "levelColor5": { "type": { "fill": { "solid": { "color": true } } } },
-                "levelColor6": { "type": { "fill": { "solid": { "color": true } } } }
+                "gridColor": {
+                    "displayName": "Grid color",
+                    "displayNameKey": "Prop_layoutSettings_gridColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                }
             }
         },
         "nodeSettings": {
+            "displayName": "Nodes",
+            "displayNameKey": "Obj_nodeSettings",
             "properties": {
                 "width": {
+                    "displayName": "Node width",
+                    "displayNameKey": "Prop_nodeSettings_width",
                     "type": {
                         "numeric": true
                     }
                 },
                 "height": {
+                    "displayName": "Node height",
+                    "displayNameKey": "Prop_nodeSettings_height",
                     "type": {
                         "numeric": true
                     }
                 },
                 "cornerRadius": {
+                    "displayName": "Corner radius",
+                    "displayNameKey": "Prop_nodeSettings_cornerRadius",
                     "type": {
                         "numeric": true
                     }
                 },
                 "fontFamily": {
+                    "displayName": "Font family",
+                    "displayNameKey": "Prop_nodeSettings_fontFamily",
                     "type": {
                         "enumeration": [
-                            { "value": "'Segoe UI',sans-serif", "displayName": "Segoe UI" },
-                            { "value": "Arial,sans-serif", "displayName": "Arial" },
-                            { "value": "Calibri,sans-serif", "displayName": "Calibri" },
-                            { "value": "Georgia,serif", "displayName": "Georgia" },
-                            { "value": "Consolas,monospace", "displayName": "Consolas" }
+                            {
+                                "value": "'Segoe UI',sans-serif",
+                                "displayName": "Segoe UI",
+                                "displayNameKey": "Enum_nodeSettings_fontFamily_SegoeUIsansserif"
+                            },
+                            {
+                                "value": "Arial,sans-serif",
+                                "displayName": "Arial",
+                                "displayNameKey": "Enum_nodeSettings_fontFamily_Arialsansserif"
+                            },
+                            {
+                                "value": "Calibri,sans-serif",
+                                "displayName": "Calibri",
+                                "displayNameKey": "Enum_nodeSettings_fontFamily_Calibrisansserif"
+                            },
+                            {
+                                "value": "Georgia,serif",
+                                "displayName": "Georgia",
+                                "displayNameKey": "Enum_nodeSettings_fontFamily_Georgiaserif"
+                            },
+                            {
+                                "value": "Consolas,monospace",
+                                "displayName": "Consolas",
+                                "displayNameKey": "Enum_nodeSettings_fontFamily_Consolasmonospace"
+                            }
                         ]
                     }
                 },
                 "fontSize": {
+                    "displayName": "Label size",
+                    "displayNameKey": "Prop_nodeSettings_fontSize",
                     "type": {
                         "formatting": {
                             "fontSize": true
@@ -92,6 +268,8 @@
                     }
                 },
                 "textColor": {
+                    "displayName": "Text color",
+                    "displayNameKey": "Prop_nodeSettings_textColor",
                     "type": {
                         "fill": {
                             "solid": {
@@ -100,34 +278,121 @@
                         }
                     }
                 },
+                "showStepNumber": {
+                    "displayName": "Step number",
+                    "displayNameKey": "Prop_nodeSettings_showStepNumber",
+                    "type": {
+                        "bool": true
+                    }
+                },
                 "showBadge": {
+                    "displayName": "Show value badge in chip",
+                    "displayNameKey": "Prop_nodeSettings_showBadge",
                     "type": {
                         "bool": true
                     }
                 },
                 "badgeFontFamily": {
+                    "displayName": "Badge font",
+                    "displayNameKey": "Prop_nodeSettings_badgeFontFamily",
                     "type": {
                         "enumeration": [
-                            { "value": "'Segoe UI',sans-serif", "displayName": "Segoe UI" },
-                            { "value": "Arial,sans-serif", "displayName": "Arial" },
-                            { "value": "Calibri,sans-serif", "displayName": "Calibri" },
-                            { "value": "Georgia,serif", "displayName": "Georgia" },
-                            { "value": "Consolas,monospace", "displayName": "Consolas" }
+                            {
+                                "value": "'Segoe UI',sans-serif",
+                                "displayName": "Segoe UI",
+                                "displayNameKey": "Enum_nodeSettings_badgeFontFamily_SegoeUIsansserif"
+                            },
+                            {
+                                "value": "Arial,sans-serif",
+                                "displayName": "Arial",
+                                "displayNameKey": "Enum_nodeSettings_badgeFontFamily_Arialsansserif"
+                            },
+                            {
+                                "value": "Calibri,sans-serif",
+                                "displayName": "Calibri",
+                                "displayNameKey": "Enum_nodeSettings_badgeFontFamily_Calibrisansserif"
+                            },
+                            {
+                                "value": "Georgia,serif",
+                                "displayName": "Georgia",
+                                "displayNameKey": "Enum_nodeSettings_badgeFontFamily_Georgiaserif"
+                            },
+                            {
+                                "value": "Consolas,monospace",
+                                "displayName": "Consolas",
+                                "displayNameKey": "Enum_nodeSettings_badgeFontFamily_Consolasmonospace"
+                            }
                         ]
                     }
                 },
-                "badgeFontSize": { "type": { "numeric": true } },
-                "badgeTextColor": { "type": { "fill": { "solid": { "color": true } } } },
-                "badgeBackgroundColor": { "type": { "fill": { "solid": { "color": true } } } },
-                "badgeBackgroundOpacity": { "type": { "numeric": true } },
-                "kpiUpColor": { "type": { "fill": { "solid": { "color": true } } } },
-                "kpiDownColor": { "type": { "fill": { "solid": { "color": true } } } },
+                "badgeFontSize": {
+                    "displayName": "Badge font size",
+                    "displayNameKey": "Prop_nodeSettings_badgeFontSize",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "badgeTextColor": {
+                    "displayName": "Badge text color",
+                    "displayNameKey": "Prop_nodeSettings_badgeTextColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "badgeBackgroundColor": {
+                    "displayName": "Badge background",
+                    "displayNameKey": "Prop_nodeSettings_badgeBackgroundColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "badgeBackgroundOpacity": {
+                    "displayName": "Badge background opacity %",
+                    "displayNameKey": "Prop_nodeSettings_badgeBackgroundOpacity",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "kpiUpColor": {
+                    "displayName": "KPI up color",
+                    "displayNameKey": "Prop_nodeSettings_kpiUpColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "kpiDownColor": {
+                    "displayName": "KPI down color",
+                    "displayNameKey": "Prop_nodeSettings_kpiDownColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
                 "borderWidth": {
+                    "displayName": "Border width",
+                    "displayNameKey": "Prop_nodeSettings_borderWidth",
                     "type": {
                         "numeric": true
                     }
                 },
                 "borderColor": {
+                    "displayName": "Border color",
+                    "displayNameKey": "Prop_nodeSettings_borderColor",
                     "type": {
                         "fill": {
                             "solid": {
@@ -137,46 +402,121 @@
                     }
                 },
                 "colorBorderByLevel": {
+                    "displayName": "Color border by level",
+                    "displayNameKey": "Prop_nodeSettings_colorBorderByLevel",
                     "type": {
                         "bool": true
                     }
                 },
                 "imageSize": {
+                    "displayName": "Image size",
+                    "displayNameKey": "Prop_nodeSettings_imageSize",
                     "type": {
                         "numeric": true
                     }
                 },
-                "showShadow": { "type": { "bool": true } },
-                "shadowColor": { "type": { "fill": { "solid": { "color": true } } } },
-                "shadowBlur": { "type": { "numeric": true } },
-                "shadowOffsetX": { "type": { "numeric": true } },
-                "shadowOffsetY": { "type": { "numeric": true } },
-                "shadowOpacity": { "type": { "numeric": true } }
+                "showShadow": {
+                    "displayName": "Show node shadow",
+                    "displayNameKey": "Prop_nodeSettings_showShadow",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "shadowColor": {
+                    "displayName": "Shadow color",
+                    "displayNameKey": "Prop_nodeSettings_shadowColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "shadowBlur": {
+                    "displayName": "Shadow blur",
+                    "displayNameKey": "Prop_nodeSettings_shadowBlur",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "shadowOffsetX": {
+                    "displayName": "Shadow offset X",
+                    "displayNameKey": "Prop_nodeSettings_shadowOffsetX",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "shadowOffsetY": {
+                    "displayName": "Shadow offset Y",
+                    "displayNameKey": "Prop_nodeSettings_shadowOffsetY",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "shadowOpacity": {
+                    "displayName": "Shadow opacity %",
+                    "displayNameKey": "Prop_nodeSettings_shadowOpacity",
+                    "type": {
+                        "numeric": true
+                    }
+                }
             }
         },
         "valueFormatSettings": {
+            "displayName": "Value format",
+            "displayNameKey": "Obj_valueFormatSettings",
             "properties": {
                 "format": {
+                    "displayName": "Number format",
+                    "displayNameKey": "Prop_valueFormatSettings_format",
                     "type": {
                         "enumeration": [
-                            { "value": "plain", "displayName": "Plain (1234)" },
-                            { "value": "thousands", "displayName": "Thousands (1,234)" },
-                            { "value": "compact", "displayName": "Compact (1.2K / 3.4M)" },
-                            { "value": "percent", "displayName": "Percent (12.3%)" }
+                            {
+                                "value": "model",
+                                "displayName": "Model format",
+                                "displayNameKey": "Enum_valueFormatSettings_format_Model"
+                            },
+                            {
+                                "value": "thousands",
+                                "displayName": "Thousands (1,234)",
+                                "displayNameKey": "Enum_valueFormatSettings_format_Thousands"
+                            },
+                            {
+                                "value": "compact",
+                                "displayName": "Compact (1.2K / 3.4M)",
+                                "displayNameKey": "Enum_valueFormatSettings_format_Compact"
+                            },
+                            {
+                                "value": "plain",
+                                "displayName": "Plain (1234)",
+                                "displayNameKey": "Enum_valueFormatSettings_format_Plain"
+                            },
+                            {
+                                "value": "percent",
+                                "displayName": "Percent (12.3%)",
+                                "displayNameKey": "Enum_valueFormatSettings_format_Percent"
+                            }
                         ]
                     }
                 },
                 "decimals": {
+                    "displayName": "Decimal places",
+                    "displayNameKey": "Prop_valueFormatSettings_decimals",
                     "type": {
                         "numeric": true
                     }
                 },
                 "prefix": {
+                    "displayName": "Prefix",
+                    "displayNameKey": "Prop_valueFormatSettings_prefix",
                     "type": {
                         "text": true
                     }
                 },
                 "suffix": {
+                    "displayName": "Suffix",
+                    "displayNameKey": "Prop_valueFormatSettings_suffix",
                     "type": {
                         "text": true
                     }
@@ -184,8 +524,12 @@
             }
         },
         "linkSettings": {
+            "displayName": "Links",
+            "displayNameKey": "Obj_linkSettings",
             "properties": {
                 "color": {
+                    "displayName": "Link color",
+                    "displayNameKey": "Prop_linkSettings_color",
                     "type": {
                         "fill": {
                             "solid": {
@@ -195,31 +539,91 @@
                     }
                 },
                 "width": {
+                    "displayName": "Base link width",
+                    "displayNameKey": "Prop_linkSettings_width",
                     "type": {
                         "numeric": true
                     }
                 },
                 "curvature": {
+                    "displayName": "Curvature",
+                    "displayNameKey": "Prop_linkSettings_curvature",
                     "type": {
                         "numeric": true
                     }
                 },
                 "highlightDominant": {
+                    "displayName": "Highlight dominant path",
+                    "displayNameKey": "Prop_linkSettings_highlightDominant",
                     "type": {
                         "bool": true
                     }
                 },
                 "dominantEmphasis": {
+                    "displayName": "Dominant path thickness x",
+                    "displayNameKey": "Prop_linkSettings_dominantEmphasis",
                     "type": {
                         "numeric": true
                     }
                 },
                 "highlightTopVariant": {
+                    "displayName": "Highlight top end-to-end variant",
+                    "displayNameKey": "Prop_linkSettings_highlightTopVariant",
                     "type": {
                         "bool": true
                     }
                 },
                 "topVariantColor": {
+                    "displayName": "Top variant color",
+                    "displayNameKey": "Prop_linkSettings_topVariantColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "showLabels": {
+                    "displayName": "Link labels",
+                    "displayNameKey": "Prop_linkSettings_showLabels",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "labelContent": {
+                    "displayName": "Label shows",
+                    "displayNameKey": "Prop_linkSettings_labelContent",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "value",
+                                "displayName": "Value",
+                                "displayNameKey": "Enum_linkSettings_labelContent_Value"
+                            },
+                            {
+                                "value": "percent",
+                                "displayName": "% of total",
+                                "displayNameKey": "Enum_linkSettings_labelContent_Percent"
+                            },
+                            {
+                                "value": "both",
+                                "displayName": "Value and %",
+                                "displayNameKey": "Enum_linkSettings_labelContent_Both"
+                            }
+                        ]
+                    }
+                },
+                "labelSize": {
+                    "displayName": "Label size",
+                    "displayNameKey": "Prop_linkSettings_labelSize",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "labelColor": {
+                    "displayName": "Label color",
+                    "displayNameKey": "Prop_linkSettings_labelColor",
                     "type": {
                         "fill": {
                             "solid": {
@@ -230,64 +634,426 @@
                 }
             }
         },
-        "layoutSettings": {
+        "rules": {
+            "displayName": "Color rules (Pro)",
+            "displayNameKey": "Obj_rules",
             "properties": {
-                "direction": {
+                "basis": {
+                    "displayName": "Compare",
+                    "displayNameKey": "Prop_rules_basis",
                     "type": {
                         "enumeration": [
-                            { "value": "horizontal", "displayName": "Left to right" },
-                            { "value": "vertical", "displayName": "Top to bottom" }
+                            {
+                                "value": "value",
+                                "displayName": "Node value",
+                                "displayNameKey": "Enum_rules_basis_Value"
+                            },
+                            {
+                                "value": "share",
+                                "displayName": "% of total",
+                                "displayNameKey": "Enum_rules_basis_Share"
+                            },
+                            {
+                                "value": "variance",
+                                "displayName": "% vs target",
+                                "displayNameKey": "Enum_rules_basis_Variance"
+                            }
                         ]
                     }
                 },
-                "nodeGap": {
+                "rule1On": {
+                    "displayName": "Rule 1",
+                    "displayNameKey": "Prop_rules_rule1On",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "rule1Op": {
+                    "displayName": "Condition",
+                    "displayNameKey": "Prop_rules_rule1Op",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "gt",
+                                "displayName": "Greater than",
+                                "displayNameKey": "Enum_rules_rule1Op_Gt"
+                            },
+                            {
+                                "value": "lt",
+                                "displayName": "Less than",
+                                "displayNameKey": "Enum_rules_rule1Op_Lt"
+                            }
+                        ]
+                    }
+                },
+                "rule1Value": {
+                    "displayName": "Value",
+                    "displayNameKey": "Prop_rules_rule1Value",
                     "type": {
                         "numeric": true
                     }
                 },
-                "layerGap": {
+                "rule1Color": {
+                    "displayName": "Color",
+                    "displayNameKey": "Prop_rules_rule1Color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "rule2On": {
+                    "displayName": "Rule 2",
+                    "displayNameKey": "Prop_rules_rule2On",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "rule2Op": {
+                    "displayName": "Condition",
+                    "displayNameKey": "Prop_rules_rule2Op",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "gt",
+                                "displayName": "Greater than",
+                                "displayNameKey": "Enum_rules_rule2Op_Gt"
+                            },
+                            {
+                                "value": "lt",
+                                "displayName": "Less than",
+                                "displayNameKey": "Enum_rules_rule2Op_Lt"
+                            }
+                        ]
+                    }
+                },
+                "rule2Value": {
+                    "displayName": "Value",
+                    "displayNameKey": "Prop_rules_rule2Value",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "rule2Color": {
+                    "displayName": "Color",
+                    "displayNameKey": "Prop_rules_rule2Color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "rule3On": {
+                    "displayName": "Rule 3",
+                    "displayNameKey": "Prop_rules_rule3On",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "rule3Op": {
+                    "displayName": "Condition",
+                    "displayNameKey": "Prop_rules_rule3Op",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "gt",
+                                "displayName": "Greater than",
+                                "displayNameKey": "Enum_rules_rule3Op_Gt"
+                            },
+                            {
+                                "value": "lt",
+                                "displayName": "Less than",
+                                "displayNameKey": "Enum_rules_rule3Op_Lt"
+                            }
+                        ]
+                    }
+                },
+                "rule3Value": {
+                    "displayName": "Value",
+                    "displayNameKey": "Prop_rules_rule3Value",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "rule3Color": {
+                    "displayName": "Color",
+                    "displayNameKey": "Prop_rules_rule3Color",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "swimlaneSettings": {
+            "displayName": "Swimlanes",
+            "displayNameKey": "Obj_swimlaneSettings",
+            "properties": {
+                "show": {
+                    "displayName": "Show swimlane bands",
+                    "displayNameKey": "Prop_swimlaneSettings_show",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "labelSize": {
+                    "displayName": "Label size",
+                    "displayNameKey": "Prop_swimlaneSettings_labelSize",
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "fontFamily": {
+                    "displayName": "Label font",
+                    "displayNameKey": "Prop_swimlaneSettings_fontFamily",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "'Segoe UI',sans-serif",
+                                "displayName": "Segoe UI",
+                                "displayNameKey": "Enum_swimlaneSettings_fontFamily_SegoeUIsansserif"
+                            },
+                            {
+                                "value": "Arial,sans-serif",
+                                "displayName": "Arial",
+                                "displayNameKey": "Enum_swimlaneSettings_fontFamily_Arialsansserif"
+                            },
+                            {
+                                "value": "Calibri,sans-serif",
+                                "displayName": "Calibri",
+                                "displayNameKey": "Enum_swimlaneSettings_fontFamily_Calibrisansserif"
+                            },
+                            {
+                                "value": "Georgia,serif",
+                                "displayName": "Georgia",
+                                "displayNameKey": "Enum_swimlaneSettings_fontFamily_Georgiaserif"
+                            },
+                            {
+                                "value": "Consolas,monospace",
+                                "displayName": "Consolas",
+                                "displayNameKey": "Enum_swimlaneSettings_fontFamily_Consolasmonospace"
+                            }
+                        ]
+                    }
+                },
+                "textColor": {
+                    "displayName": "Label color",
+                    "displayNameKey": "Prop_swimlaneSettings_textColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "bandColor1": {
+                    "displayName": "Band 1 color",
+                    "displayNameKey": "Prop_swimlaneSettings_bandColor1",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "bandColor2": {
+                    "displayName": "Band 2 color",
+                    "displayNameKey": "Prop_swimlaneSettings_bandColor2",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "bandColor3": {
+                    "displayName": "Band 3 color",
+                    "displayNameKey": "Prop_swimlaneSettings_bandColor3",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "bandColor4": {
+                    "displayName": "Band 4 color",
+                    "displayNameKey": "Prop_swimlaneSettings_bandColor4",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "bandOpacity": {
+                    "displayName": "Band opacity %",
+                    "displayNameKey": "Prop_swimlaneSettings_bandOpacity",
                     "type": {
                         "numeric": true
                     }
                 }
             }
         },
-        "swimlaneSettings": {
+        "legendSettings": {
+            "displayName": "Legend",
+            "displayNameKey": "Obj_legendSettings",
             "properties": {
                 "show": {
+                    "displayName": "Show legend",
+                    "displayNameKey": "Prop_legendSettings_show",
                     "type": {
                         "bool": true
                     }
                 },
-                "labelSize": {
+                "position": {
+                    "displayName": "Position",
+                    "displayNameKey": "Prop_legendSettings_position",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "bottomLeft",
+                                "displayName": "Bottom left",
+                                "displayNameKey": "Enum_legendSettings_position_BottomLeft"
+                            },
+                            {
+                                "value": "bottomRight",
+                                "displayName": "Bottom right",
+                                "displayNameKey": "Enum_legendSettings_position_BottomRight"
+                            },
+                            {
+                                "value": "topRight",
+                                "displayName": "Top right",
+                                "displayNameKey": "Enum_legendSettings_position_TopRight"
+                            }
+                        ]
+                    }
+                },
+                "useFieldNames": {
+                    "displayName": "Use field names",
+                    "displayNameKey": "Prop_legendSettings_useFieldNames",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "fontSize": {
+                    "displayName": "Text size",
+                    "displayNameKey": "Prop_legendSettings_fontSize",
                     "type": {
                         "numeric": true
                     }
                 },
-                "fontFamily": {
+                "textColor": {
+                    "displayName": "Text color",
+                    "displayNameKey": "Prop_legendSettings_textColor",
                     "type": {
-                        "enumeration": [
-                            { "value": "'Segoe UI',sans-serif", "displayName": "Segoe UI" },
-                            { "value": "Arial,sans-serif", "displayName": "Arial" },
-                            { "value": "Calibri,sans-serif", "displayName": "Calibri" },
-                            { "value": "Georgia,serif", "displayName": "Georgia" },
-                            { "value": "Consolas,monospace", "displayName": "Consolas" }
-                        ]
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
                     }
-                },
-                "textColor": { "type": { "fill": { "solid": { "color": true } } } },
-                "bandColor1": { "type": { "fill": { "solid": { "color": true } } } },
-                "bandColor2": { "type": { "fill": { "solid": { "color": true } } } },
-                "bandColor3": { "type": { "fill": { "solid": { "color": true } } } },
-                "bandColor4": { "type": { "fill": { "solid": { "color": true } } } },
-                "bandOpacity": { "type": { "numeric": true } }
+                }
             }
         },
-        "legendSettings": {
+        "dataPoint": {
+            "displayName": "Data colors",
+            "displayNameKey": "Obj_dataPoint",
             "properties": {
-                "show": {
+                "defaultColor": {
+                    "displayName": "Default node color",
+                    "displayNameKey": "Prop_dataPoint_defaultColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "colorByLevel": {
+                    "displayName": "Color nodes by level",
+                    "displayNameKey": "Prop_dataPoint_colorByLevel",
                     "type": {
                         "bool": true
+                    }
+                },
+                "levelColor1": {
+                    "displayName": "Level 1 color",
+                    "displayNameKey": "Prop_dataPoint_levelColor1",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "levelColor2": {
+                    "displayName": "Level 2 color",
+                    "displayNameKey": "Prop_dataPoint_levelColor2",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "levelColor3": {
+                    "displayName": "Level 3 color",
+                    "displayNameKey": "Prop_dataPoint_levelColor3",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "levelColor4": {
+                    "displayName": "Level 4 color",
+                    "displayNameKey": "Prop_dataPoint_levelColor4",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "levelColor5": {
+                    "displayName": "Level 5 color",
+                    "displayNameKey": "Prop_dataPoint_levelColor5",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "levelColor6": {
+                    "displayName": "Level 6 color",
+                    "displayNameKey": "Prop_dataPoint_levelColor6",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
                     }
                 }
             }
@@ -298,12 +1064,36 @@
             "table": {
                 "rows": {
                     "select": [
-                        { "for": { "in": "levels" } },
-                        { "for": { "in": "levelImages" } },
-                        { "for": { "in": "value" } },
-                        { "for": { "in": "target" } },
-                        { "for": { "in": "swimlane" } },
-                        { "for": { "in": "tooltips" } }
+                        {
+                            "for": {
+                                "in": "levels"
+                            }
+                        },
+                        {
+                            "for": {
+                                "in": "levelImages"
+                            }
+                        },
+                        {
+                            "for": {
+                                "in": "value"
+                            }
+                        },
+                        {
+                            "for": {
+                                "in": "target"
+                            }
+                        },
+                        {
+                            "for": {
+                                "in": "swimlane"
+                            }
+                        },
+                        {
+                            "for": {
+                                "in": "tooltips"
+                            }
+                        }
                     ],
                     "dataReductionAlgorithm": {
                         "top": {}
@@ -317,7 +1107,9 @@
             "default": true,
             "canvas": true
         },
-        "roles": ["tooltips"],
+        "roles": [
+            "tooltips"
+        ],
         "supportEnhancedTooltips": true
     },
     "supportsHighlight": true,
@@ -325,5 +1117,7 @@
     "supportsLandingPage": true,
     "supportsKeyboardFocus": true,
     "supportsMultiVisualSelection": true,
-    "privileges": []
+    "privileges": [],
+    "supportsOnObjectFormatting": true,
+    "enablePointerEventsFormatMode": true
 }

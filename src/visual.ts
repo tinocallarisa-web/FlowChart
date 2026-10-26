@@ -2,7 +2,26 @@
 
 import powerbi from "powerbi-visuals-api";
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
+import { valueFormatter } from "powerbi-visuals-utils-formattingutils";
+import {
+    HtmlSubSelectableClass, HtmlSubSelectionHelper, SubSelectableDisplayNameAttribute,
+    SubSelectableObjectNameAttribute, SubSelectableTypeAttribute
+} from "powerbi-visuals-utils-onobjectutils";
 import "./../style/visual.less";
+import { I18N } from "./i18n";
+import { STRINGS } from "./strings";
+import { LANDING_ICON } from "./landingIcon";
+
+const URL_GUIDE = "https://tinocallarisa-web.github.io/FlowChart/support.html";
+const URL_PRODUCT = "https://tcviz.com/product/flow-chart/?ref=visual-flowchart";
+// Vídeo de la 1.1; se cambia cuando Tino grabe el de la 1.2.
+const URL_VIDEO = "https://www.youtube.com/watch?v=wXvxscw7e4k";
+
+/** Vista previa Pro (editando, sin licencia): las capas Pro se dibujan solo en los nodos de más valor, para enseñarlas
+ *  sin que sirvan de trabajo real (decisión 26-10-2026). Con licencia no hay límite. */
+const PREVIEW_NODES = 5;
+const PREVIEW_BANDS = 2;
+const PREVIEW_VARIANTS = 3;
 
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
@@ -156,6 +175,25 @@ export class Visual implements IVisual {
     private noticeShown = false;
     private watermarkEl: HTMLDivElement | null = null;
     private watermarkWhy: HTMLDivElement | null = null;
+    private loc: powerbi.extensibility.ILocalizationManager;
+    /** Formato desde el lienzo (on-object): en modo formato el clic elige qué formatear, no filtra datos. */
+    public visualOnObjectFormatting: powerbi.extensibility.visual.VisualOnObjectFormatting;
+    private subSelectionHelper: HtmlSubSelectionHelper;
+    private formatMode = false;
+    /** Propiedades que el autor ha fijado en el panel: las plantillas solo rellenan las demás. */
+    private explicitProps: powerbi.DataViewObjects = {};
+    /** Pozos con campo, para los consejos de configuración. */
+    private fields = { levels: 0, value: false, target: false, swimlane: false, images: false, tips: false };
+    /** Nombre de cada campo de Levels, para la leyenda y las cabeceras. */
+    private levelNames: string[] = [];
+    /** Formato de la medida Value (el dinámico de la primera fila si lo hay). */
+    private valueFormatString: string | undefined;
+    /** Nodos con capas Pro en la vista previa (los de más valor). Vacío = sin límite. */
+    private previewNodeIds: Set<string> | null = null;
+    /** Nodo con el foco de teclado (tabindex móvil). */
+    private focusNodeId: string | null = null;
+    /** Firma del diagrama ya ajustado al visual, para no reajustar en cada repintado. */
+    private fittedKey = "";
 
     constructor(options: VisualConstructorOptions) {
         this.formattingSettingsService = new FormattingSettingsService();
@@ -164,10 +202,24 @@ export class Visual implements IVisual {
         this.selectionManager = this.host.createSelectionManager();
         this.events = this.host.eventService;
         this.licenseManager = options.host.licenseManager;
+        this.loc = options.host.createLocalizationManager();
 
         this.target.style.overflow = "hidden";
         this.target.tabIndex = 0;
+        this.injectStyles();
 
+        this.subSelectionHelper = HtmlSubSelectionHelper.createHtmlSubselectionHelper({
+            hostElement: options.element,
+            subSelectionService: options.host.subSelectionService,
+            selectionIdCallback: () => undefined,
+        });
+        this.visualOnObjectFormatting = {
+            getSubSelectionStyles: (subs) => this.getSubSelectionStyles(subs),
+            getSubSelectionShortcuts: (subs) => this.getSubSelectionShortcuts(subs),
+            getSubSelectables: (filter) => this.subSelectionHelper.getAllSubSelectables(filter),
+        };
+
+        // Marcadores y selección hecha desde fuera: solo repinta la atenuación (nunca persistProperties aquí).
         this.selectionManager.registerOnSelectCallback(() => {
             this.applySelectionDimming();
         });
@@ -219,7 +271,10 @@ export class Visual implements IVisual {
             // dejaria la vista previa visible en un informe publicado.
             const viewMode = (options as unknown as { viewMode?: number }).viewMode;
             if (typeof viewMode === "number") { this.editing = viewMode !== 0; }
+            this.formatMode = !!(options as unknown as { formatMode?: boolean }).formatMode;
+            this.subSelectionHelper.setFormatMode(this.formatMode);
             this.draw(options);
+            this.updateOutlines(options);
             this.events.renderingFinished(options);
         } catch (e) {
             this.events.renderingFailed(options, String(e));
@@ -237,18 +292,27 @@ export class Visual implements IVisual {
             VisualFormattingSettingsModel,
             options.dataViews && options.dataViews[0]
         );
+        this.explicitProps = options.dataViews?.[0]?.metadata?.objects ?? {};
+        this.applyTemplate();
+        this.localizeModel();
 
         this.width = options.viewport.width;
         this.height = options.viewport.height;
         this.direction = this.formattingSettings?.layoutCard?.direction?.value?.value?.toString() ?? "horizontal";
 
         const dataView = options.dataViews && options.dataViews[0];
-        if (!dataView || !dataView.table) {
+        const conNiveles = (dataView?.table?.columns || []).filter(c => c.roles && c.roles["levels"]).length;
+        if (!dataView || !dataView.table || conNiveles === 0) {
             this.renderEmpty();
             return;
         }
 
         this.data = this.parseDataView(dataView);
+        // Con un solo nivel, o sin filas que formen una cadena, no hay diagrama: se explica qué falta.
+        if (this.data.nodes.length === 0) {
+            this.renderEmpty(conNiveles < 2 ? this.t("UI_NeedTwoLevels", "Add a second field to Levels: a flow needs at least two steps.") : this.t("UI_NoRows", "No row has two or more levels filled in."));
+            return;
+        }
 
         // El tope de nodos se ha ido en 1.1.0.0.
         //
@@ -267,7 +331,6 @@ export class Visual implements IVisual {
 
         this.computeLayout();
         this.render();
-        this.updateWatermark();
     }
 
     /** Pide la licencia una vez, fuera del camino critico. Si no resuelve, se
@@ -368,7 +431,7 @@ export class Visual implements IVisual {
                 "color:#FFFFFF;opacity:0.72;transform:rotate(-20deg);" +
                 "text-shadow:0 0 3px rgba(46,52,64,0.95),0 2px 6px rgba(46,52,64,0.75);";
             const titulo = document.createElement("div");
-            titulo.textContent = "Pro preview";
+            titulo.textContent = this.t("UI_ProPreview", "Pro preview");
             this.watermarkWhy = document.createElement("div");
             this.watermarkEl.appendChild(titulo);
             this.watermarkEl.appendChild(this.watermarkWhy);
@@ -442,11 +505,8 @@ export class Visual implements IVisual {
             if (nuevas.length === 0) { return; }
             this.noticeShown = true;
 
-            const una = nuevas.length === 1;
-            const lista = una ? nuevas[0]
-                : nuevas.slice(0, -1).join(", ") + " and " + nuevas[nuevas.length - 1];
-            const msg = `Flow Chart: ${lista} ${una ? "is" : "are"} part of the Pro plan, `
-                      + "shown here as a watermarked preview. Reading view shows the free result.";
+            const msg = this.t("UI_ProNotice", "Flow Chart: {0} — part of the Pro plan, shown here as a watermarked preview on the largest nodes. Reading view shows the free result.")
+                .replace("{0}", nuevas.join(", "));
 
             const mostrar = () => {
                 try { lm.notifyFeatureBlocked?.(msg.slice(0, 500)); } catch (_) { /* best effort */ }
@@ -466,11 +526,165 @@ export class Visual implements IVisual {
     }
 
 
-    private renderEmpty(): void {
+    /** Sin datos: la pantalla de inicio de la serie TCViz, en tres tamaños; con un aviso si falta algo concreto. */
+    private renderEmpty(aviso?: string): void {
         while (this.target.firstChild) { this.target.removeChild(this.target.firstChild); }
-        this.target.appendChild(this.htmlEl("div", {
-            style: "padding:16px;color:#83827D;font:12px 'Segoe UI',sans-serif;"
-        }, 'Drag one field per hierarchy level into "Levels" (in order), plus a Value measure.'));
+        this.svgRoot = null;
+        this.attemptedPro = [];
+        if (this.watermarkEl) { this.watermarkEl.style.display = "none"; }
+        const w = this.width || this.target.clientWidth || 0, h = this.height || this.target.clientHeight || 0;
+        const size = (w >= 560 && h >= 300) ? "l" : (w >= 320 && h >= 200) ? "m" : "s";
+        const pal = this.host.colorPalette as unknown as { isHighContrast?: boolean; foreground?: { value: string }; background?: { value: string } };
+        const hc = !!pal?.isHighContrast;
+        const fg = hc ? (pal.foreground?.value || "#FFFFFF") : "";
+        const el = document.createElement("div");
+        el.className = "fc-landing fc-landing-" + size;
+        el.setAttribute("role", "status");
+        if (hc) el.style.background = pal.background?.value || "#000000";
+        const mk = (tag: string, cls?: string, text?: string): HTMLElement => {
+            const n = document.createElement(tag);
+            if (cls) n.className = cls;
+            if (text !== undefined) n.textContent = text;
+            if (fg) n.style.color = fg;
+            return n;
+        };
+        const head = mk("div", "cl-head");
+        const img = document.createElement("img");
+        img.src = LANDING_ICON; img.alt = ""; img.className = "cl-icon";
+        head.appendChild(img);
+        const titles = mk("div");
+        titles.appendChild(mk("div", "cl-title", this.t("UI_LandingTitle", "Flow Chart by TCViz")));
+        if (size !== "s") titles.appendChild(mk("div", "cl-tag", this.t("UI_LandingTagline", "Where the volume goes, where it comes back and where it stops.")));
+        head.appendChild(titles);
+        el.appendChild(head);
+        if (aviso) el.appendChild(mk("p", "cl-warn", aviso));
+        const link = (txt: string, url: string, cls: string, sub?: string): HTMLElement => {
+            // Sin href: ni el clic central ni "abrir en pestaña" se saltan host.launchUrl.
+            const a = mk("a", cls) as HTMLAnchorElement;
+            a.setAttribute("role", "link"); a.tabIndex = 0;
+            a.appendChild(document.createTextNode(txt));
+            if (sub) a.appendChild(mk("span", "cl-sub", sub));
+            if (hc) { a.style.background = "transparent"; a.style.borderColor = fg; }
+            const open = (e: Event): void => { e.preventDefault(); e.stopPropagation(); if (this.canInteract) this.host.launchUrl(url); };
+            a.addEventListener("click", open);
+            a.addEventListener("keydown", (e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") open(e); });
+            return a;
+        };
+        if (size === "s") {
+            el.appendChild(mk("p", "cl-do", this.t("UI_Step1Short", "Drag one field per step into Levels, in order, plus a Value measure.")));
+            el.appendChild(link(this.t("UI_LandingGuide", "Guide"), URL_GUIDE, "cl-a"));
+            this.target.appendChild(el);
+            return;
+        }
+        const cols = mk("div", "cl-cols");
+        const pasos = mk("div");
+        pasos.appendChild(mk("div", "cl-lbl", this.t("UI_LandingSteps", "Get started")));
+        const ol = mk("ol", "cl-steps");
+        const paso = (n: string, bold: string, txt: string) => {
+            const li = mk("li");
+            const num = mk("span", "cl-n", n);
+            if (hc) Object.assign(num.style, { background: "transparent", border: "1px solid " + fg });
+            li.appendChild(num);
+            const sp = mk("span");
+            sp.appendChild(mk("b", "cl-well", bold));
+            sp.appendChild(document.createTextNode(" — " + txt));
+            li.appendChild(sp);
+            ol.appendChild(li);
+        };
+        paso("1", this.t("UI_LevelsShort", "Levels"), this.t("UI_LandingStep1", "one field per step of the process, in order"));
+        paso("2", this.t("Role_value", "Value"), this.t("UI_LandingStep2", "sizes the links; without it, each row counts 1"));
+        paso("3", this.t("Obj_style", "Style template"), this.t("UI_LandingStep3", "then direction, link labels and level headers"));
+        pasos.appendChild(ol);
+        if (size === "l") {
+            const pro = mk("div", "cl-pro");
+            const chip = mk("span", "cl-chip", "Pro");
+            if (hc) { chip.style.background = "transparent"; chip.style.border = "1px solid " + fg; }
+            pro.appendChild(chip);
+            pro.appendChild(mk("span", "", this.t("UI_LandingPro", "Swimlanes, the KPI badge, node images, color rules, collapse, search and the Variants panel.")));
+            pasos.appendChild(pro);
+        }
+        cols.appendChild(pasos);
+        const links = mk("div");
+        links.appendChild(mk("div", "cl-lbl", this.t("UI_LandingHelpTitle", "Help")));
+        const ll = mk("div", "cl-links");
+        ll.appendChild(link(this.t("UI_LandingGuide", "Guide"), URL_GUIDE, "cl-card", this.t("UI_LandingGuideSub", "support page")));
+        ll.appendChild(link(this.t("UI_LandingProduct", "Product page"), URL_PRODUCT, "cl-card", "tcviz.com"));
+        if (size === "l") ll.appendChild(link(this.t("UI_LandingVideo", "Video"), URL_VIDEO, "cl-card", "YouTube"));
+        links.appendChild(ll);
+        cols.appendChild(links);
+        el.appendChild(cols);
+        this.target.appendChild(el);
+    }
+
+    private get canInteract(): boolean {
+        const h = this.host as unknown as { hostCapabilities?: { allowInteractions?: boolean }; allowInteractions?: boolean };
+        return (h?.hostCapabilities?.allowInteractions ?? h?.allowInteractions) !== false;
+    }
+
+    /** Texto por clave: primero la tabla del bundle (Desktop solo traduce con getDisplayName las claves de capabilities). */
+    private t(key: string, fallback: string): string {
+        const loc = String(this.host?.locale || "");
+        const tabla = STRINGS[loc] || STRINGS[Object.keys(STRINGS).find(l => l.slice(0, 2) === loc.slice(0, 2)) || ""];
+        if (tabla && tabla[key]) return tabla[key];
+        try { const v = this.loc.getDisplayName(key); return v && v !== key ? v : fallback; } catch { return fallback; }
+    }
+
+    /** Traduce tarjetas, ajustes y opciones de las listas con las claves de capabilities (src/i18n.ts). */
+    private localizeModel(): void {
+        const cards = (this.formattingSettings?.cards || []) as unknown as { name: string; displayName: string; slices: { name: string; displayName: string; items?: { value: string; displayName: string }[]; value?: { value?: unknown; displayName?: string } }[] }[];
+        for (const card of cards) {
+            const ci = I18N[card.name];
+            if (!ci) continue;
+            if (ci.k) card.displayName = this.t(ci.k, card.displayName);
+            for (const s of card.slices || []) {
+                const pi = ci.p[s.name];
+                if (!pi) continue;
+                if (pi.k) s.displayName = this.t(pi.k, s.displayName);
+                if (s.items) {
+                    s.items = s.items.map(it => ({ value: it.value, displayName: pi.e[it.value] ? this.t(pi.e[it.value], it.displayName) : it.displayName }));
+                    const cur = s.items.find(it => it.value === s.value?.value);
+                    if (cur) s.value = cur;
+                }
+            }
+        }
+    }
+
+    /**
+     * Plantillas de estilo: rellenan solo los ajustes que el autor no ha tocado (los que no están en metadata.objects).
+     * "default" no cambia nada: es el aspecto de siempre.
+     */
+    private applyTemplate(): void {
+        const fs = this.formattingSettings;
+        const tpl = String(fs?.styleCard?.template?.value?.value ?? "default");
+        const P: Record<string, [string, string, unknown][]> = {
+            clean: [["linkSettings", "color", "#D8DEE9"], ["linkSettings", "highlightDominant", false], ["nodeSettings", "cornerRadius", 12],
+                    ["nodeSettings", "showShadow", true], ["nodeSettings", "shadowBlur", 6], ["nodeSettings", "shadowOpacity", 18],
+                    ["nodeSettings", "showStepNumber", false]],
+            outline: [["dataPoint", "defaultColor", "#FFFFFF"], ["dataPoint", "colorByLevel", false], ["nodeSettings", "textColor", "#2E3440"],
+                      ["nodeSettings", "badgeTextColor", "#4C566A"], ["nodeSettings", "colorBorderByLevel", true], ["nodeSettings", "borderWidth", 2],
+                      ["linkSettings", "color", "#C9CFDB"]],
+            contrast: [["dataPoint", "colorByLevel", false], ["dataPoint", "defaultColor", "#1F2A37"], ["nodeSettings", "textColor", "#FFFFFF"],
+                       ["nodeSettings", "badgeTextColor", "#E5E9F0"], ["linkSettings", "color", "#5FA8F5"], ["linkSettings", "topVariantColor", "#F5A623"]],
+            compact: [["nodeSettings", "height", 28], ["nodeSettings", "fontSize", 11], ["nodeSettings", "badgeFontSize", 8],
+                      ["nodeSettings", "showBadge", false], ["nodeSettings", "showStepNumber", false],
+                      ["layoutSettings", "nodeGap", 12], ["layoutSettings", "layerGap", 70]],
+            minimal: [["dataPoint", "colorByLevel", false], ["dataPoint", "defaultColor", "#ECEFF4"], ["nodeSettings", "textColor", "#2E3440"],
+                      ["nodeSettings", "badgeTextColor", "#4C566A"], ["nodeSettings", "showStepNumber", false], ["linkSettings", "color", "#C9CFDB"],
+                      ["linkSettings", "highlightDominant", false], ["legendSettings", "show", false]],
+        };
+        const lista = P[tpl];
+        if (!lista || !fs) return;
+        const porNombre: Record<string, unknown> = {};
+        for (const c of fs.cards as unknown as { name: string; slices: { name: string }[] }[]) porNombre[c.name] = c;
+        for (const [obj, prop, val] of lista) {
+            if (this.explicitProps?.[obj]?.[prop] !== undefined) continue;
+            const card = porNombre[obj] as { slices: { name: string; value: unknown; items?: { value: string }[] }[] } | undefined;
+            const s = card?.slices.find(x => x.name === prop);
+            if (!s) continue;
+            if (typeof val === "string" && val.startsWith("#")) s.value = { value: val };
+            else if (s.items) s.value = s.items.find(i => i.value === val) ?? s.value;
+            else s.value = val;
+        }
     }
 
     private measureTextWidth(text: string, fontSize: number, fontFamily: string): number {
@@ -484,13 +698,27 @@ export class Visual implements IVisual {
 
     private formatValue(value: number, percentBase?: number): string {
         const fmt = this.formattingSettings?.valueFormatCard;
-        const type = fmt?.format?.value?.value?.toString() ?? "thousands";
+        const type = fmt?.format?.value?.value?.toString() ?? "model";
         const decimals = fmt?.decimals?.value ?? 0;
         const prefix = fmt?.prefix?.value ?? "";
         const suffix = fmt?.suffix?.value ?? "";
 
         let body: string;
-        if (type === "compact") {
+        if (type === "model") {
+            // El formato de la medida (también el dinámico) y el idioma del informe, como un visual nativo.
+            // Decimal places solo cuenta si el autor lo ha fijado.
+            const decFijado = this.explicitProps?.["valueFormatSettings"]?.["decimals"] !== undefined;
+            try {
+                const f = valueFormatter.create({
+                    format: this.valueFormatString || "#,0.##",
+                    precision: decFijado ? Math.max(0, Math.min(10, decimals)) : undefined,
+                    cultureSelector: this.host?.locale
+                });
+                body = f.format(value);
+            } catch {
+                body = value.toLocaleString(this.host?.locale || undefined);
+            }
+        } else if (type === "compact") {
             const abs = Math.abs(value);
             if (abs >= 1e6) body = (value / 1e6).toFixed(decimals) + "M";
             else if (abs >= 1e3) body = (value / 1e3).toFixed(decimals) + "K";
@@ -523,12 +751,15 @@ export class Visual implements IVisual {
         // son una cota inferior barata del numero de nodos y basta para el umbral.
         const pideDiagramaGrande = (table.rows || []).length > BIG_DIAGRAM_NODES;
 
+        const pideReglas = this.rulesActive();
+
         this.attemptedPro = [];
-        if (pideSwimlane) { this.attemptedPro.push("swimlanes"); }
-        if (pideDiagramaGrande) { this.attemptedPro.push("large-diagram tools"); }
-        if (pideImagenes) { this.attemptedPro.push("node images"); }
-        if (pideTarget)   { this.attemptedPro.push("the KPI badge"); }
-        if (pideTooltips) { this.attemptedPro.push("extra tooltips"); }
+        if (pideSwimlane) { this.attemptedPro.push(this.t("Feat_swimlanes", "swimlanes")); }
+        if (pideDiagramaGrande) { this.attemptedPro.push(this.t("Feat_tools", "large-diagram tools")); }
+        if (pideImagenes) { this.attemptedPro.push(this.t("Feat_images", "node images")); }
+        if (pideTarget)   { this.attemptedPro.push(this.t("Feat_kpi", "the KPI badge")); }
+        if (pideTooltips) { this.attemptedPro.push(this.t("Feat_tooltips", "extra tooltips")); }
+        if (pideReglas)   { this.attemptedPro.push(this.t("Feat_rules", "color rules")); }
 
         // Con licencia o en vista previa se dibujan; sin ninguna de las dos, el pozo se
         // ignora y el diagrama sale completo pero sin esa capa.
@@ -537,6 +768,23 @@ export class Visual implements IVisual {
         const levelImageIdxs = !conPro ? [] :
             columns.map((c, i) => (c.roles && c.roles["levelImages"] ? i : -1)).filter(i => i >= 0);
         const valueIdx = columns.findIndex(c => c.roles && c.roles["value"]);
+
+        // Pozos para los consejos, nombres de los niveles para la leyenda y las cabeceras, y el formato de Value
+        // (el dinámico de la fila si la medida lo tiene: general.formatString llega en los objetos de la fila).
+        this.fields = {
+            levels: levelIdxs.length, value: valueIdx >= 0, target: pideTarget, swimlane: pideSwimlane,
+            images: pideImagenes, tips: pideTooltips
+        };
+        this.levelNames = levelIdxs.map(i => columns[i].displayName);
+        this.valueFormatString = valueIdx >= 0 ? columns[valueIdx].format : undefined;
+        const filaObjs = (table.rows?.[0] as DataViewTableRow | undefined)?.objects;
+        if (valueIdx >= 0 && filaObjs) {
+            const candidatos = [filaObjs[valueIdx], ...filaObjs];
+            for (const o of candidatos) {
+                const fsDin = (o as powerbi.DataViewObjects | undefined)?.["general"]?.["formatString"];
+                if (typeof fsDin === "string" && fsDin) { this.valueFormatString = fsDin; break; }
+            }
+        }
         const targetIdx = !conPro ? -1 : columns.findIndex(c => c.roles && c.roles["target"]);
         const swimlaneIdx = !conPro ? -1 : columns.findIndex(c => c.roles && c.roles["swimlane"]);
         const tooltipIdxs = !conPro ? [] : columns
@@ -678,28 +926,53 @@ export class Visual implements IVisual {
             variant.count += 1;
         });
 
+        // Vista previa Pro (editando, sin licencia): las capas Pro solo en los nodos de más valor, dos carriles y tres
+        // variantes. Se ve cómo funciona con los datos propios, pero no sirve de trabajo terminado. Con licencia, todo.
+        const previaLimitada = conPro && !this.isPro;
         const variants = Array.from(variantMap.values())
             .sort((a, b) => b.value - a.value)
-            .slice(0, 8);
+            .slice(0, previaLimitada ? PREVIEW_VARIANTS : 8);
 
         const totalValue = Array.from(nodeMap.values())
             .filter(n => n.layer === 0)
             .reduce((sum, n) => sum + n.outValue, 0);
 
+        nodeMap.forEach((n, key) => {
+            const seen = swimlaneSeen.get(key);
+            n.swimlane = seen && seen.size === 1 ? Array.from(seen)[0] : null;
+        });
+
+        this.previewNodeIds = null;
+        if (previaLimitada) {
+            const top = Array.from(nodeMap.values())
+                .sort((a, b) => Math.max(b.inValue, b.outValue) - Math.max(a.inValue, a.outValue))
+                .slice(0, PREVIEW_NODES);
+            this.previewNodeIds = new Set(top.map(n => n.id));
+            const bandas: string[] = [];
+            nodeMap.forEach(n => {
+                if (n.swimlane && bandas.indexOf(n.swimlane) < 0) bandas.push(n.swimlane);
+            });
+            const bandasVisibles = new Set(bandas.slice(0, PREVIEW_BANDS));
+            nodeMap.forEach(n => {
+                if (n.swimlane && !bandasVisibles.has(n.swimlane)) n.swimlane = null;
+                if (!this.previewNodeIds.has(n.id)) {
+                    n.image = null;
+                    n.hasTarget = false;
+                    n.extraTooltips = [];
+                }
+            });
+            linkMap.forEach(l => { if (!this.previewNodeIds.has(l.targetId)) { l.extra = []; l.targetValue = 0; } });
+        }
+
         linkMap.forEach(link => {
             const s = nodeMap.get(link.sourceId);
             const t = nodeMap.get(link.targetId);
             link.tooltipItems = [
-                { displayName: "Source", value: s?.label ?? link.sourceId },
-                { displayName: "Target", value: t?.label ?? link.targetId },
-                { displayName: "Value", value: this.formatValue(link.value, totalValue) },
+                { displayName: this.t("UI_Tip_Source", "Source"), value: s?.label ?? link.sourceId },
+                { displayName: this.t("UI_Tip_To", "To"), value: t?.label ?? link.targetId },
+                { displayName: this.t("Role_value", "Value"), value: this.formatValue(link.value, totalValue) },
                 ...link.extra
             ];
-        });
-
-        nodeMap.forEach((n, key) => {
-            const seen = swimlaneSeen.get(key);
-            n.swimlane = seen && seen.size === 1 ? Array.from(seen)[0] : null;
         });
 
         return { nodes: Array.from(nodeMap.values()), links: Array.from(linkMap.values()), totalValue, variants, rowChains };
@@ -881,6 +1154,26 @@ export class Visual implements IVisual {
             });
         }
 
+        // Hueco para la barra de herramientas, que flota arriba a la izquierda: sin él tapaba la primera fila.
+        const TOOLBAR_H = 30;
+        nodes.forEach(n => { n.y += TOOLBAR_H; });
+        if (isHorizontal) this.swimlaneBands.forEach(b => { b.start += TOOLBAR_H; b.end += TOOLBAR_H; });
+
+        // Hueco para las cabeceras de nivel: arriba en horizontal, a la izquierda en vertical.
+        if (this.formattingSettings?.layoutCard?.showLevelHeaders?.value) {
+            const hs = this.formattingSettings?.layoutCard?.headerSize?.value ?? 11;
+            if (isHorizontal) {
+                const pad = hs + 16;
+                nodes.forEach(n => { n.y += pad; });
+                this.swimlaneBands.forEach(b => { b.start += pad; b.end += pad; });
+            } else {
+                const ff = this.formattingSettings?.nodeCard?.fontFamily?.value?.value?.toString() ?? "'Segoe UI',sans-serif";
+                const pad = Math.ceil(Math.max(0, ...this.levelNames.map(s => this.measureTextWidth(s, hs, ff)))) + 18;
+                nodes.forEach(n => { n.x += pad; });
+                this.swimlaneBands.forEach(b => { b.start += pad; b.end += pad; });
+            }
+        }
+
         if (hasSwimlanes) {
             this.swimlaneBands.forEach(band => {
                 const bandNodes = nodes.filter(n => n.swimlane === band.label);
@@ -1008,6 +1301,13 @@ export class Visual implements IVisual {
         );
 
         let backEdgeCount = 0;
+        const showLinkLabels = this.formattingSettings?.linkCard?.showLabels?.value ?? false;
+        const labelContent = String(this.formattingSettings?.linkCard?.labelContent?.value?.value ?? "value");
+        const linkLabelSize = this.formattingSettings?.linkCard?.labelSize?.value ?? 9;
+        const linkLabelColor = isHighContrast ? this.host.colorPalette.foreground.value
+            : (this.formattingSettings?.linkCard?.labelColor?.value?.value || "#4C566A");
+        const linkLabels: SVGElement[] = [];
+        const candidatas: { el: SVGElement; x: number; y: number; w: number; h: number; v: number }[] = [];
 
         const linkPaths: SVGElement[] = links.map(l => {
             const s = nodeById.get(l.sourceId);
@@ -1053,7 +1353,31 @@ export class Visual implements IVisual {
             const clases = "flow-link" + (isBackEdge ? " flow-link-back" : "")
                 + (isDominant ? " flow-link-dominant" : "")
                 + (isTopVariant ? " flow-link-variant" : "");
-            return this.svgEl("path", {
+            // Etiqueta del enlace: en el punto medio de la curva (t = 0.5 de la Bézier cúbica = media de los 4 puntos
+            // ponderada 1-3-3-1). Las vueltas atrás no llevan etiqueta: se leerían encima de los nodos.
+            if (showLinkLabels && !isBackEdge) {
+                const nums = path.replace(/[MC]/g, " ").trim().split(/[\s,]+/).map(Number);
+                if (nums.length === 8 && nums.every(v => isFinite(v))) {
+                    const mx = (nums[0] + 3 * nums[2] + 3 * nums[4] + nums[6]) / 8;
+                    const my = (nums[1] + 3 * nums[3] + 3 * nums[5] + nums[7]) / 8;
+                    const v = linkValue(l);
+                    const pct = this.data.totalValue > 0 ? (v / this.data.totalValue) * 100 : 0;
+                    const pctTxt = pct.toLocaleString(this.host?.locale || undefined, { maximumFractionDigits: 1 }) + "%";
+                    const txt = labelContent === "percent" ? pctTxt
+                        : labelContent === "both" ? `${this.formatValue(v, this.data.totalValue)} · ${pctTxt}`
+                        : this.formatValue(v, this.data.totalValue);
+                    const lbl = this.svgEl("text", {
+                        "aria-hidden": "true", class: "flow-link-label", x: mx, y: my, dy: "-0.35em", "text-anchor": "middle",
+                        "font-size": linkLabelSize, "font-family": fontFamily, fill: linkLabelColor,
+                        "paint-order": "stroke", stroke: isHighContrast ? this.host.colorPalette.background.value : "#FFFFFF",
+                        "stroke-width": 3, "stroke-linejoin": "round"
+                    }, txt);
+                    this.subSelectable(lbl, "linkLabels", this.t("Prop_linkSettings_showLabels", "Link labels"), powerbi.visuals.SubSelectionStylesType.Text);
+                    const lw = this.measureTextWidth(txt, linkLabelSize, fontFamily) + 6;
+                    candidatas.push({ el: lbl, x: mx - lw / 2, y: my - linkLabelSize * 1.2, w: lw, h: linkLabelSize + 3, v });
+                }
+            }
+            const pathEl = this.svgEl("path", {
                 class: clases,
                 "data-link-id": l.id,
                 d: path,
@@ -1062,12 +1386,23 @@ export class Visual implements IVisual {
                 fill: "none",
                 opacity,
                 "stroke-dasharray": isBackEdge ? "4 3" : null,
-                tabindex: "0",
+                tabindex: "-1",
                 role: "button",
-                "aria-label": `${s.label} to ${t.label}, `
-                    + `${this.formatValue(l.value, this.data.totalValue)}${isBackEdge ? ", rework" : ""}`
+                "aria-label": this.t("UI_AriaLink", "{0} to {1}").replace("{0}", s.label).replace("{1}", t.label) + ", "
+                    + this.formatValue(l.value, this.data.totalValue) + (isBackEdge ? ", " + this.t("UI_Rework", "rework") : "")
             });
+            this.subSelectable(pathEl, "linkSettings", this.t("Obj_linkSettings", "Links"), powerbi.visuals.SubSelectionStylesType.Shape);
+            return pathEl;
         }).filter((e): e is SVGElement => e !== null);
+
+        // Etiquetas que no se pisan: se colocan de mayor a menor valor y se omite la que chocaría con otra ya puesta.
+        const puestas: { x: number; y: number; w: number; h: number }[] = [];
+        candidatas.sort((a, b) => b.v - a.v).forEach(c => {
+            const choca = puestas.some(p => c.x < p.x + p.w && c.x + c.w > p.x && c.y < p.y + p.h && c.y + c.h > p.y);
+            if (choca) return;
+            puestas.push(c);
+            linkLabels.push(c.el);
+        });
 
         const showBadge = this.formattingSettings?.nodeCard?.showBadge?.value ?? true;
         const badgeFontFamily = this.formattingSettings?.nodeCard?.badgeFontFamily?.value?.value?.toString() ?? fontFamily;
@@ -1110,10 +1445,20 @@ export class Visual implements IVisual {
             this.formattingSettings?.dataPointCard?.levelColor6?.value?.value
         ].map((c, i) => c || LEVEL_PALETTE[i]);
 
+        // Reglas de color (Pro): pintan el nodo por su valor, su parte del total o su desviación frente al objetivo.
+        const conReglas = this.rulesActive() && this.proNow();
+        const showStepNumber = this.formattingSettings?.nodeCard?.showStepNumber?.value ?? true;
+        const enPrevia = (id: string) => !this.previewNodeIds || this.previewNodeIds.has(id);
+        // Tabindex móvil: un solo nodo en el orden de tabulación; las flechas recorren el resto.
+        if (!this.focusNodeId || !nodes.some(n => n.id === this.focusNodeId)) {
+            this.focusNodeId = nodes.slice().sort((a, b) => a.layer - b.layer || a.order - b.order)[0]?.id ?? null;
+        }
+
         const nodeShapes = nodes.map(n => {
+            const reglaColor = conReglas && enPrevia(n.id) ? this.ruleColor(n) : null;
             const nodeFill = isHighContrast
                 ? this.host.colorPalette.background.value
-                : (colorByLevel ? levelColors[n.layer % levelColors.length] : defaultColor);
+                : (reglaColor ?? (colorByLevel ? levelColors[n.layer % levelColors.length] : defaultColor));
             n.displayColor = nodeFill;
             const effectiveBorderColor = colorBorderByLevel ? levelColors[n.layer % levelColors.length] : borderColor;
             const nodeStroke = isHighContrast
@@ -1156,19 +1501,22 @@ export class Visual implements IVisual {
             }
             const positionCode = `${n.layer + 1}.${n.order + 1}`;
             const visibleActual = this.visibleInValue.get(n.id) || this.visibleOutValue.get(n.id) || 0;
-            const ariaParts = [`${n.label}, level ${n.layer + 1}`, `value ${this.formatValue(visibleActual, this.data.totalValue)}`];
+            const nivelNombre = this.levelNames[n.layer] || this.t("UI_Level", "Level {0}").replace("{0}", String(n.layer + 1));
+            const ariaParts = [`${n.label}, ${nivelNombre} (${n.layer + 1})`, `${this.t("Role_value", "Value")} ${this.formatValue(visibleActual, this.data.totalValue)}`];
             const visibleTargetAria = this.visibleTargetValue.get(n.id) || 0;
             if (n.hasTarget && visibleTargetAria !== 0) {
                 const pct = (visibleActual - visibleTargetAria) / visibleTargetAria * 100;
-                ariaParts.push(`${pct >= 0 ? "above" : "below"} target by ${Math.abs(pct).toFixed(1)} percent`);
+                ariaParts.push((pct >= 0 ? this.t("UI_AriaAbove", "{0}% above target") : this.t("UI_AriaBelow", "{0}% below target"))
+                    .replace("{0}", Math.abs(pct).toFixed(1)));
             }
 
             const g = this.svgEl("g", {
-                class: "flow-node", "data-node-id": n.id, tabindex: "0", role: "button",
+                class: "flow-node", "data-node-id": n.id, tabindex: n.id === this.focusNodeId ? "0" : "-1", role: "button",
                 "aria-label": ariaParts.join(", "),
                 transform: `translate(${n.x},${n.y})`,
                 filter: showShadow ? "url(#flow-node-shadow)" : null
             });
+            this.subSelectable(g, "nodeSettings", this.t("Obj_nodeSettings", "Nodes"), powerbi.visuals.SubSelectionStylesType.Text);
 
             const rect = this.svgEl("rect", {
                 width: n.width, height: n.height, rx: cornerRadius, fill: nodeFill, opacity: "0.95"
@@ -1191,10 +1539,13 @@ export class Visual implements IVisual {
                 }));
             }
 
-            g.appendChild(this.svgEl("text", {
-                "aria-hidden": "true", x: n.width - 6, y: 10, "text-anchor": "end",
-                "font-size": 9, "font-family": fontFamily, fill: textColor, opacity: "0.7"
-            }, positionCode));
+            // Número de paso (nivel.orden): el mismo código que el tooltip llama "Position".
+            if (showStepNumber) {
+                g.appendChild(this.svgEl("text", {
+                    "aria-hidden": "true", x: n.width - 6, y: 10, "text-anchor": "end",
+                    "font-size": 9, "font-family": fontFamily, fill: textColor, opacity: "0.7"
+                }, positionCode));
+            }
 
             g.appendChild(this.svgEl("text", {
                 "aria-hidden": "true", x: labelCenterX, y: labelY, dy: "0.35em",
@@ -1211,7 +1562,7 @@ export class Visual implements IVisual {
             if (hasChildren && this.proNow()) {
                 const tg = this.svgEl("g", {
                     class: "flow-collapse-toggle", "data-node-id": n.id, tabindex: "0", role: "button",
-                    "aria-label": `${isCollapsed ? "Expand" : "Collapse"} ${n.label}`,
+                    "aria-label": (isCollapsed ? this.t("UI_Expand", "Expand {0}") : this.t("UI_Collapse", "Collapse {0}")).replace("{0}", n.label),
                     transform: `translate(${n.width},${n.height / 2})`, style: "cursor:pointer;"
                 });
                 tg.appendChild(this.svgEl("circle", { r: 7, fill: "#ffffff", stroke: nodeFill, "stroke-width": "1.5" }));
@@ -1226,28 +1577,70 @@ export class Visual implements IVisual {
 
         this.contentWidth = maxX;
         this.contentHeight = maxY;
+        // Ajustar al visual un diagrama que no cabe, una vez por forma y tamaño (luego manda el zoom del lector).
+        const fitOnLoad = this.formattingSettings?.layoutCard?.fitOnLoad?.value ?? true;
+        const fitKey = `${nodes.length}|${this.direction}|${Math.round(maxX)}x${Math.round(maxY)}|${Math.round(this.width)}x${Math.round(this.height)}`;
+        if (fitOnLoad && fitKey !== this.fittedKey && this.width > 0 && this.height > 0) {
+            this.fittedKey = fitKey;
+            const escala = Math.min(this.width / maxX, this.height / maxY);
+            this.zoomScale = escala < 1 ? Math.max(0.35, escala) : 1;
+        }
         const svgWidth = maxX * this.zoomScale;
         const svgHeight = maxY * this.zoomScale;
 
-        const showLegend = this.formattingSettings?.legendCard?.show?.value ?? true;
+        const showLegend = (this.formattingSettings?.legendCard?.show?.value ?? true) && this.height >= 140;
+        const legendPos = String(this.formattingSettings?.legendCard?.position?.value?.value ?? "bottomLeft");
+        const legendFieldNames = this.formattingSettings?.legendCard?.useFieldNames?.value ?? true;
+        const legendSize = this.formattingSettings?.legendCard?.fontSize?.value ?? 11;
+        const legendColor = isHighContrast ? this.host.colorPalette.foreground.value
+            : (this.formattingSettings?.legendCard?.textColor?.value?.value || "#333333");
+        const legendBg = isHighContrast ? this.host.colorPalette.background.value : "rgba(255,255,255,0.9)";
+        const nombreNivel = (li: number) => (legendFieldNames && this.levelNames[li])
+            ? this.levelNames[li] : this.t("UI_Level", "Level {0}").replace("{0}", String(li + 1));
         const usedLevels = Array.from(new Set(nodes.map(n => n.layer))).sort((a, b) => a - b);
         let legendEl: HTMLElement | null = null;
         if (showLegend && colorByLevel && usedLevels.length) {
+            const lado = legendPos === "bottomRight" ? "bottom:0;right:0;" : legendPos === "topRight" ? "top:0;right:0;" : "bottom:0;left:0;";
             legendEl = this.htmlEl("div", {
-                class: "flow-legend",
-                style: "position:absolute;bottom:0;left:0;z-index:2;background:rgba(255,255,255,0.9);"
-                     + "font:11px 'Segoe UI',sans-serif;padding:4px 6px;color:#333;"
+                class: "flow-legend", role: "list", "aria-label": this.t("Obj_legendSettings", "Legend"),
+                style: `position:absolute;${lado}z-index:2;background:${legendBg};max-width:calc(100% - 8px);`
+                     + `font:${legendSize}px 'Segoe UI',sans-serif;padding:4px 6px;color:${legendColor};`
+                     + "display:flex;flex-wrap:wrap;row-gap:2px;box-sizing:border-box;"
             });
             usedLevels.forEach(li => {
                 const item = this.htmlEl("span", {
+                    role: "listitem",
                     style: "display:inline-flex;align-items:center;gap:4px;margin-right:12px;"
                 });
                 item.appendChild(this.htmlEl("span", {
-                    style: `width:10px;height:10px;border-radius:2px;display:inline-block;`
-                         + `background:${levelColors[li % levelColors.length]};`
+                    style: `width:10px;height:10px;border-radius:2px;display:inline-block;flex-shrink:0;`
+                         + `background:${isHighContrast ? legendColor : levelColors[li % levelColors.length]};`
                 }));
-                item.appendChild(document.createTextNode(`Level ${li + 1}`));
+                item.appendChild(document.createTextNode(nombreNivel(li)));
                 legendEl.appendChild(item);
+            });
+            this.subSelectable(legendEl, "legendSettings", this.t("Obj_legendSettings", "Legend"), powerbi.visuals.SubSelectionStylesType.Text);
+        }
+
+        // Cabeceras de nivel: el nombre de cada campo encima (o a la izquierda) de su columna de nodos.
+        const showHeaders = this.formattingSettings?.layoutCard?.showLevelHeaders?.value ?? false;
+        const headerSize = this.formattingSettings?.layoutCard?.headerSize?.value ?? 11;
+        const headerColor = isHighContrast ? this.host.colorPalette.foreground.value
+            : (this.formattingSettings?.layoutCard?.headerColor?.value?.value || "#4C566A");
+        const headerEls: SVGElement[] = [];
+        if (showHeaders) {
+            const arriba = Math.min(...nodes.map(n => n.y));
+            usedLevels.forEach(li => {
+                const capa = nodes.filter(n => n.layer === li);
+                if (!capa.length) return;
+                const x = isHorizontal ? Math.min(...capa.map(n => n.x)) + Math.max(...capa.map(n => n.width)) / 2 : 6;
+                const y = isHorizontal ? arriba - 10 : capa[0].y + capa[0].height / 2;
+                const h = this.svgEl("text", {
+                    class: "flow-level-header", x, y, dy: isHorizontal ? null : "0.35em", "text-anchor": isHorizontal ? "middle" : "start",
+                    "font-size": headerSize, "font-weight": "600", "font-family": fontFamily, fill: headerColor
+                }, nombreNivel(li));
+                this.subSelectable(h, "layoutSettings", this.t("Prop_layoutSettings_showLevelHeaders", "Level headers"), powerbi.visuals.SubSelectionStylesType.Text);
+                headerEls.push(h);
             });
         }
 
@@ -1263,7 +1656,7 @@ export class Visual implements IVisual {
             });
             variantsPanelEl.appendChild(this.htmlEl("div", {
                 style: "font-size:11px;font-weight:600;color:#333;margin-bottom:4px;"
-            }, "Top variants (full paths)"));
+            }, this.t("UI_TopVariants", "Top variants (full paths)")));
 
             variants.forEach((v, i) => {
                 const pct = this.data.totalValue > 0 ? (v.value / this.data.totalValue) * 100 : 0;
@@ -1338,12 +1731,14 @@ export class Visual implements IVisual {
         this.minimapScale = nodes.length ? Math.min(MINIMAP_MAX_W / maxX, MINIMAP_MAX_H / maxY) : 1;
         const minimapW = Math.max(1, maxX * this.minimapScale);
         const minimapH = Math.max(1, maxY * this.minimapScale);
-        const showMinimap = nodes.length > 6;
+        // En un visual pequeño el minimapa taparía el diagrama.
+        const showMinimap = nodes.length > 6 && this.width >= 360 && this.height >= 240;
         let minimapEl: HTMLElement | null = null;
         if (showMinimap) {
             minimapEl = this.htmlEl("div", {
                 class: "flow-minimap", "aria-hidden": "true",
-                style: "position:absolute;top:38px;left:4px;z-index:2;background:rgba(255,255,255,0.9);"
+                // Abajo a la derecha: arriba a la izquierda tapaba el primer nodo y su cabecera.
+                style: `position:absolute;${legendPos === "bottomRight" ? "top:38px" : "bottom:4px"};right:4px;z-index:2;background:rgba(255,255,255,0.9);`
                      + "border:1px solid #ccc;border-radius:3px;padding:2px;"
             });
             const msvg = this.svgEl("svg", {
@@ -1379,40 +1774,47 @@ export class Visual implements IVisual {
         });
         const ESTILO_BOTON = "font:12px 'Segoe UI',sans-serif;padding:2px 8px;border:1px solid #ccc;"
                            + "border-radius:3px;cursor:pointer;";
-        if (this.proNow()) {
+        // Visual estrecho: solo Ajustar, para no tapar el diagrama.
+        const estrecho = this.width < 320;
+        if (this.proNow() && !estrecho) {
             barra.appendChild(this.htmlEl("input", {
-                type: "text", class: "flow-search", placeholder: "Search node...",
-                "aria-label": "Search node by name",
+                type: "text", class: "flow-search", placeholder: this.t("UI_Search", "Search node..."),
+                "aria-label": this.t("UI_SearchAria", "Search node by name"),
                 style: "font:12px 'Segoe UI',sans-serif;padding:2px 6px;border:1px solid #ccc;border-radius:3px;"
             }));
         }
-        barra.appendChild(this.htmlEl("button", {
-            type: "button", class: "flow-zoom-out", title: "Zoom out", "aria-label": "Zoom out",
-            style: "font:14px 'Segoe UI',sans-serif;width:24px;padding:0;border:1px solid #ccc;"
-                 + "border-radius:3px;background:#fff;cursor:pointer;"
-        }, "−"));
-        barra.appendChild(this.htmlEl("button", {
-            type: "button", class: "flow-zoom-in", title: "Zoom in", "aria-label": "Zoom in",
-            style: "font:14px 'Segoe UI',sans-serif;width:24px;padding:0;border:1px solid #ccc;"
-                 + "border-radius:3px;background:#fff;cursor:pointer;"
-        }, "+"));
-        barra.appendChild(this.htmlEl("button", {
-            type: "button", class: "flow-fit", "aria-label": "Fit diagram to view",
-            style: ESTILO_BOTON + "background:#fff;"
-        }, "Fit"));
-        if (variants.length && this.proNow()) {
+        if (!estrecho) {
             barra.appendChild(this.htmlEl("button", {
-                type: "button", class: "flow-variants-toggle",
-                "aria-label": "Toggle top variants panel",
-                "aria-pressed": String(this.variantsPanelOpen),
-                style: ESTILO_BOTON + `background:${this.variantsPanelOpen ? "#e8f0fe" : "#fff"};`
-            }, "Variants"));
+                type: "button", class: "flow-zoom-out", title: this.t("UI_ZoomOut", "Zoom out"), "aria-label": this.t("UI_ZoomOut", "Zoom out"),
+                style: "font:14px 'Segoe UI',sans-serif;width:24px;padding:0;border:1px solid #ccc;"
+                     + "border-radius:3px;background:#fff;cursor:pointer;"
+            }, "−"));
+            barra.appendChild(this.htmlEl("button", {
+                type: "button", class: "flow-zoom-in", title: this.t("UI_ZoomIn", "Zoom in"), "aria-label": this.t("UI_ZoomIn", "Zoom in"),
+                style: "font:14px 'Segoe UI',sans-serif;width:24px;padding:0;border:1px solid #ccc;"
+                     + "border-radius:3px;background:#fff;cursor:pointer;"
+            }, "+"));
         }
         barra.appendChild(this.htmlEl("button", {
-            type: "button", class: "flow-tooltips-toggle", title: "Toggle tooltips",
-            "aria-label": "Toggle tooltips", "aria-pressed": String(this.tooltipsEnabled),
-            style: ESTILO_BOTON + `background:${this.tooltipsEnabled ? "#fff" : "#e8f0fe"};`
-        }, "Tooltips"));
+            type: "button", class: "flow-fit", "aria-label": this.t("UI_FitAria", "Fit diagram to view"),
+            style: ESTILO_BOTON + "background:#fff;"
+        }, this.t("UI_Fit", "Fit")));
+        if (variants.length && this.proNow() && !estrecho) {
+            barra.appendChild(this.htmlEl("button", {
+                type: "button", class: "flow-variants-toggle",
+                "aria-label": this.t("UI_VariantsAria", "Toggle top variants panel"),
+                "aria-pressed": String(this.variantsPanelOpen),
+                style: ESTILO_BOTON + `background:${this.variantsPanelOpen ? "#e8f0fe" : "#fff"};`
+            }, this.t("UI_Variants", "Variants")));
+        }
+        if (!estrecho) {
+            barra.appendChild(this.htmlEl("button", {
+                type: "button", class: "flow-tooltips-toggle", title: this.t("UI_TooltipsAria", "Toggle tooltips"),
+                "aria-label": this.t("UI_TooltipsAria", "Toggle tooltips"), "aria-pressed": String(this.tooltipsEnabled),
+                style: ESTILO_BOTON + `background:${this.tooltipsEnabled ? "#fff" : "#e8f0fe"};`
+            }, this.t("UI_Tooltips", "Tooltips")));
+        }
+        this.subSelectable(barra, "layoutSettings", this.t("Obj_layoutSettings", "Layout"), powerbi.visuals.SubSelectionStylesType.Shape);
         this.target.appendChild(barra);
 
         if (variantsPanelEl) { this.target.appendChild(variantsPanelEl); }
@@ -1423,9 +1825,20 @@ export class Visual implements IVisual {
         const svg = this.svgEl("svg", {
             width: svgWidth, height: svgHeight, viewBox: `0 0 ${maxX} ${maxY}`,
             style: "display:block;", role: "group",
-            "aria-label": `Flow diagram with ${nodes.length} nodes`
+            "aria-label": this.t("UI_AriaDiagram", "Flow diagram with {0} nodes. Use the arrow keys to move between steps.").replace("{0}", String(nodes.length))
         });
         if (shadowDefsEl) { svg.appendChild(shadowDefsEl); }
+
+        // Cuadrícula de fondo opcional, detrás de todo.
+        if (this.formattingSettings?.layoutCard?.showGrid?.value && !isHighContrast) {
+            const gc = this.formattingSettings?.layoutCard?.gridColor?.value?.value || "#E5E9F0";
+            const defs = this.svgEl("defs", {});
+            const pat = this.svgEl("pattern", { id: "flow-grid", width: 20, height: 20, patternUnits: "userSpaceOnUse" });
+            pat.appendChild(this.svgEl("path", { d: "M20 0 L0 0 0 20", fill: "none", stroke: gc, "stroke-width": 1 }));
+            defs.appendChild(pat);
+            svg.appendChild(defs);
+            svg.appendChild(this.svgEl("rect", { "aria-hidden": "true", class: "flow-grid", x: 0, y: 0, width: maxX, height: maxY, fill: "url(#flow-grid)" }));
+        }
 
         const capaSwim = this.svgEl("g", { class: "swimlane-layer" });
         swimlaneBandEls.forEach(e => capaSwim.appendChild(e));
@@ -1433,9 +1846,13 @@ export class Visual implements IVisual {
         linkPaths.forEach(e => capaLinks.appendChild(e));
         const capaNodos = this.svgEl("g", { class: "nodes-layer" });
         nodeShapes.forEach(e => capaNodos.appendChild(e));
+        const capaTextos = this.svgEl("g", { class: "labels-layer" });
+        linkLabels.forEach(e => capaTextos.appendChild(e));
+        headerEls.forEach(e => capaTextos.appendChild(e));
         svg.appendChild(capaSwim);
         svg.appendChild(capaLinks);
         svg.appendChild(capaNodos);
+        svg.appendChild(capaTextos);
 
         scroll.appendChild(svg);
         this.target.appendChild(scroll);
@@ -1447,6 +1864,9 @@ export class Visual implements IVisual {
         this.attachInteractions();
         this.updateMinimapViewport();
         this.applySelectionDimming();
+        // render() también se llama al plegar una rama: la marca y los consejos se reponen aquí.
+        this.updateWatermark();
+        this.renderGuide();
     }
 
     // ── Construccion del DOM ──────────────────────────────────────────────────
@@ -1656,6 +2076,7 @@ export class Visual implements IVisual {
             this.contextMenuBound = true;
             this.target.addEventListener("contextmenu", (e: MouseEvent) => {
                 e.preventDefault();
+                if (!this.canInteract || this.formatMode) return;
                 const nodeEl = (e.target as Element).closest(".flow-node") as SVGGElement;
                 const linkEl = (e.target as Element).closest(".flow-link") as SVGPathElement;
                 const node = nodeEl ? this.data.nodes.find(n => n.id === nodeEl.getAttribute("data-node-id")) : null;
@@ -1666,7 +2087,8 @@ export class Visual implements IVisual {
         }
 
         this.svgRoot.addEventListener("click", (e: MouseEvent) => {
-            if ((this.host as any).allowInteractions === false) return;
+            // Interacciones desactivadas por el autor, o modo formato (el clic elige qué formatear): no se filtra.
+            if (!this.canInteract || this.formatMode) return;
             const nodeEl = (e.target as Element).closest(".flow-node") as SVGGElement;
             const linkEl = (e.target as Element).closest(".flow-link") as SVGPathElement;
             const multiSelect = e.ctrlKey || e.metaKey;
@@ -1683,12 +2105,40 @@ export class Visual implements IVisual {
         });
 
         this.svgRoot.addEventListener("keydown", (e: KeyboardEvent) => {
-            if (e.key !== "Enter" && e.key !== " ") return;
             const nodeEl = (e.target as Element).closest(".flow-node") as SVGGElement;
-            if (nodeEl) {
-                const node = this.data.nodes.find(n => n.id === nodeEl.getAttribute("data-node-id"));
-                if (node) this.toggleSelection(node.selectionIds, e.ctrlKey);
+            if (!nodeEl) return;
+            const node = this.data.nodes.find(n => n.id === nodeEl.getAttribute("data-node-id"));
+            if (!node) return;
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                if (this.canInteract && !this.formatMode) this.toggleSelection(node.selectionIds, e.ctrlKey);
+                return;
             }
+            // Flechas: a lo largo del flujo (siguiente / anterior nivel) y dentro del nivel. Home y End: primero y último.
+            const visibles = Array.from(this.svgRoot.querySelectorAll(".flow-node"))
+                .map(el => this.data.nodes.find(n => n.id === el.getAttribute("data-node-id")))
+                .filter((n): n is FlowNode => !!n);
+            const horiz = this.direction === "horizontal";
+            const adelante = horiz ? "ArrowRight" : "ArrowDown", atras = horiz ? "ArrowLeft" : "ArrowUp";
+            const sig = horiz ? "ArrowDown" : "ArrowRight", ant = horiz ? "ArrowUp" : "ArrowLeft";
+            let dest: FlowNode | undefined;
+            const mismoNivel = visibles.filter(n => n.layer === node.layer).sort((a, b) => a.order - b.order);
+            const cerca = (capa: number) => visibles.filter(n => n.layer === capa)
+                .sort((a, b) => Math.abs(a.order - node.order) - Math.abs(b.order - node.order))[0];
+            if (e.key === adelante) dest = cerca(node.layer + 1);
+            else if (e.key === atras) dest = cerca(node.layer - 1);
+            else if (e.key === sig) dest = mismoNivel[mismoNivel.indexOf(node) + 1];
+            else if (e.key === ant) dest = mismoNivel[mismoNivel.indexOf(node) - 1];
+            else if (e.key === "Home") dest = visibles.slice().sort((a, b) => a.layer - b.layer || a.order - b.order)[0];
+            else if (e.key === "End") dest = visibles.slice().sort((a, b) => b.layer - a.layer || b.order - a.order)[0];
+            else return;
+            e.preventDefault();
+            if (!dest) return;
+            this.focusNodeId = dest.id;
+            this.svgRoot.querySelectorAll(".flow-node").forEach(el =>
+                el.setAttribute("tabindex", el.getAttribute("data-node-id") === dest.id ? "0" : "-1"));
+            const destEl = this.svgRoot.querySelector(`.flow-node[data-node-id="${CSS.escape(dest.id)}"]`) as SVGGElement | null;
+            destEl?.focus();
         });
 
         this.svgRoot.addEventListener("mousemove", (e: MouseEvent) => {
@@ -1707,18 +2157,18 @@ export class Visual implements IVisual {
                         const visibleTarget = this.visibleTargetValue.get(node.id) || 0;
                         const variancePct = visibleTarget !== 0 ? ((actual - visibleTarget) / visibleTarget) * 100 : 0;
                         kpiItems.push(
-                            { displayName: "Target", value: this.formatValue(visibleTarget, this.data.totalValue) },
-                            { displayName: "Variance", value: `${variancePct >= 0 ? "+" : ""}${variancePct.toFixed(1)}%` }
+                            { displayName: this.t("UI_Tip_Target", "Target"), value: this.formatValue(visibleTarget, this.data.totalValue) },
+                            { displayName: this.t("UI_Tip_Variance", "Variance"), value: `${variancePct >= 0 ? "+" : ""}${variancePct.toFixed(1)}%` }
                         );
                     }
                     this.host.tooltipService.show({
                         dataItems: [
-                            { displayName: "Current", value: node.label, color: node.displayColor },
-                            { displayName: "Level", value: String(node.layer + 1) },
-                            { displayName: "Position", value: `${node.layer + 1}.${node.order + 1}` },
-                            { displayName: "Origin", value: node.originLabels.join(", ") || "—" },
-                            { displayName: "Inflow", value: this.formatValue(visibleIn, this.data.totalValue) },
-                            { displayName: "Outflow", value: this.formatValue(visibleOut, this.data.totalValue) },
+                            { displayName: this.levelNames[node.layer] || this.t("UI_Tip_Step", "Step"), value: node.label, color: node.displayColor },
+                            { displayName: this.t("UI_Tip_Level", "Level"), value: String(node.layer + 1) },
+                            { displayName: this.t("UI_Tip_Position", "Position"), value: `${node.layer + 1}.${node.order + 1}` },
+                            { displayName: this.t("UI_Tip_Origin", "Origin"), value: node.originLabels.join(", ") || "—" },
+                            { displayName: this.t("UI_Tip_Inflow", "Inflow"), value: this.formatValue(visibleIn, this.data.totalValue) },
+                            { displayName: this.t("UI_Tip_Outflow", "Outflow"), value: this.formatValue(visibleOut, this.data.totalValue) },
                             ...kpiItems,
                             ...node.extraTooltips
                         ] as any,
@@ -1787,6 +2237,274 @@ export class Visual implements IVisual {
             const match = variant.linkIds.includes(linkId);
             (el as HTMLElement).style.opacity = match ? "1" : "0.08";
         });
+    }
+
+    // ── Reglas de color (Pro) ────────────────────────────────────────────────
+
+    private rulesActive(): boolean {
+        const r = this.formattingSettings?.rulesCard;
+        return !!(r?.rule1On?.value || r?.rule2On?.value || r?.rule3On?.value);
+    }
+
+    /** Color de la primera regla que cumple el nodo, o null. "% vs target" solo se evalúa si el nodo tiene objetivo. */
+    private ruleColor(n: FlowNode): string | null {
+        const r = this.formattingSettings?.rulesCard;
+        if (!r) return null;
+        const basis = String(r.basis?.value?.value ?? "value");
+        const actual = this.visibleInValue.get(n.id) || this.visibleOutValue.get(n.id) || 0;
+        let v: number | null = actual;
+        if (basis === "share") {
+            v = this.data.totalValue > 0 ? (actual / this.data.totalValue) * 100 : null;
+        } else if (basis === "variance") {
+            const tg = this.visibleTargetValue.get(n.id) || 0;
+            v = n.hasTarget && tg !== 0 ? ((actual - tg) / tg) * 100 : null;
+        }
+        if (v === null || !isFinite(v)) return null;
+        const reglas: [boolean, string, number, string][] = [
+            [!!r.rule1On.value, String(r.rule1Op.value?.value), r.rule1Value.value, r.rule1Color.value?.value],
+            [!!r.rule2On.value, String(r.rule2Op.value?.value), r.rule2Value.value, r.rule2Color.value?.value],
+            [!!r.rule3On.value, String(r.rule3Op.value?.value), r.rule3Value.value, r.rule3Color.value?.value]
+        ];
+        for (const [on, op, umbral, col] of reglas) {
+            if (!on || !col) continue;
+            if ((op === "lt" && v < umbral) || (op !== "lt" && v > umbral)) return col;
+        }
+        return null;
+    }
+
+    // ── Consejos de configuración (solo editando) ─────────────────────────────
+
+    /**
+     * Abajo, solo editando, con datos y si cabe: qué pozos hay, plantillas y las dos opciones que más cambian el
+     * diagrama, en un clic. persistProperties solo desde un clic. ✕ los cierra (style.guide = false).
+     */
+    private renderGuide(): void {
+        this.target.querySelectorAll(".fc-guide").forEach(n => n.remove());
+        const fs = this.formattingSettings;
+        if (!this.editing || this.formatMode || !this.canInteract || !(fs?.styleCard?.guide?.value ?? true)
+            || this.width < 380 || this.height < 240 || !this.svgRoot) return;
+        const pal = this.host.colorPalette as unknown as { isHighContrast?: boolean; foreground?: { value: string }; background?: { value: string }; foregroundSelected?: { value: string } };
+        const hc = !!pal?.isHighContrast;
+        const azul = hc ? (pal.foregroundSelected?.value || "#FFFF00") : "#2B6CB0";
+        const fg = hc ? (pal.foreground?.value || "#FFF") : "";
+        const g = document.createElement("div");
+        g.className = "fc-guide";
+        g.setAttribute("role", "region");
+        g.setAttribute("aria-label", this.t("UI_GuideTitle", "Setup tips"));
+        if (hc) Object.assign(g.style, { background: pal.background?.value || "#000", color: fg, borderColor: azul });
+        g.addEventListener("click", e => e.stopPropagation());
+        g.addEventListener("keydown", e => e.stopPropagation());
+        const fila = (titulo: string) => {
+            const f = document.createElement("div");
+            f.className = "fc-g-row";
+            const l = document.createElement("span");
+            l.className = "fc-g-lbl";
+            l.textContent = titulo;
+            f.appendChild(l);
+            g.appendChild(f);
+            return f;
+        };
+        const guardar = (obj: string, props: Record<string, powerbi.DataViewPropertyValue>) =>
+            this.host.persistProperties({ merge: [{ objectName: obj, selector: null, properties: props }] });
+        const boton = (f: HTMLElement, texto: string, on: boolean, accion: () => void) => {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "fc-g-btn";
+            b.textContent = texto;
+            b.setAttribute("aria-pressed", String(on));
+            b.style.borderColor = azul;
+            if (on) { b.style.background = azul; b.style.color = hc ? (pal.background?.value || "#000") : "#FFFFFF"; } else b.style.color = azul;
+            b.addEventListener("click", accion);
+            f.appendChild(b);
+        };
+        const p = this.fields;
+        const f0 = fila(this.t("UI_GuideFields", "Fields:"));
+        const marca = (ok: boolean, texto: string) => {
+            const s = document.createElement("span");
+            s.className = "fc-g-field" + (ok ? " ok" : "");
+            s.textContent = (ok ? "✓ " : "○ ") + texto;
+            f0.appendChild(s);
+        };
+        marca(p.levels >= 2, this.t("UI_LevelsShort", "Levels") + " (" + p.levels + ")");
+        marca(p.value, this.t("Role_value", "Value"));
+        marca(p.swimlane, this.t("Role_swimlane", "Swimlane (Pro)"));
+        marca(p.target, this.t("UI_TargetShort", "Target (Pro)"));
+        marca(p.images, this.t("Role_levelImages", "Level images (Pro)"));
+        const f1 = fila(this.t("UI_GuideStyle", "Try a style:"));
+        const tplActual = String(fs?.styleCard?.template?.value?.value ?? "default");
+        ([["default", "Enum_style_template_Default", "Default"], ["clean", "Enum_style_template_Clean", "Clean"],
+          ["outline", "Enum_style_template_Outline", "Outline"], ["contrast", "Enum_style_template_Contrast", "Contrast"],
+          ["compact", "Enum_style_template_Compact", "Compact"], ["minimal", "Enum_style_template_Minimal", "Minimal"]] as [string, string, string][])
+            .forEach(([v, k, d]) => boton(f1, this.t(k, d), tplActual === v, () => guardar("style", { template: v })));
+        const f2 = fila(this.t("UI_GuideShow", "Show:"));
+        const etiquetas = !!fs?.linkCard?.showLabels?.value;
+        boton(f2, this.t("Prop_linkSettings_showLabels", "Link labels"), etiquetas, () => guardar("linkSettings", { showLabels: !etiquetas }));
+        const cabeceras = !!fs?.layoutCard?.showLevelHeaders?.value;
+        boton(f2, this.t("Prop_layoutSettings_showLevelHeaders", "Level headers"), cabeceras, () => guardar("layoutSettings", { showLevelHeaders: !cabeceras }));
+        const vertical = this.direction === "vertical";
+        boton(f2, this.t("Enum_layoutSettings_direction_Vertical", "Top to bottom"), vertical,
+            () => guardar("layoutSettings", { direction: vertical ? "horizontal" : "vertical" }));
+        const x = document.createElement("button");
+        x.type = "button";
+        x.className = "fc-g-close";
+        x.textContent = "✕";
+        x.title = this.t("UI_GuideClose", "Hide tips (Format → Style template)");
+        x.setAttribute("aria-label", x.title);
+        if (hc) x.style.color = fg;
+        x.addEventListener("click", () => guardar("style", { guide: false }));
+        g.appendChild(x);
+        this.target.appendChild(g);
+    }
+
+    private injectStyles(): void {
+        const ID = "fc-styles";
+        if (document.getElementById(ID)) return;
+        const st = document.createElement("style");
+        st.id = ID;
+        st.textContent = [
+            ".flow-node{outline:none}",
+            ".flow-node:focus-visible>rect{stroke:#005A9E;stroke-width:3px}",
+            "@media (forced-colors: active){.flow-node:focus-visible>rect{stroke:Highlight}}",
+            // Pantalla de inicio de la serie
+            ".fc-landing{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:22px 28px;box-sizing:border-box;overflow:hidden;color:#605E5C;font-family:'Segoe UI',wf_segoe-ui_normal,helvetica,arial,sans-serif}",
+            ".fc-landing .cl-head{display:flex;gap:12px;align-items:center}",
+            ".fc-landing .cl-icon{width:44px;height:44px;border-radius:9px;flex-shrink:0}",
+            ".fc-landing .cl-title{font-size:20px;font-weight:600;color:#252423}",
+            ".fc-landing .cl-tag{font-size:14px;margin-top:2px}",
+            ".fc-landing .cl-warn{margin:0;font-size:13px;color:#A4262C}",
+            ".fc-landing .cl-cols{display:grid;grid-template-columns:1.2fr 1fr;gap:26px}",
+            ".fc-landing .cl-lbl{font-size:10.5px;font-weight:600;letter-spacing:1.3px;text-transform:uppercase;color:#8A8886;margin-bottom:7px}",
+            ".fc-landing .cl-steps{list-style:none;margin:0;padding:0;display:grid;gap:7px;font-size:13.5px}",
+            ".fc-landing .cl-steps li{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:start}",
+            ".fc-landing .cl-n{display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#2B6CB0;color:#FFFFFF;font-size:10.5px}",
+            ".fc-landing .cl-well{color:#252423}",
+            ".fc-landing .cl-pro{display:flex;gap:8px;align-items:center;margin-top:12px;font-size:12.5px}",
+            ".fc-landing .cl-chip{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:#E3F2E8;color:#2F7A47;flex-shrink:0}",
+            ".fc-landing .cl-links{display:grid;gap:7px}",
+            ".fc-landing .cl-card{display:flex;align-items:center;gap:9px;padding:7px 10px;border:1px solid #E1DFDD;border-radius:6px;background:#F7F6F3;color:#252423;text-decoration:none;font-size:13.5px;cursor:pointer}",
+            ".fc-landing .cl-card:hover{border-color:#2B6CB0}",
+            ".fc-landing .cl-card:focus-visible{border-color:#2B6CB0;outline:2px solid #005A9E;outline-offset:1px}",
+            ".fc-landing .cl-sub{margin-left:auto;color:#8A8886;font-size:11px}",
+            ".fc-landing .cl-a{color:#2B6CB0;font-weight:600;text-decoration:none;cursor:pointer;font-size:12px}",
+            ".fc-landing .cl-a:hover,.fc-landing .cl-a:focus-visible{text-decoration:underline}",
+            ".fc-landing .cl-do{margin:0;font-size:12px;line-height:1.45}",
+            ".fc-landing-m{gap:11px;padding:14px 18px}",
+            ".fc-landing-m .cl-icon{width:34px;height:34px}",
+            ".fc-landing-m .cl-title{font-size:16px}",
+            ".fc-landing-m .cl-tag,.fc-landing-m .cl-steps,.fc-landing-m .cl-card{font-size:12.5px}",
+            ".fc-landing-m .cl-cols{grid-template-columns:1fr;gap:10px}",
+            ".fc-landing-m .cl-links{grid-template-columns:1fr 1fr}",
+            ".fc-landing-s{gap:8px;padding:10px 12px}",
+            ".fc-landing-s .cl-icon{width:26px;height:26px;border-radius:6px}",
+            ".fc-landing-s .cl-title{font-size:14px}",
+            // Consejos de configuración
+            ".fc-guide{position:absolute;left:8px;right:8px;bottom:8px;z-index:40;display:flex;flex-direction:column;gap:4px;padding:6px 30px 6px 8px;border:1px solid #2B6CB0;border-radius:8px;background:#FFFFFF;color:#252423;box-shadow:0 4px 14px rgba(0,0,0,.16);font:11.5px 'Segoe UI',sans-serif;cursor:default}",
+            ".fc-guide .fc-g-row{display:flex;flex-wrap:wrap;align-items:center;gap:5px}",
+            ".fc-guide .fc-g-lbl{font-weight:600;margin-right:2px}",
+            ".fc-guide .fc-g-field{color:#605E5C;margin-right:6px}",
+            ".fc-guide .fc-g-field.ok{color:#107C10}",
+            ".fc-guide .fc-g-btn{border:1px solid;border-radius:999px;background:transparent;padding:2px 9px;font:inherit;cursor:pointer}",
+            ".fc-guide .fc-g-close{position:absolute;top:4px;right:6px;border:none;background:transparent;cursor:pointer;color:#605E5C;font-size:12px}",
+            ".fc-guide button:focus-visible{outline:2px solid #005A9E;outline-offset:1px}",
+        ].join("\n");
+        (document.head || this.target).appendChild(st);
+    }
+
+    // ── Formato desde el lienzo (on-object) ───────────────────────────────────
+
+    /** Marca un elemento como formateable en el lienzo. Solo en modo formato: fuera de él no cambia nada. */
+    private subSelectable(el: Element, objectName: string, displayName: string, type: powerbi.visuals.SubSelectionStylesType): void {
+        if (!this.formatMode) return;
+        el.classList.add(HtmlSubSelectableClass);
+        el.setAttribute(SubSelectableObjectNameAttribute, objectName);
+        el.setAttribute(SubSelectableDisplayNameAttribute, displayName);
+        el.setAttribute(SubSelectableTypeAttribute, String(type));
+    }
+
+    private updateOutlines(options: VisualUpdateOptions): void {
+        if (!this.formatMode) return;
+        const subs = (options as unknown as { subSelections?: powerbi.visuals.CustomVisualSubSelection[] }).subSelections;
+        this.subSelectionHelper.updateOutlinesFromSubSelections(subs ?? [], true);
+    }
+
+    private getSubSelectionStyles(subs: powerbi.visuals.CustomVisualSubSelection[]): powerbi.visuals.SubSelectionStyles | undefined {
+        const name = subs[0]?.customVisualObjects[0]?.objectName;
+        const ref = (objectName: string, propertyName: string, label: string) => ({ reference: { objectName, propertyName }, label });
+        switch (name) {
+            case "nodeSettings":
+                return {
+                    type: powerbi.visuals.SubSelectionStylesType.Text,
+                    fontFamily: ref("nodeSettings", "fontFamily", this.t("Prop_nodeSettings_fontFamily", "Font family")),
+                    fontSize: ref("nodeSettings", "fontSize", this.t("Prop_nodeSettings_fontSize", "Label size")),
+                    fontColor: ref("nodeSettings", "textColor", this.t("Prop_nodeSettings_textColor", "Text color")),
+                    background: ref("dataPoint", "defaultColor", this.t("Prop_dataPoint_defaultColor", "Default node color")),
+                } as unknown as powerbi.visuals.SubSelectionStyles;
+            case "linkSettings":
+                return {
+                    type: powerbi.visuals.SubSelectionStylesType.Shape,
+                    stroke: ref("linkSettings", "color", this.t("Prop_linkSettings_color", "Link color")),
+                } as unknown as powerbi.visuals.SubSelectionStyles;
+            case "linkLabels":
+            case "legendSettings":
+            case "layoutSettings": {
+                const [obj, size, color] = name === "linkLabels" ? ["linkSettings", "labelSize", "labelColor"]
+                    : name === "legendSettings" ? ["legendSettings", "fontSize", "textColor"] : ["layoutSettings", "headerSize", "headerColor"];
+                return {
+                    type: powerbi.visuals.SubSelectionStylesType.Text,
+                    fontSize: ref(obj, size, this.t(`Prop_${obj}_${size}`, "Size")),
+                    fontColor: ref(obj, color, this.t(`Prop_${obj}_${color}`, "Color")),
+                } as unknown as powerbi.visuals.SubSelectionStyles;
+            }
+        }
+        return undefined;
+    }
+
+    private getSubSelectionShortcuts(subs: powerbi.visuals.CustomVisualSubSelection[]): powerbi.visuals.VisualSubSelectionShortcuts | undefined {
+        const name = subs[0]?.customVisualObjects[0]?.objectName;
+        const id = (objectName: string, propertyName: string) => ({ objectName, propertyName });
+        const nav = (card: string, label: string) => ({ type: powerbi.visuals.VisualShortcutType.Navigate, destinationInfo: { cardUid: card + "-card" }, label });
+        const toggle = (obj: string, prop: string, on: string, off: string) =>
+            ({ type: powerbi.visuals.VisualShortcutType.Toggle, ...id(obj, prop), relatedToggledFormattingIds: [id(obj, prop)], enabledLabel: on, disabledLabel: off });
+        let lista: unknown[] | undefined;
+        switch (name) {
+            case "nodeSettings":
+                lista = [
+                    { type: powerbi.visuals.VisualShortcutType.Picker, ...id("style", "template"), label: this.t("Obj_style", "Style template") },
+                    toggle("nodeSettings", "showStepNumber", this.t("UI_HideStep", "Hide step number"), this.t("UI_ShowStep", "Show step number")),
+                    toggle("nodeSettings", "showBadge", this.t("UI_HideBadge", "Hide value badge"), this.t("UI_ShowBadge", "Show value badge")),
+                    { type: powerbi.visuals.VisualShortcutType.Divider },
+                    { type: powerbi.visuals.VisualShortcutType.Reset, relatedResetFormattingIds: [id("nodeSettings", "fontFamily"), id("nodeSettings", "fontSize"), id("nodeSettings", "textColor"), id("dataPoint", "defaultColor")] },
+                    nav("nodeSettings", this.t("Obj_nodeSettings", "Nodes")),
+                ];
+                break;
+            case "linkSettings":
+            case "linkLabels":
+                lista = [
+                    toggle("linkSettings", "showLabels", this.t("UI_HideLinkLabels", "Hide link labels"), this.t("UI_ShowLinkLabels", "Show link labels")),
+                    { type: powerbi.visuals.VisualShortcutType.Picker, ...id("linkSettings", "labelContent"), label: this.t("Prop_linkSettings_labelContent", "Label shows") },
+                    { type: powerbi.visuals.VisualShortcutType.Divider },
+                    { type: powerbi.visuals.VisualShortcutType.Reset, relatedResetFormattingIds: [id("linkSettings", "color"), id("linkSettings", "labelSize"), id("linkSettings", "labelColor")] },
+                    nav("linkSettings", this.t("Obj_linkSettings", "Links")),
+                ];
+                break;
+            case "legendSettings":
+                lista = [
+                    { type: powerbi.visuals.VisualShortcutType.Picker, ...id("legendSettings", "position"), label: this.t("Prop_legendSettings_position", "Position") },
+                    toggle("legendSettings", "show", this.t("UI_HideLegend", "Hide legend"), this.t("UI_ShowLegend", "Show legend")),
+                    { type: powerbi.visuals.VisualShortcutType.Divider },
+                    nav("legendSettings", this.t("Obj_legendSettings", "Legend")),
+                ];
+                break;
+            case "layoutSettings":
+                lista = [
+                    { type: powerbi.visuals.VisualShortcutType.Picker, ...id("layoutSettings", "direction"), label: this.t("Prop_layoutSettings_direction", "Direction") },
+                    toggle("layoutSettings", "showLevelHeaders", this.t("UI_HideHeaders", "Hide level headers"), this.t("UI_ShowHeaders", "Show level headers")),
+                    { type: powerbi.visuals.VisualShortcutType.Divider },
+                    nav("layoutSettings", this.t("Obj_layoutSettings", "Layout")),
+                ];
+                break;
+        }
+        return lista as unknown as powerbi.visuals.VisualSubSelectionShortcuts;
     }
 
     public getFormattingModel(): powerbi.visuals.FormattingModel {

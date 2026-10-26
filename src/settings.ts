@@ -6,25 +6,51 @@ import FormattingSettingsCard = formattingSettings.SimpleCard;
 import FormattingSettingsSlice = formattingSettings.Slice;
 import FormattingSettingsModel = formattingSettings.Model;
 
+// Los textos van en inglés; la traducción la aplica Visual.localizeModel() con las claves de src/i18n.ts
+// (generadas desde tools/gen_capabilities.py, que es la fuente de capabilities.json).
+
+const FONTS = [
+    { value: "'Segoe UI',sans-serif", displayName: "Segoe UI" },
+    { value: "Arial,sans-serif", displayName: "Arial" },
+    { value: "Calibri,sans-serif", displayName: "Calibri" },
+    { value: "Georgia,serif", displayName: "Georgia" },
+    { value: "Consolas,monospace", displayName: "Consolas" }
+];
+const color = (name: string, displayName: string, value: string) =>
+    new formattingSettings.ColorPicker({ name, displayName, value: { value } });
+const num = (name: string, displayName: string, value: number) =>
+    new formattingSettings.NumUpDown({ name, displayName, value });
+const toggle = (name: string, displayName: string, value: boolean) =>
+    new formattingSettings.ToggleSwitch({ name, displayName, value });
+const pick = (name: string, displayName: string, items: { value: string; displayName: string }[], value = 0) =>
+    new formattingSettings.ItemDropdown({ name, displayName, items, value: items[value] });
+
+export const TEMPLATES = [
+    { value: "default", displayName: "Default" },
+    { value: "clean", displayName: "Clean" },
+    { value: "outline", displayName: "Outline" },
+    { value: "contrast", displayName: "Contrast" },
+    { value: "compact", displayName: "Compact" },
+    { value: "minimal", displayName: "Minimal" }
+];
+
+class StyleCardSettings extends FormattingSettingsCard {
+    template = pick("template", "Template", TEMPLATES);
+    guide = toggle("guide", "Show setup tips", true);
+    name: string = "style";
+    displayName: string = "Style template";
+    slices: Array<FormattingSettingsSlice> = [this.template, this.guide];
+}
+
 class DataPointCardSettings extends FormattingSettingsCard {
-    defaultColor = new formattingSettings.ColorPicker({
-        name: "defaultColor",
-        displayName: "Default node color",
-        value: { value: "#6B7A99" }
-    });
-
-    colorByLevel = new formattingSettings.ToggleSwitch({
-        name: "colorByLevel",
-        displayName: "Color nodes by level",
-        value: true
-    });
-
-    levelColor1 = new formattingSettings.ColorPicker({ name: "levelColor1", displayName: "Level 1 color", value: { value: "#2B6CB0" } });
-    levelColor2 = new formattingSettings.ColorPicker({ name: "levelColor2", displayName: "Level 2 color", value: { value: "#3E9C5B" } });
-    levelColor3 = new formattingSettings.ColorPicker({ name: "levelColor3", displayName: "Level 3 color", value: { value: "#D9A441" } });
-    levelColor4 = new formattingSettings.ColorPicker({ name: "levelColor4", displayName: "Level 4 color", value: { value: "#8E5FC4" } });
-    levelColor5 = new formattingSettings.ColorPicker({ name: "levelColor5", displayName: "Level 5 color", value: { value: "#C9524A" } });
-    levelColor6 = new formattingSettings.ColorPicker({ name: "levelColor6", displayName: "Level 6 color", value: { value: "#0E9AA7" } });
+    defaultColor = color("defaultColor", "Default node color", "#6B7A99");
+    colorByLevel = toggle("colorByLevel", "Color nodes by level", true);
+    levelColor1 = color("levelColor1", "Level 1 color", "#2B6CB0");
+    levelColor2 = color("levelColor2", "Level 2 color", "#3E9C5B");
+    levelColor3 = color("levelColor3", "Level 3 color", "#D9A441");
+    levelColor4 = color("levelColor4", "Level 4 color", "#8E5FC4");
+    levelColor5 = color("levelColor5", "Level 5 color", "#C9524A");
+    levelColor6 = color("levelColor6", "Level 6 color", "#0E9AA7");
 
     name: string = "dataPoint";
     displayName: string = "Data colors";
@@ -35,169 +61,37 @@ class DataPointCardSettings extends FormattingSettingsCard {
 }
 
 class NodeCardSettings extends FormattingSettingsCard {
-    width = new formattingSettings.NumUpDown({
-        name: "width",
-        displayName: "Node width",
-        value: 140
-    });
-
-    height = new formattingSettings.NumUpDown({
-        name: "height",
-        displayName: "Node height",
-        value: 36
-    });
-
-    cornerRadius = new formattingSettings.NumUpDown({
-        name: "cornerRadius",
-        displayName: "Corner radius",
-        value: 6
-    });
-
-    fontFamily = new formattingSettings.ItemDropdown({
-        name: "fontFamily",
-        displayName: "Font family",
-        items: [
-            { value: "'Segoe UI',sans-serif", displayName: "Segoe UI" },
-            { value: "Arial,sans-serif", displayName: "Arial" },
-            { value: "Calibri,sans-serif", displayName: "Calibri" },
-            { value: "Georgia,serif", displayName: "Georgia" },
-            { value: "Consolas,monospace", displayName: "Consolas" }
-        ],
-        value: { value: "'Segoe UI',sans-serif", displayName: "Segoe UI" }
-    });
-
-    fontSize = new formattingSettings.NumUpDown({
-        name: "fontSize",
-        displayName: "Label size",
-        value: 12
-    });
-
-    textColor = new formattingSettings.ColorPicker({
-        name: "textColor",
-        displayName: "Text color",
-        value: { value: "#FFFFFF" }
-    });
-
-    showBadge = new formattingSettings.ToggleSwitch({
-        name: "showBadge",
-        displayName: "Show value badge in chip",
-        value: true
-    });
-
-    badgeFontFamily = new formattingSettings.ItemDropdown({
-        name: "badgeFontFamily",
-        displayName: "Badge font",
-        items: [
-            { value: "'Segoe UI',sans-serif", displayName: "Segoe UI" },
-            { value: "Arial,sans-serif", displayName: "Arial" },
-            { value: "Calibri,sans-serif", displayName: "Calibri" },
-            { value: "Georgia,serif", displayName: "Georgia" },
-            { value: "Consolas,monospace", displayName: "Consolas" }
-        ],
-        value: { value: "'Segoe UI',sans-serif", displayName: "Segoe UI" }
-    });
-
-    badgeFontSize = new formattingSettings.NumUpDown({
-        name: "badgeFontSize",
-        displayName: "Badge font size",
-        value: 9
-    });
-
-    badgeTextColor = new formattingSettings.ColorPicker({
-        name: "badgeTextColor",
-        displayName: "Badge text color",
-        value: { value: "#FFFFFF" }
-    });
-
-    badgeBackgroundColor = new formattingSettings.ColorPicker({
-        name: "badgeBackgroundColor",
-        displayName: "Badge background",
-        value: { value: "#000000" }
-    });
-
-    badgeBackgroundOpacity = new formattingSettings.NumUpDown({
-        name: "badgeBackgroundOpacity",
-        displayName: "Badge background opacity %",
-        value: 0
-    });
-
-    kpiUpColor = new formattingSettings.ColorPicker({
-        name: "kpiUpColor",
-        displayName: "KPI up color",
-        value: { value: "#3E9C5B" }
-    });
-
-    kpiDownColor = new formattingSettings.ColorPicker({
-        name: "kpiDownColor",
-        displayName: "KPI down color",
-        value: { value: "#C9524A" }
-    });
-
-    borderWidth = new formattingSettings.NumUpDown({
-        name: "borderWidth",
-        displayName: "Border width",
-        value: 0
-    });
-
-    borderColor = new formattingSettings.ColorPicker({
-        name: "borderColor",
-        displayName: "Border color",
-        value: { value: "#FFFFFF" }
-    });
-
-    colorBorderByLevel = new formattingSettings.ToggleSwitch({
-        name: "colorBorderByLevel",
-        displayName: "Color border by level",
-        value: false
-    });
-
-    showShadow = new formattingSettings.ToggleSwitch({
-        name: "showShadow",
-        displayName: "Show node shadow",
-        value: false
-    });
-
-    shadowColor = new formattingSettings.ColorPicker({
-        name: "shadowColor",
-        displayName: "Shadow color",
-        value: { value: "#000000" }
-    });
-
-    shadowBlur = new formattingSettings.NumUpDown({
-        name: "shadowBlur",
-        displayName: "Shadow blur",
-        value: 4
-    });
-
-    shadowOffsetX = new formattingSettings.NumUpDown({
-        name: "shadowOffsetX",
-        displayName: "Shadow offset X",
-        value: 0
-    });
-
-    shadowOffsetY = new formattingSettings.NumUpDown({
-        name: "shadowOffsetY",
-        displayName: "Shadow offset Y",
-        value: 2
-    });
-
-    shadowOpacity = new formattingSettings.NumUpDown({
-        name: "shadowOpacity",
-        displayName: "Shadow opacity %",
-        value: 35
-    });
-
-    imageSize = new formattingSettings.NumUpDown({
-        name: "imageSize",
-        displayName: "Image size",
-        value: 24
-    });
+    width = num("width", "Node width", 140);
+    height = num("height", "Node height", 36);
+    cornerRadius = num("cornerRadius", "Corner radius", 6);
+    fontFamily = pick("fontFamily", "Font family", FONTS);
+    fontSize = num("fontSize", "Label size", 12);
+    textColor = color("textColor", "Text color", "#FFFFFF");
+    showStepNumber = toggle("showStepNumber", "Step number", true);
+    showBadge = toggle("showBadge", "Show value badge in chip", true);
+    badgeFontFamily = pick("badgeFontFamily", "Badge font", FONTS);
+    badgeFontSize = num("badgeFontSize", "Badge font size", 9);
+    badgeTextColor = color("badgeTextColor", "Badge text color", "#FFFFFF");
+    badgeBackgroundColor = color("badgeBackgroundColor", "Badge background", "#000000");
+    badgeBackgroundOpacity = num("badgeBackgroundOpacity", "Badge background opacity %", 0);
+    kpiUpColor = color("kpiUpColor", "KPI up color", "#3E9C5B");
+    kpiDownColor = color("kpiDownColor", "KPI down color", "#C9524A");
+    borderWidth = num("borderWidth", "Border width", 0);
+    borderColor = color("borderColor", "Border color", "#FFFFFF");
+    colorBorderByLevel = toggle("colorBorderByLevel", "Color border by level", false);
+    showShadow = toggle("showShadow", "Show node shadow", false);
+    shadowColor = color("shadowColor", "Shadow color", "#000000");
+    shadowBlur = num("shadowBlur", "Shadow blur", 4);
+    shadowOffsetX = num("shadowOffsetX", "Shadow offset X", 0);
+    shadowOffsetY = num("shadowOffsetY", "Shadow offset Y", 2);
+    shadowOpacity = num("shadowOpacity", "Shadow opacity %", 35);
+    imageSize = num("imageSize", "Image size", 24);
 
     name: string = "nodeSettings";
     displayName: string = "Nodes";
     slices: Array<FormattingSettingsSlice> = [
         this.width, this.height, this.cornerRadius,
-        this.fontFamily, this.fontSize, this.textColor,
+        this.fontFamily, this.fontSize, this.textColor, this.showStepNumber,
         this.showBadge, this.badgeFontFamily, this.badgeFontSize, this.badgeTextColor,
         this.badgeBackgroundColor, this.badgeBackgroundOpacity, this.kpiUpColor, this.kpiDownColor,
         this.borderWidth, this.borderColor, this.colorBorderByLevel, this.imageSize,
@@ -206,37 +100,17 @@ class NodeCardSettings extends FormattingSettingsCard {
 }
 
 class ValueFormatCardSettings extends FormattingSettingsCard {
-    format = new formattingSettings.ItemDropdown({
-        name: "format",
-        displayName: "Number format",
-        items: [
-            { value: "plain", displayName: "Plain (1234)" },
-            { value: "thousands", displayName: "Thousands (1,234)" },
-            { value: "compact", displayName: "Compact (1.2K / 3.4M)" },
-            { value: "percent", displayName: "Percent (12.3%)" }
-        ],
-        value: { value: "thousands", displayName: "Thousands (1,234)" }
-    });
-
-    decimals = new formattingSettings.NumUpDown({
-        name: "decimals",
-        displayName: "Decimal places",
-        value: 0
-    });
-
-    prefix = new formattingSettings.TextInput({
-        name: "prefix",
-        displayName: "Prefix",
-        value: "",
-        placeholder: "e.g. $"
-    });
-
-    suffix = new formattingSettings.TextInput({
-        name: "suffix",
-        displayName: "Suffix",
-        value: "",
-        placeholder: "e.g. L"
-    });
+    // "model" (el formato de la medida, también el dinámico) es el valor por defecto desde 1.2.0.0.
+    format = pick("format", "Number format", [
+        { value: "model", displayName: "Model format" },
+        { value: "thousands", displayName: "Thousands (1,234)" },
+        { value: "compact", displayName: "Compact (1.2K / 3.4M)" },
+        { value: "plain", displayName: "Plain (1234)" },
+        { value: "percent", displayName: "Percent (12.3%)" }
+    ]);
+    decimals = num("decimals", "Decimal places", 0);
+    prefix = new formattingSettings.TextInput({ name: "prefix", displayName: "Prefix", value: "", placeholder: "e.g. $" });
+    suffix = new formattingSettings.TextInput({ name: "suffix", displayName: "Suffix", value: "", placeholder: "e.g. L" });
 
     name: string = "valueFormatSettings";
     displayName: string = "Value format";
@@ -244,98 +118,72 @@ class ValueFormatCardSettings extends FormattingSettingsCard {
 }
 
 class LinkCardSettings extends FormattingSettingsCard {
-    color = new formattingSettings.ColorPicker({
-        name: "color",
-        displayName: "Link color",
-        value: { value: "#B7C0D8" }
-    });
-
-    width = new formattingSettings.NumUpDown({
-        name: "width",
-        displayName: "Base link width",
-        value: 2
-    });
-
-    curvature = new formattingSettings.NumUpDown({
-        name: "curvature",
-        displayName: "Curvature",
-        value: 0.5
-    });
-
-    highlightDominant = new formattingSettings.ToggleSwitch({
-        name: "highlightDominant",
-        displayName: "Highlight dominant path",
-        value: true
-    });
-
-    dominantEmphasis = new formattingSettings.NumUpDown({
-        name: "dominantEmphasis",
-        displayName: "Dominant path thickness x",
-        value: 1.3
-    });
-
-    highlightTopVariant = new formattingSettings.ToggleSwitch({
-        name: "highlightTopVariant",
-        displayName: "Highlight top end-to-end variant",
-        value: false
-    });
-
-    topVariantColor = new formattingSettings.ColorPicker({
-        name: "topVariantColor",
-        displayName: "Top variant color",
-        value: { value: "#F5A623" }
-    });
+    color = color("color", "Link color", "#B7C0D8");
+    width = num("width", "Base link width", 2);
+    curvature = num("curvature", "Curvature", 0.5);
+    highlightDominant = toggle("highlightDominant", "Highlight dominant path", true);
+    dominantEmphasis = num("dominantEmphasis", "Dominant path thickness x", 1.3);
+    highlightTopVariant = toggle("highlightTopVariant", "Highlight top end-to-end variant", false);
+    topVariantColor = color("topVariantColor", "Top variant color", "#F5A623");
+    showLabels = toggle("showLabels", "Link labels", false);
+    labelContent = pick("labelContent", "Label shows", [
+        { value: "value", displayName: "Value" },
+        { value: "percent", displayName: "% of total" },
+        { value: "both", displayName: "Value and %" }
+    ]);
+    labelSize = num("labelSize", "Label size", 9);
+    labelColor = color("labelColor", "Label color", "#4C566A");
 
     name: string = "linkSettings";
     displayName: string = "Links";
     slices: Array<FormattingSettingsSlice> = [
         this.color, this.width, this.curvature, this.highlightDominant, this.dominantEmphasis,
-        this.highlightTopVariant, this.topVariantColor
+        this.highlightTopVariant, this.topVariantColor,
+        this.showLabels, this.labelContent, this.labelSize, this.labelColor
+    ];
+}
+
+const OPS = [{ value: "gt", displayName: "Greater than" }, { value: "lt", displayName: "Less than" }];
+
+class RulesCardSettings extends FormattingSettingsCard {
+    basis = pick("basis", "Compare", [
+        { value: "value", displayName: "Node value" },
+        { value: "share", displayName: "% of total" },
+        { value: "variance", displayName: "% vs target" }
+    ]);
+    rule1On = toggle("rule1On", "Rule 1", false);
+    rule1Op = pick("rule1Op", "Condition", OPS);
+    rule1Value = num("rule1Value", "Value", 0);
+    rule1Color = color("rule1Color", "Color", "#C9524A");
+    rule2On = toggle("rule2On", "Rule 2", false);
+    rule2Op = pick("rule2Op", "Condition", OPS, 1);
+    rule2Value = num("rule2Value", "Value", 0);
+    rule2Color = color("rule2Color", "Color", "#3E9C5B");
+    rule3On = toggle("rule3On", "Rule 3", false);
+    rule3Op = pick("rule3Op", "Condition", OPS);
+    rule3Value = num("rule3Value", "Value", 0);
+    rule3Color = color("rule3Color", "Color", "#D9A441");
+
+    name: string = "rules";
+    displayName: string = "Color rules (Pro)";
+    slices: Array<FormattingSettingsSlice> = [
+        this.basis,
+        this.rule1On, this.rule1Op, this.rule1Value, this.rule1Color,
+        this.rule2On, this.rule2Op, this.rule2Value, this.rule2Color,
+        this.rule3On, this.rule3Op, this.rule3Value, this.rule3Color
     ];
 }
 
 class SwimlaneCardSettings extends FormattingSettingsCard {
-    show = new formattingSettings.ToggleSwitch({
-        name: "show",
-        displayName: "Show swimlane bands",
-        value: true
-    });
-
-    labelSize = new formattingSettings.NumUpDown({
-        name: "labelSize",
-        displayName: "Label size",
-        value: 11
-    });
-
-    fontFamily = new formattingSettings.ItemDropdown({
-        name: "fontFamily",
-        displayName: "Label font",
-        items: [
-            { value: "'Segoe UI',sans-serif", displayName: "Segoe UI" },
-            { value: "Arial,sans-serif", displayName: "Arial" },
-            { value: "Calibri,sans-serif", displayName: "Calibri" },
-            { value: "Georgia,serif", displayName: "Georgia" },
-            { value: "Consolas,monospace", displayName: "Consolas" }
-        ],
-        value: { value: "'Segoe UI',sans-serif", displayName: "Segoe UI" }
-    });
-
-    textColor = new formattingSettings.ColorPicker({
-        name: "textColor",
-        displayName: "Label color",
-        value: { value: "#666666" }
-    });
-
-    bandColor1 = new formattingSettings.ColorPicker({ name: "bandColor1", displayName: "Band 1 color", value: { value: "#2B6CB0" } });
-    bandColor2 = new formattingSettings.ColorPicker({ name: "bandColor2", displayName: "Band 2 color", value: { value: "#3E9C5B" } });
-    bandColor3 = new formattingSettings.ColorPicker({ name: "bandColor3", displayName: "Band 3 color", value: { value: "#D9A441" } });
-    bandColor4 = new formattingSettings.ColorPicker({ name: "bandColor4", displayName: "Band 4 color", value: { value: "#8E5FC4" } });
-
-    bandOpacity = new formattingSettings.NumUpDown({
-        name: "bandOpacity",
-        displayName: "Band opacity %",
-        value: 6
-    });
+    show = toggle("show", "Show swimlane bands", true);
+    labelSize = num("labelSize", "Label size", 11);
+    fontFamily = pick("fontFamily", "Label font", FONTS);
+    textColor = color("textColor", "Label color", "#666666");
+    bandColor1 = color("bandColor1", "Band 1 color", "#2B6CB0");
+    bandColor2 = color("bandColor2", "Band 2 color", "#3E9C5B");
+    bandColor3 = color("bandColor3", "Band 3 color", "#D9A441");
+    bandColor4 = color("bandColor4", "Band 4 color", "#8E5FC4");
+    bandOpacity = num("bandOpacity", "Band opacity %", 6);
 
     name: string = "swimlaneSettings";
     displayName: string = "Swimlanes";
@@ -346,53 +194,54 @@ class SwimlaneCardSettings extends FormattingSettingsCard {
 }
 
 class LegendCardSettings extends FormattingSettingsCard {
-    show = new formattingSettings.ToggleSwitch({
-        name: "show",
-        displayName: "Show legend",
-        value: true
-    });
+    show = toggle("show", "Show legend", true);
+    position = pick("position", "Position", [
+        { value: "bottomLeft", displayName: "Bottom left" },
+        { value: "bottomRight", displayName: "Bottom right" },
+        { value: "topRight", displayName: "Top right" }
+    ]);
+    useFieldNames = toggle("useFieldNames", "Use field names", true);
+    fontSize = num("fontSize", "Text size", 11);
+    textColor = color("textColor", "Text color", "#333333");
 
     name: string = "legendSettings";
     displayName: string = "Legend";
-    slices: Array<FormattingSettingsSlice> = [this.show];
+    slices: Array<FormattingSettingsSlice> = [this.show, this.position, this.useFieldNames, this.fontSize, this.textColor];
 }
 
 class LayoutCardSettings extends FormattingSettingsCard {
-    direction = new formattingSettings.ItemDropdown({
-        name: "direction",
-        displayName: "Direction",
-        items: [
-            { value: "horizontal", displayName: "Left to right" },
-            { value: "vertical", displayName: "Top to bottom" }
-        ],
-        value: { value: "horizontal", displayName: "Left to right" }
-    });
-
-    nodeGap = new formattingSettings.NumUpDown({
-        name: "nodeGap",
-        displayName: "Spacing between nodes",
-        value: 24
-    });
-
-    layerGap = new formattingSettings.NumUpDown({
-        name: "layerGap",
-        displayName: "Spacing between levels",
-        value: 100
-    });
+    direction = pick("direction", "Direction", [
+        { value: "horizontal", displayName: "Left to right" },
+        { value: "vertical", displayName: "Top to bottom" }
+    ]);
+    nodeGap = num("nodeGap", "Spacing between nodes", 24);
+    layerGap = num("layerGap", "Spacing between levels", 100);
+    fitOnLoad = toggle("fitOnLoad", "Fit large diagrams to the visual", true);
+    showLevelHeaders = toggle("showLevelHeaders", "Level headers", false);
+    headerSize = num("headerSize", "Header size", 11);
+    headerColor = color("headerColor", "Header color", "#4C566A");
+    showGrid = toggle("showGrid", "Background grid", false);
+    gridColor = color("gridColor", "Grid color", "#E5E9F0");
 
     name: string = "layoutSettings";
     displayName: string = "Layout";
-    slices: Array<FormattingSettingsSlice> = [this.direction, this.nodeGap, this.layerGap];
+    slices: Array<FormattingSettingsSlice> = [
+        this.direction, this.nodeGap, this.layerGap, this.fitOnLoad,
+        this.showLevelHeaders, this.headerSize, this.headerColor, this.showGrid, this.gridColor
+    ];
 }
 
 export class VisualFormattingSettingsModel extends FormattingSettingsModel {
+    styleCard = new StyleCardSettings();
     dataPointCard = new DataPointCardSettings();
     nodeCard = new NodeCardSettings();
     valueFormatCard = new ValueFormatCardSettings();
     linkCard = new LinkCardSettings();
+    rulesCard = new RulesCardSettings();
     layoutCard = new LayoutCardSettings();
     swimlaneCard = new SwimlaneCardSettings();
     legendCard = new LegendCardSettings();
 
-    cards = [this.layoutCard, this.nodeCard, this.valueFormatCard, this.linkCard, this.swimlaneCard, this.legendCard, this.dataPointCard];
+    cards = [this.styleCard, this.layoutCard, this.nodeCard, this.valueFormatCard, this.linkCard, this.rulesCard,
+             this.swimlaneCard, this.legendCard, this.dataPointCard];
 }
