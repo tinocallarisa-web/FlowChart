@@ -2422,5 +2422,17 @@
   "ズーム ボタン",
   "缩放按钮",
   "확대/축소 단추"
+ ],
+ "Flow diagram with {0} nodes. Arrow keys move between steps; + and − zoom, 0 fits.": [
+  "Diagrama de flujo con {0} nodos. Las flechas recorren los pasos; + y − amplían y reducen, 0 ajusta.",
+  "Diagrama de fluxo com {0} nós. As setas percorrem as etapas; + e − ampliam e reduzem, 0 ajusta.",
+  "Diagramme de flux de {0} nœuds. Les flèches parcourent les étapes ; + et − zooment, 0 ajuste.",
+  "Flussdiagramm mit {0} Knoten. Pfeiltasten wechseln die Schritte; + und − zoomen, 0 passt an.",
+  "Diagramma di flusso con {0} nodi. Le frecce scorrono i passaggi; + e − ingrandiscono e riducono, 0 adatta.",
+  "Stroomdiagram met {0} knooppunten. Pijltoetsen gaan langs de stappen; + en − zoomen, 0 past in.",
+  "Diagram przepływu z {0} węzłami. Strzałki przechodzą między krokami; + i − powiększają, 0 dopasowuje.",
+  "{0} 個のノードのフロー図。矢印キーで手順を移動、+ と − でズーム、0 で全体表示。",
+  "包含 {0} 个节点的流程图。箭头键在步骤间移动；+ 和 − 缩放，0 适应。",
+  "노드 {0}개의 흐름도. 화살표 키로 단계를 이동하고, + 와 − 로 확대/축소, 0 으로 맞춥니다."
  ]
 }

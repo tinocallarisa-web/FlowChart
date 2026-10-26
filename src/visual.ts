@@ -1172,10 +1172,8 @@ export class Visual implements IVisual {
             });
         }
 
-        // Hueco para la barra de herramientas, que flota arriba a la izquierda: sin él tapaba la primera fila.
-        const TOOLBAR_H = this.toolbarShown() ? Math.round(this.toolbarSize() * 2.5) : 0;
-        nodes.forEach(n => { n.y += TOOLBAR_H; });
-        if (isHorizontal) this.swimlaneBands.forEach(b => { b.start += TOOLBAR_H; b.end += TOOLBAR_H; });
+        // El hueco de la barra de herramientas no va dentro del dibujo: lo pone el contenedor (padding-top), y así el
+        // diagrama se centra en el espacio que queda debajo. Dentro del dibujo descentraba en vertical.
 
         // Hueco para las cabeceras de nivel: arriba en horizontal, a la izquierda en vertical.
         if (this.formattingSettings?.layoutCard?.showLevelHeaders?.value) {
@@ -1599,7 +1597,8 @@ export class Visual implements IVisual {
                 const tg = this.svgEl("g", {
                     class: "flow-collapse-toggle", "data-node-id": n.id, tabindex: "0", role: "button",
                     "aria-label": (isCollapsed ? this.t("UI_Expand", "Expand {0}") : this.t("UI_Collapse", "Collapse {0}")).replace("{0}", n.label),
-                    transform: `translate(${n.width},${n.height / 2})`, style: "cursor:pointer;"
+                    // En vertical el flujo sigue hacia abajo: el botón va en el borde inferior, no en el lateral.
+                    transform: isHorizontal ? `translate(${n.width},${n.height / 2})` : `translate(${n.width / 2},${n.height + 8})`, style: "cursor:pointer;"
                 });
                 tg.appendChild(this.svgEl("circle", { r: 7, fill: "#ffffff", stroke: nodeFill, "stroke-width": "1.5" }));
                 tg.appendChild(this.svgEl("text", {
@@ -1619,7 +1618,7 @@ export class Visual implements IVisual {
         // reajusta: cambiaba el zoom del lector a cada clic.
         if (fitOnLoad && this.dataKey !== this.fittedKey && this.width > 0 && this.height > 0) {
             this.fittedKey = this.dataKey;
-            const escala = Math.min(this.width / maxX, this.height / maxY);
+            const escala = Math.min(this.width / maxX, (this.height - this.toolbarH()) / maxY);
             this.zoomScale = escala < 1 ? Math.max(0.35, escala) : 1;
         }
         const svgWidth = maxX * this.zoomScale;
@@ -1862,12 +1861,12 @@ export class Visual implements IVisual {
         if (variantsPanelEl) { this.target.appendChild(variantsPanelEl); }
 
         const scroll = this.htmlEl("div", {
-            class: "flow-scroll", style: "position:absolute;inset:0;overflow:auto;display:flex;"
+            class: "flow-scroll", style: `position:absolute;inset:0;overflow:auto;display:flex;box-sizing:border-box;padding-top:${this.toolbarH()}px;`
         });
         const svg = this.svgEl("svg", {
             width: svgWidth, height: svgHeight, viewBox: `0 0 ${maxX} ${maxY}`,
             style: "display:block;margin:auto;flex-shrink:0;", role: "group",
-            "aria-label": this.t("UI_AriaDiagram", "Flow diagram with {0} nodes. Use the arrow keys to move between steps.").replace("{0}", String(nodes.length))
+            "aria-label": this.t("UI_AriaDiagram", "Flow diagram with {0} nodes. Arrow keys move between steps; + and − zoom, 0 fits.").replace("{0}", String(nodes.length))
         });
         if (shadowDefsEl) { svg.appendChild(shadowDefsEl); }
 
@@ -1973,7 +1972,7 @@ export class Visual implements IVisual {
     private fitToView(): void {
         if (!this.contentWidth || !this.contentHeight) return;
         const scaleX = this.width / this.contentWidth;
-        const scaleY = this.height / this.contentHeight;
+        const scaleY = (this.height - this.toolbarH()) / this.contentHeight;
         this.zoomScale = Math.min(scaleX, scaleY, 1);
         this.updateSvgSize();
         const scrollEl = this.target.querySelector(".flow-scroll") as HTMLElement;
@@ -2107,6 +2106,21 @@ export class Visual implements IVisual {
             scrollContainer.scrollTop = contentY * this.zoomScale - scrollContainer.clientHeight / 2;
             this.updateMinimapViewport();
         };
+
+        // Zoom sin botones: Ctrl + rueda sobre el diagrama, y + / − / 0 con el foco en él. Así el lector puede ampliar
+        // un diagrama ajustado aunque el autor haya ocultado los botones de zoom.
+        if (scrollContainer) {
+            scrollContainer.addEventListener("wheel", (e: WheelEvent) => {
+                if (!e.ctrlKey && !e.metaKey) return;
+                e.preventDefault();
+                zoomBy(e.deltaY < 0 ? 1.15 : 1 / 1.15);
+            }, { passive: false });
+        }
+        this.svgRoot.addEventListener("keydown", (e: KeyboardEvent) => {
+            if (e.key === "+" || e.key === "=") { e.preventDefault(); zoomBy(1.25); }
+            else if (e.key === "-" || e.key === "_") { e.preventDefault(); zoomBy(1 / 1.25); }
+            else if (e.key === "0") { e.preventDefault(); this.fitToView(); }
+        });
 
         const zoomInButton = this.target.querySelector(".flow-zoom-in") as HTMLButtonElement;
         if (zoomInButton) zoomInButton.addEventListener("click", () => zoomBy(1.25));
@@ -2283,6 +2297,7 @@ export class Visual implements IVisual {
 
     /** Barra de herramientas: visible y tamaño de letra (Diseño → Barra de herramientas, Tamaño de la barra). */
     private toolbarShown(): boolean { return this.formattingSettings?.layoutCard?.showToolbar?.value ?? true; }
+    private toolbarH(): number { return this.toolbarShown() ? Math.round(this.toolbarSize() * 2.5) : 0; }
     private toolbarSize(): number { return Math.max(8, Math.min(20, this.formattingSettings?.layoutCard?.toolbarSize?.value ?? 12)); }
 
     // ── Reglas de color (Pro) ────────────────────────────────────────────────
