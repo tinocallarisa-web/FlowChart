@@ -75,6 +75,7 @@
   "Prop_layoutSettings_showLevelHeaders": "En-têtes de niveau",
   "Prop_layoutSettings_showMinimap": "Mini-carte",
   "Prop_layoutSettings_showToolbar": "Barre d’outils",
+  "Prop_layoutSettings_showZoomButtons": "Boutons de zoom",
   "Prop_layoutSettings_toolbarSize": "Taille de la barre",
   "Prop_legendSettings_fontSize": "Taille du texte",
   "Prop_legendSettings_position": "Position",

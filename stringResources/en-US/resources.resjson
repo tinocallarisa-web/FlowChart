@@ -75,6 +75,7 @@
   "Prop_layoutSettings_showLevelHeaders": "Level headers",
   "Prop_layoutSettings_showMinimap": "Minimap",
   "Prop_layoutSettings_showToolbar": "Toolbar",
+  "Prop_layoutSettings_showZoomButtons": "Zoom buttons",
   "Prop_layoutSettings_toolbarSize": "Toolbar size",
   "Prop_legendSettings_fontSize": "Text size",
   "Prop_legendSettings_position": "Position",

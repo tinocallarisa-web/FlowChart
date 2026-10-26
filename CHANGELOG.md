@@ -16,7 +16,7 @@ All notable changes to the Flow Chart Power BI custom visual are documented here
 - **Image background and shape (free):** *Nodes → Image background* puts a color behind node images, and *Image shape* (rounded, circle, square) also crops the image.
 - **Legend options:** position (bottom left, bottom right, top right), text size and color, and the field names instead of "Level 1, 2, 3".
 - **Color rules (Pro):** up to three rules that paint a node by its value, its share of the total or its variance against Target.
-- **Toolbar and minimap options (free):** *Layout → Toolbar* and *Minimap* show or hide them, and *Toolbar size* scales the search box and buttons.
+- **Toolbar and minimap options (free):** *Layout → Toolbar*, *Zoom buttons* and *Minimap* show or hide them (the diagram already fits itself on load), and *Toolbar size* scales the search box and buttons.
 - **Format on the canvas:** in format mode, click a node, a link, a link label, the legend, a level header or the toolbar to format it there.
 - **Keyboard:** one tab stop for the diagram; the arrow keys move along the flow and within a level, Home and End go to the first and last step. Visible focus ring.
 

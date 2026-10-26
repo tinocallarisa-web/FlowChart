@@ -75,6 +75,7 @@
   "Prop_layoutSettings_showLevelHeaders": "Niveaukoppen",
   "Prop_layoutSettings_showMinimap": "Minikaart",
   "Prop_layoutSettings_showToolbar": "Werkbalk",
+  "Prop_layoutSettings_showZoomButtons": "Zoomknoppen",
   "Prop_layoutSettings_toolbarSize": "Grootte van werkbalk",
   "Prop_legendSettings_fontSize": "Tekstgrootte",
   "Prop_legendSettings_position": "Positie",

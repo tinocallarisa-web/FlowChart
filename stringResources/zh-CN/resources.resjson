@@ -75,6 +75,7 @@
   "Prop_layoutSettings_showLevelHeaders": "级别标题",
   "Prop_layoutSettings_showMinimap": "小地图",
   "Prop_layoutSettings_showToolbar": "工具栏",
+  "Prop_layoutSettings_showZoomButtons": "缩放按钮",
   "Prop_layoutSettings_toolbarSize": "工具栏大小",
   "Prop_legendSettings_fontSize": "文本大小",
   "Prop_legendSettings_position": "位置",

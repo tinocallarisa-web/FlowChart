@@ -162,6 +162,13 @@
                         "bool": true
                     }
                 },
+                "showZoomButtons": {
+                    "displayName": "Zoom buttons",
+                    "displayNameKey": "Prop_layoutSettings_showZoomButtons",
+                    "type": {
+                        "bool": true
+                    }
+                },
                 "toolbarSize": {
                     "displayName": "Toolbar size",
                     "displayNameKey": "Prop_layoutSettings_toolbarSize",

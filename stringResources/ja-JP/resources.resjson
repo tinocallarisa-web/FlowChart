@@ -75,6 +75,7 @@
   "Prop_layoutSettings_showLevelHeaders": "レベルのヘッダー",
   "Prop_layoutSettings_showMinimap": "ミニマップ",
   "Prop_layoutSettings_showToolbar": "ツール バー",
+  "Prop_layoutSettings_showZoomButtons": "ズーム ボタン",
   "Prop_layoutSettings_toolbarSize": "ツール バーのサイズ",
   "Prop_legendSettings_fontSize": "テキストのサイズ",
   "Prop_legendSettings_position": "位置",

@@ -60,6 +60,10 @@ export const I18N: Record<string, I18nCard> = {
                 "k": "Prop_layoutSettings_showToolbar",
                 "e": {}
             },
+            "showZoomButtons": {
+                "k": "Prop_layoutSettings_showZoomButtons",
+                "e": {}
+            },
             "toolbarSize": {
                 "k": "Prop_layoutSettings_toolbarSize",
                 "e": {}

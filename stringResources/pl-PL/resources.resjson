@@ -75,6 +75,7 @@
   "Prop_layoutSettings_showLevelHeaders": "Nagłówki poziomów",
   "Prop_layoutSettings_showMinimap": "Minimapa",
   "Prop_layoutSettings_showToolbar": "Pasek narzędzi",
+  "Prop_layoutSettings_showZoomButtons": "Przyciski powiększenia",
   "Prop_layoutSettings_toolbarSize": "Rozmiar paska",
   "Prop_legendSettings_fontSize": "Rozmiar tekstu",
   "Prop_legendSettings_position": "Położenie",

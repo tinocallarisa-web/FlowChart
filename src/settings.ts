@@ -226,6 +226,7 @@ class LayoutCardSettings extends FormattingSettingsCard {
     layerGap = num("layerGap", "Spacing between levels", 100);
     fitOnLoad = toggle("fitOnLoad", "Fit large diagrams to the visual", true);
     showToolbar = toggle("showToolbar", "Toolbar", true);
+    showZoomButtons = toggle("showZoomButtons", "Zoom buttons", true);
     toolbarSize = num("toolbarSize", "Toolbar size", 12);
     showMinimap = toggle("showMinimap", "Minimap", true);
     showLevelHeaders = toggle("showLevelHeaders", "Level headers", false);
@@ -239,7 +240,7 @@ class LayoutCardSettings extends FormattingSettingsCard {
     name: string = "layoutSettings";
     displayName: string = "Layout";
     slices: Array<FormattingSettingsSlice> = [
-        this.direction, this.nodeGap, this.layerGap, this.fitOnLoad, this.showToolbar, this.toolbarSize, this.showMinimap,
+        this.direction, this.nodeGap, this.layerGap, this.fitOnLoad, this.showToolbar, this.showZoomButtons, this.toolbarSize, this.showMinimap,
         this.showLevelHeaders, this.headerSize, this.headerColor, this.fillBackground, this.backgroundColor,
         this.showGrid, this.gridColor
     ];

@@ -1823,7 +1823,9 @@ export class Visual implements IVisual {
                 style: `font:${ts}px 'Segoe UI',sans-serif;padding:2px 6px;border:1px solid #ccc;border-radius:3px;width:${ts * 9}px;`
             }));
         }
-        if (!estrecho) {
+        // Botones de zoom (−, +, Ajustar): ocultables, porque el diagrama ya se ajusta solo al cargar.
+        const zoomBotones = this.formattingSettings?.layoutCard?.showZoomButtons?.value ?? true;
+        if (!estrecho && zoomBotones) {
             barra.appendChild(this.htmlEl("button", {
                 type: "button", class: "flow-zoom-out", title: this.t("UI_ZoomOut", "Zoom out"), "aria-label": this.t("UI_ZoomOut", "Zoom out"),
                 style: `font:${ts + 2}px 'Segoe UI',sans-serif;width:${Math.round(ts * 2)}px;padding:0;border:1px solid #ccc;`
@@ -1835,7 +1837,7 @@ export class Visual implements IVisual {
                      + "border-radius:3px;background:#fff;cursor:pointer;"
             }, "+"));
         }
-        barra.appendChild(this.htmlEl("button", {
+        if (zoomBotones) barra.appendChild(this.htmlEl("button", {
             type: "button", class: "flow-fit", "aria-label": this.t("UI_FitAria", "Fit diagram to view"),
             style: ESTILO_BOTON + "background:#fff;"
         }, this.t("UI_Fit", "Fit")));
@@ -1855,7 +1857,7 @@ export class Visual implements IVisual {
             }, "ⓘ"));  // ⓘ: el texto traducido ("Información sobre herramientas") no cabe en la barra; va en title y aria-label
         }
         this.subSelectable(barra, "layoutSettings", this.t("Obj_layoutSettings", "Layout"), powerbi.visuals.SubSelectionStylesType.Shape);
-        if (this.toolbarShown()) this.target.appendChild(barra);
+        if (this.toolbarShown() && barra.childElementCount > 0) this.target.appendChild(barra);
 
         if (variantsPanelEl) { this.target.appendChild(variantsPanelEl); }
 

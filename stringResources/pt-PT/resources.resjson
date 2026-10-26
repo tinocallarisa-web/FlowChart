@@ -75,6 +75,7 @@
   "Prop_layoutSettings_showLevelHeaders": "Cabeçalhos de nível",
   "Prop_layoutSettings_showMinimap": "Minimapa",
   "Prop_layoutSettings_showToolbar": "Barra de ferramentas",
+  "Prop_layoutSettings_showZoomButtons": "Botões de zoom",
   "Prop_layoutSettings_toolbarSize": "Tamanho da barra",
   "Prop_legendSettings_fontSize": "Tamanho do texto",
   "Prop_legendSettings_position": "Posição",

@@ -75,6 +75,7 @@
   "Prop_layoutSettings_showLevelHeaders": "Ebenenüberschriften",
   "Prop_layoutSettings_showMinimap": "Minikarte",
   "Prop_layoutSettings_showToolbar": "Symbolleiste",
+  "Prop_layoutSettings_showZoomButtons": "Zoomschaltflächen",
   "Prop_layoutSettings_toolbarSize": "Größe der Symbolleiste",
   "Prop_legendSettings_fontSize": "Textgröße",
   "Prop_legendSettings_position": "Position",

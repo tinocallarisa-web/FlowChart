@@ -45,6 +45,7 @@ OBJECTS = OD([
         ("layerGap", NUM, "Spacing between levels"),
         ("fitOnLoad", BOOL, "Fit large diagrams to the visual"),
         ("showToolbar", BOOL, "Toolbar"),
+        ("showZoomButtons", BOOL, "Zoom buttons"),
         ("toolbarSize", NUM, "Toolbar size"),
         ("showMinimap", BOOL, "Minimap"),
         ("showLevelHeaders", BOOL, "Level headers"),
