@@ -196,6 +196,8 @@ export class Visual implements IVisual {
     private clipSeq = 0;
     /** Firma del diagrama ya ajustado al visual, para no reajustar en cada repintado. */
     private fittedKey = "";
+    /** Firma de los datos, la dirección y el tamaño del visual: lo único que justifica reajustar. */
+    private dataKey = "";
 
     constructor(options: VisualConstructorOptions) {
         this.formattingSettingsService = new FormattingSettingsService();
@@ -310,6 +312,9 @@ export class Visual implements IVisual {
         }
 
         this.data = this.parseDataView(dataView);
+        const filas = dataView.table.rows || [];
+        this.dataKey = [filas.length, this.levelNames.join("/"), this.direction, Math.round(this.width), Math.round(this.height),
+            String(filas[0]?.[0] ?? ""), String(filas[filas.length - 1]?.[0] ?? "")].join("|");
         // Con un solo nivel, o sin filas que formen una cadena, no hay diagrama: se explica qué falta.
         if (this.data.nodes.length === 0) {
             this.renderEmpty(conNiveles < 2 ? this.t("UI_NeedTwoLevels", "Add a second field to Levels: a flow needs at least two steps.") : this.t("UI_NoRows", "No row has two or more levels filled in."));
@@ -1603,9 +1608,10 @@ export class Visual implements IVisual {
         this.contentHeight = maxY;
         // Ajustar al visual un diagrama que no cabe, una vez por forma y tamaño (luego manda el zoom del lector).
         const fitOnLoad = this.formattingSettings?.layoutCard?.fitOnLoad?.value ?? true;
-        const fitKey = `${nodes.length}|${this.direction}|${Math.round(maxX)}x${Math.round(maxY)}|${Math.round(this.width)}x${Math.round(this.height)}`;
-        if (fitOnLoad && fitKey !== this.fittedKey && this.width > 0 && this.height > 0) {
-            this.fittedKey = fitKey;
+        // Solo con datos, dirección o tamaño del visual nuevos (dataKey, en draw). Plegar una rama o tocar el panel no
+        // reajusta: cambiaba el zoom del lector a cada clic.
+        if (fitOnLoad && this.dataKey !== this.fittedKey && this.width > 0 && this.height > 0) {
+            this.fittedKey = this.dataKey;
             const escala = Math.min(this.width / maxX, this.height / maxY);
             this.zoomScale = escala < 1 ? Math.max(0.35, escala) : 1;
         }
