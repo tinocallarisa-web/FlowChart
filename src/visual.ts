@@ -1135,7 +1135,8 @@ export class Visual implements IVisual {
             });
             const maxLayerWidth = Math.max(...layerWidths, offsetX - MARGIN);
 
-            let cursorY = MARGIN + (hasSwimlanes ? SWIMLANE_LABEL_GAP : 0);
+            // Sin hueco extra arriba: la etiqueta del carril va dentro de su banda, encima de sus nodos.
+            let cursorY = MARGIN;
             sortedLayerIndexes.forEach((layerIndex, i) => {
                 const layerNodes = layers.get(layerIndex);
                 let cursorX = MARGIN + (maxLayerWidth - layerWidths[i]) / 2;
@@ -1618,7 +1619,7 @@ export class Visual implements IVisual {
         // reajusta: cambiaba el zoom del lector a cada clic.
         if (fitOnLoad && this.dataKey !== this.fittedKey && this.width > 0 && this.height > 0) {
             this.fittedKey = this.dataKey;
-            const escala = Math.min(this.width / maxX, (this.height - this.toolbarH()) / maxY);
+            const escala = Math.min(this.width / maxX, (this.height - this.toolbarH() - this.legendReserve()) / maxY);
             this.zoomScale = escala < 1 ? Math.max(0.35, escala) : 1;
         }
         const svgWidth = maxX * this.zoomScale;
@@ -1634,6 +1635,9 @@ export class Visual implements IVisual {
         const nombreNivel = (li: number) => (legendFieldNames && this.levelNames[li])
             ? this.levelNames[li] : this.t("UI_Level", "Level {0}").replace("{0}", String(li + 1));
         const usedLevels = Array.from(new Set(nodes.map(n => n.layer))).sort((a, b) => a - b);
+        // La leyenda de abajo también reserva su sitio (como la barra arriba): el diagrama no se mete debajo de ella.
+        const legendAbajo = legendPos !== "topRight";
+        const legendH = this.legendReserve();
         let legendEl: HTMLElement | null = null;
         if (showLegend && colorByLevel && usedLevels.length) {
             const lado = legendPos === "bottomRight" ? "bottom:0;right:0;" : legendPos === "topRight" ? "top:0;right:0;" : "bottom:0;left:0;";
@@ -1861,7 +1865,7 @@ export class Visual implements IVisual {
         if (variantsPanelEl) { this.target.appendChild(variantsPanelEl); }
 
         const scroll = this.htmlEl("div", {
-            class: "flow-scroll", style: `position:absolute;inset:0;overflow:auto;display:flex;box-sizing:border-box;padding-top:${this.toolbarH()}px;`
+            class: "flow-scroll", style: `position:absolute;inset:0;overflow:auto;display:flex;box-sizing:border-box;padding-top:${this.toolbarH()}px;padding-bottom:${legendH}px;`
         });
         const svg = this.svgEl("svg", {
             width: svgWidth, height: svgHeight, viewBox: `0 0 ${maxX} ${maxY}`,
@@ -1898,7 +1902,11 @@ export class Visual implements IVisual {
         scroll.appendChild(svg);
         this.target.appendChild(scroll);
 
-        if (legendEl) { this.target.appendChild(legendEl); }
+        if (legendEl) {
+            this.target.appendChild(legendEl);
+            // Si la leyenda ocupa más de una línea (visual estrecho), se reserva su alto real.
+            if (legendAbajo && legendEl.offsetHeight > legendH) scroll.style.paddingBottom = legendEl.offsetHeight + "px";
+        }
         if (minimapEl) { this.target.appendChild(minimapEl); }
 
         this.svgRoot = this.target.querySelector("svg");
@@ -1972,7 +1980,7 @@ export class Visual implements IVisual {
     private fitToView(): void {
         if (!this.contentWidth || !this.contentHeight) return;
         const scaleX = this.width / this.contentWidth;
-        const scaleY = (this.height - this.toolbarH()) / this.contentHeight;
+        const scaleY = (this.height - this.toolbarH() - this.legendReserve()) / this.contentHeight;
         this.zoomScale = Math.min(scaleX, scaleY, 1);
         this.updateSvgSize();
         const scrollEl = this.target.querySelector(".flow-scroll") as HTMLElement;
@@ -2297,6 +2305,14 @@ export class Visual implements IVisual {
 
     /** Barra de herramientas: visible y tamaño de letra (Diseño → Barra de herramientas, Tamaño de la barra). */
     private toolbarShown(): boolean { return this.formattingSettings?.layoutCard?.showToolbar?.value ?? true; }
+    /** Alto que se reserva abajo para la leyenda (una línea); 0 si no se ve o va arriba a la derecha. */
+    private legendReserve(): number {
+        const lg = this.formattingSettings?.legendCard;
+        const visible = (lg?.show?.value ?? true) && this.height >= 140
+            && (this.formattingSettings?.dataPointCard?.colorByLevel?.value ?? true)
+            && String(lg?.position?.value?.value ?? "bottomLeft") !== "topRight";
+        return visible ? Math.round((lg?.fontSize?.value ?? 11) * 1.5 + 10) : 0;
+    }
     private toolbarH(): number { return this.toolbarShown() ? Math.round(this.toolbarSize() * 2.5) : 0; }
     private toolbarSize(): number { return Math.max(8, Math.min(20, this.formattingSettings?.layoutCard?.toolbarSize?.value ?? 12)); }
 
