@@ -180,6 +180,24 @@
                         }
                     }
                 },
+                "fillBackground": {
+                    "displayName": "Background",
+                    "displayNameKey": "Prop_layoutSettings_fillBackground",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "backgroundColor": {
+                    "displayName": "Background color",
+                    "displayNameKey": "Prop_layoutSettings_backgroundColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
                 "showGrid": {
                     "displayName": "Background grid",
                     "displayNameKey": "Prop_layoutSettings_showGrid",
@@ -413,6 +431,47 @@
                     "displayNameKey": "Prop_nodeSettings_imageSize",
                     "type": {
                         "numeric": true
+                    }
+                },
+                "imageBackground": {
+                    "displayName": "Image background",
+                    "displayNameKey": "Prop_nodeSettings_imageBackground",
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "imageBackgroundColor": {
+                    "displayName": "Image background color",
+                    "displayNameKey": "Prop_nodeSettings_imageBackgroundColor",
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "imageShape": {
+                    "displayName": "Image shape",
+                    "displayNameKey": "Prop_nodeSettings_imageShape",
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "rounded",
+                                "displayName": "Rounded",
+                                "displayNameKey": "Enum_nodeSettings_imageShape_Rounded"
+                            },
+                            {
+                                "value": "circle",
+                                "displayName": "Circle",
+                                "displayNameKey": "Enum_nodeSettings_imageShape_Circle"
+                            },
+                            {
+                                "value": "square",
+                                "displayName": "Square",
+                                "displayNameKey": "Enum_nodeSettings_imageShape_Square"
+                            }
+                        ]
                     }
                 },
                 "showShadow": {

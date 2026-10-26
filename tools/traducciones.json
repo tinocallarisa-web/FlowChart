@@ -2278,5 +2278,101 @@
   "目標を {0}% 下回る",
   "低于目标 {0}%",
   "목표보다 {0}% 낮음"
+ ],
+ "Background": [
+  "Fondo",
+  "Tela de fundo",
+  "Arrière-plan",
+  "Hintergrund",
+  "Sfondo",
+  "Achtergrond",
+  "Tło",
+  "背景",
+  "背景",
+  "배경"
+ ],
+ "Background color": [
+  "Color de fondo",
+  "Cor da tela de fundo",
+  "Couleur d’arrière-plan",
+  "Hintergrundfarbe",
+  "Colore di sfondo",
+  "Achtergrondkleur",
+  "Kolor tła",
+  "背景色",
+  "背景色",
+  "배경색"
+ ],
+ "Image background": [
+  "Fondo de la imagen",
+  "Fundo da imagem",
+  "Arrière-plan de l’image",
+  "Bildhintergrund",
+  "Sfondo immagine",
+  "Achtergrond van afbeelding",
+  "Tło obrazu",
+  "画像の背景",
+  "图像背景",
+  "이미지 배경"
+ ],
+ "Image background color": [
+  "Color de fondo de la imagen",
+  "Cor de fundo da imagem",
+  "Couleur d’arrière-plan de l’image",
+  "Bildhintergrundfarbe",
+  "Colore sfondo immagine",
+  "Achtergrondkleur van afbeelding",
+  "Kolor tła obrazu",
+  "画像の背景色",
+  "图像背景色",
+  "이미지 배경색"
+ ],
+ "Image shape": [
+  "Forma de la imagen",
+  "Forma da imagem",
+  "Forme de l’image",
+  "Bildform",
+  "Forma immagine",
+  "Vorm van afbeelding",
+  "Kształt obrazu",
+  "画像の形",
+  "图像形状",
+  "이미지 모양"
+ ],
+ "Rounded": [
+  "Redondeada",
+  "Arredondada",
+  "Arrondie",
+  "Abgerundet",
+  "Arrotondata",
+  "Afgerond",
+  "Zaokrąglony",
+  "角丸",
+  "圆角",
+  "둥근 모서리"
+ ],
+ "Circle": [
+  "Círculo",
+  "Círculo",
+  "Cercle",
+  "Kreis",
+  "Cerchio",
+  "Cirkel",
+  "Okrąg",
+  "円",
+  "圆形",
+  "원"
+ ],
+ "Square": [
+  "Cuadrada",
+  "Quadrada",
+  "Carrée",
+  "Quadratisch",
+  "Quadrata",
+  "Vierkant",
+  "Kwadrat",
+  "四角",
+  "方形",
+  "사각형"
  ]
 }

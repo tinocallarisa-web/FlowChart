@@ -68,6 +68,14 @@ export const I18N: Record<string, I18nCard> = {
                 "k": "Prop_layoutSettings_headerColor",
                 "e": {}
             },
+            "fillBackground": {
+                "k": "Prop_layoutSettings_fillBackground",
+                "e": {}
+            },
+            "backgroundColor": {
+                "k": "Prop_layoutSettings_backgroundColor",
+                "e": {}
+            },
             "showGrid": {
                 "k": "Prop_layoutSettings_showGrid",
                 "e": {}
@@ -168,6 +176,22 @@ export const I18N: Record<string, I18nCard> = {
             "imageSize": {
                 "k": "Prop_nodeSettings_imageSize",
                 "e": {}
+            },
+            "imageBackground": {
+                "k": "Prop_nodeSettings_imageBackground",
+                "e": {}
+            },
+            "imageBackgroundColor": {
+                "k": "Prop_nodeSettings_imageBackgroundColor",
+                "e": {}
+            },
+            "imageShape": {
+                "k": "Prop_nodeSettings_imageShape",
+                "e": {
+                    "rounded": "Enum_nodeSettings_imageShape_Rounded",
+                    "circle": "Enum_nodeSettings_imageShape_Circle",
+                    "square": "Enum_nodeSettings_imageShape_Square"
+                }
             },
             "showShadow": {
                 "k": "Prop_nodeSettings_showShadow",

@@ -12,6 +12,8 @@ All notable changes to the Flow Chart Power BI custom visual are documented here
 - **Link labels (free):** the value, its share of the total, or both, on each link. When two labels would overlap, the larger link keeps its label.
 - **Level headers (free):** the name of each Levels field above (or beside) its column of nodes.
 - **Background grid (free)** and **step numbers on or off** (*Nodes → Step number*).
+- **Background (free):** *Layout → Background* paints the visual and gives the toolbar, legend and minimap the same color; without it they are transparent over the report background instead of white boxes.
+- **Image background and shape (free):** *Nodes → Image background* puts a color behind node images, and *Image shape* (rounded, circle, square) also crops the image.
 - **Legend options:** position (bottom left, bottom right, top right), text size and color, and the field names instead of "Level 1, 2, 3".
 - **Color rules (Pro):** up to three rules that paint a node by its value, its share of the total or its variance against Target.
 - **Format on the canvas:** in format mode, click a node, a link, a link label, the legend, a level header or the toolbar to format it there.
@@ -20,6 +22,8 @@ All notable changes to the Flow Chart Power BI custom visual are documented here
 ### Changed
 - **Numbers use the format of your model by default** (*Value format → Model format*), dynamic format strings included, in the report's language. Reports that never chose a format will show the measure's own format after the update; the previous options are still there.
 - **Large diagrams fit the visual when they load** (*Layout → Fit large diagrams to the visual*), instead of opening at 100% with most of the diagram out of view.
+- **Node name and value are centered together** in the node, with the same margin above and below; the value no longer sits on the bottom edge.
+- **The diagram is centered by the visual**, horizontally and vertically, and zooming grows it from the center. Before, zooming in pushed it down.
 - **Smaller visuals:** below 320 px wide the toolbar keeps only *Fit*; the minimap hides below 360 × 240 and the legend below 140 px high. The minimap moved to the bottom right, where it no longer covers the first node.
 - **Pro preview** while editing without a licence now draws the Pro layers on the five largest nodes, two swimlanes and three variants, under the watermark — enough to see them working on your data. Reading view is unchanged: the free diagram.
 - New icon of the TCViz series.

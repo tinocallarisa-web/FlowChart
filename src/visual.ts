@@ -192,6 +192,8 @@ export class Visual implements IVisual {
     private previewNodeIds: Set<string> | null = null;
     /** Nodo con el foco de teclado (tabindex móvil). */
     private focusNodeId: string | null = null;
+    /** Contador para los ids de recorte de las imágenes (únicos en la página). */
+    private clipSeq = 0;
     /** Firma del diagrama ya ajustado al visual, para no reajustar en cada repintado. */
     private fittedKey = "";
 
@@ -1260,6 +1262,12 @@ export class Visual implements IVisual {
         this.centeringApplied = true;
 
         const isHighContrast = this.host.colorPalette.isHighContrast;
+        // Fondo propio (Diseño → Fondo). Sin él, el visual es transparente y la barra, la leyenda y el minimapa también,
+        // para no dibujar recuadros blancos sobre el fondo del informe.
+        const conFondo = !!this.formattingSettings?.layoutCard?.fillBackground?.value;
+        const fondo = this.formattingSettings?.layoutCard?.backgroundColor?.value?.value || "#FFFFFF";
+        const panelBg = isHighContrast ? this.host.colorPalette.background.value : (conFondo ? this.hexToRgba(fondo, 0.92) : "transparent");
+        this.target.style.background = isHighContrast ? this.host.colorPalette.background.value : (conFondo ? fondo : "transparent");
         const linkColor = isHighContrast
             ? this.host.colorPalette.foreground.value
             : (this.formattingSettings?.linkCard?.color?.value?.value || "#B7C0D8");
@@ -1458,7 +1466,10 @@ export class Visual implements IVisual {
             const hasBadge = showBadge;
             const imageOffset = n.image ? imageSize + IMAGE_PADDING : 0;
             const labelCenterX = imageOffset + (n.width - imageOffset) / 2;
-            const labelY = hasBadge ? n.height / 2 - 8 : n.height / 2;
+            // Nombre y valor como un bloque centrado: el mismo margen arriba y abajo (antes el valor iba pegado al borde).
+            const bloque = hasBadge ? fontSize + 4 + badgeFontSize : fontSize;
+            const arribaBloque = (n.height - bloque) / 2;
+            const labelY = hasBadge ? arribaBloque + fontSize / 2 : n.height / 2;
             const badgeEls: SVGElement[] = [];
             if (hasBadge) {
                 const actual = this.visibleInValue.get(n.id) || this.visibleOutValue.get(n.id) || 0;
@@ -1470,7 +1481,7 @@ export class Visual implements IVisual {
                 const badgeText = isKpi
                     ? `${valueText}  ${isUp ? "▲" : "▼"} ${Math.abs(variancePct).toFixed(1)}%`
                     : valueText;
-                const badgeY = n.height / 2 + 13;
+                const badgeY = arribaBloque + fontSize + 4 + badgeFontSize / 2;
                 const kpiColor = isUp ? kpiUpColor : kpiDownColor;
                 const pillFill = isKpi ? this.hexToRgba(kpiColor, 0.85) : this.hexToRgba(badgeBackgroundColor, badgeBackgroundOpacity);
                 const showPill = isKpi || badgeBackgroundOpacity > 0;
@@ -1524,9 +1535,31 @@ export class Visual implements IVisual {
             // La imagen es un data URI del modelo. href por setAttribute: aunque llegara
             // algo raro, no puede convertirse en markup.
             if (n.image) {
+                // Fondo opcional detrás de la imagen (Nodos → Fondo de la imagen) y forma: un icono transparente o oscuro
+                // se lee igual sobre cualquier color de nodo. Con "Círculo" la imagen también se recorta en círculo.
+                const ix = 4, iy = (n.height - imageSize) / 2;
+                const forma = String(this.formattingSettings?.nodeCard?.imageShape?.value?.value ?? "rounded");
+                const radio = forma === "circle" ? imageSize / 2 : forma === "rounded" ? Math.round(imageSize * 0.22) : 0;
+                if (this.formattingSettings?.nodeCard?.imageBackground?.value) {
+                    const pad = 2;
+                    g.appendChild(this.svgEl("rect", {
+                        "aria-hidden": "true", x: ix - pad, y: iy - pad, width: imageSize + pad * 2, height: imageSize + pad * 2,
+                        rx: radio ? radio + pad : 0,
+                        fill: isHighContrast ? this.host.colorPalette.background.value
+                            : (this.formattingSettings?.nodeCard?.imageBackgroundColor?.value?.value || "#FFFFFF")
+                    }));
+                }
+                let clip: string | null = null;
+                if (radio > 0) {
+                    clip = "fc-img-" + (++this.clipSeq);
+                    const cp = this.svgEl("clipPath", { id: clip });
+                    cp.appendChild(this.svgEl("rect", { x: ix, y: iy, width: imageSize, height: imageSize, rx: radio }));
+                    g.appendChild(cp);
+                }
                 g.appendChild(this.svgEl("image", {
-                    x: 4, y: (n.height - imageSize) / 2, width: imageSize, height: imageSize,
-                    href: n.image, preserveAspectRatio: "xMidYMid slice"
+                    x: ix, y: iy, width: imageSize, height: imageSize,
+                    href: n.image, preserveAspectRatio: "xMidYMid slice",
+                    "clip-path": clip ? `url(#${clip})` : null
                 }));
             }
 
@@ -1585,7 +1618,7 @@ export class Visual implements IVisual {
         const legendSize = this.formattingSettings?.legendCard?.fontSize?.value ?? 11;
         const legendColor = isHighContrast ? this.host.colorPalette.foreground.value
             : (this.formattingSettings?.legendCard?.textColor?.value?.value || "#333333");
-        const legendBg = isHighContrast ? this.host.colorPalette.background.value : "rgba(255,255,255,0.9)";
+        const legendBg = panelBg;
         const nombreNivel = (li: number) => (legendFieldNames && this.levelNames[li])
             ? this.levelNames[li] : this.t("UI_Level", "Level {0}").replace("{0}", String(li + 1));
         const usedLevels = Array.from(new Set(nodes.map(n => n.layer))).sort((a, b) => a - b);
@@ -1729,7 +1762,7 @@ export class Visual implements IVisual {
             minimapEl = this.htmlEl("div", {
                 class: "flow-minimap", "aria-hidden": "true",
                 // Abajo a la derecha: arriba a la izquierda tapaba el primer nodo y su cabecera.
-                style: `position:absolute;${legendPos === "bottomRight" ? "top:38px" : "bottom:4px"};right:4px;z-index:2;background:rgba(255,255,255,0.9);`
+                style: `position:absolute;${legendPos === "bottomRight" ? "top:38px" : "bottom:4px"};right:4px;z-index:2;background:${panelBg};`
                      + "border:1px solid #ccc;border-radius:3px;padding:2px;"
             });
             const msvg = this.svgEl("svg", {
@@ -1761,7 +1794,7 @@ export class Visual implements IVisual {
         const barra = this.htmlEl("div", {
             class: "flow-toolbar",
             style: "position:absolute;top:0;left:0;z-index:2;display:flex;gap:6px;padding:4px;"
-                 + "background:rgba(255,255,255,0.9);width:max-content;"
+                 + `background:${panelBg};width:max-content;`
         });
         const ESTILO_BOTON = "font:12px 'Segoe UI',sans-serif;padding:2px 8px;border:1px solid #ccc;"
                            + "border-radius:3px;cursor:pointer;";

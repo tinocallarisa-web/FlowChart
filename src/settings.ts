@@ -86,6 +86,13 @@ class NodeCardSettings extends FormattingSettingsCard {
     shadowOffsetY = num("shadowOffsetY", "Shadow offset Y", 2);
     shadowOpacity = num("shadowOpacity", "Shadow opacity %", 35);
     imageSize = num("imageSize", "Image size", 24);
+    imageBackground = toggle("imageBackground", "Image background", false);
+    imageBackgroundColor = color("imageBackgroundColor", "Image background color", "#FFFFFF");
+    imageShape = pick("imageShape", "Image shape", [
+        { value: "rounded", displayName: "Rounded" },
+        { value: "circle", displayName: "Circle" },
+        { value: "square", displayName: "Square" }
+    ]);
 
     name: string = "nodeSettings";
     displayName: string = "Nodes";
@@ -94,7 +101,8 @@ class NodeCardSettings extends FormattingSettingsCard {
         this.fontFamily, this.fontSize, this.textColor, this.showStepNumber,
         this.showBadge, this.badgeFontFamily, this.badgeFontSize, this.badgeTextColor,
         this.badgeBackgroundColor, this.badgeBackgroundOpacity, this.kpiUpColor, this.kpiDownColor,
-        this.borderWidth, this.borderColor, this.colorBorderByLevel, this.imageSize,
+        this.borderWidth, this.borderColor, this.colorBorderByLevel,
+        this.imageSize, this.imageBackground, this.imageBackgroundColor, this.imageShape,
         this.showShadow, this.shadowColor, this.shadowBlur, this.shadowOffsetX, this.shadowOffsetY, this.shadowOpacity
     ];
 }
@@ -220,6 +228,8 @@ class LayoutCardSettings extends FormattingSettingsCard {
     showLevelHeaders = toggle("showLevelHeaders", "Level headers", false);
     headerSize = num("headerSize", "Header size", 11);
     headerColor = color("headerColor", "Header color", "#4C566A");
+    fillBackground = toggle("fillBackground", "Background", false);
+    backgroundColor = color("backgroundColor", "Background color", "#FFFFFF");
     showGrid = toggle("showGrid", "Background grid", false);
     gridColor = color("gridColor", "Grid color", "#E5E9F0");
 
@@ -227,7 +237,8 @@ class LayoutCardSettings extends FormattingSettingsCard {
     displayName: string = "Layout";
     slices: Array<FormattingSettingsSlice> = [
         this.direction, this.nodeGap, this.layerGap, this.fitOnLoad,
-        this.showLevelHeaders, this.headerSize, this.headerColor, this.showGrid, this.gridColor
+        this.showLevelHeaders, this.headerSize, this.headerColor, this.fillBackground, this.backgroundColor,
+        this.showGrid, this.gridColor
     ];
 }
 
