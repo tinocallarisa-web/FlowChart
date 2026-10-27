@@ -119,7 +119,7 @@ Support: https://tinocallarisa-web.github.io/FlowChart/support.html
 Privacy: https://tinocallarisa-web.github.io/FlowChart/privacy.html
 Terms: https://tinocallarisa-web.github.io/FlowChart/terms.html
 Changelog: https://tinocallarisa-web.github.io/FlowChart/changelog.html
-Video: https://www.youtube.com/watch?v=wXvxscw7e4k
+Video: https://www.youtube.com/watch?v=FotaI7ziHxg
 
 LICENSE VALIDATION
 Resolved via the official IVisualLicenseManager API (getAvailableServicePlans), checked against

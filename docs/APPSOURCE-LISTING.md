@@ -10,9 +10,8 @@ Microsoft reviews lives only in the console.
 
 Counted with Python on 2026-10-27: summary **92** characters, description **4,072** characters (4,135 counting CRLF line breaks).
 
-**TODO before submitting:** Tino records the 1.2 video. Replace `wXvxscw7e4k` here, in
-`src/visual.ts` (URL_VIDEO), `docs/support.html` (iframe), `docs/CERTIFICATION-NOTES*`, `README.md`
-and in Partner Center → Offer listing → Videos — canonical `https://www.youtube.com/watch?v=…` only.
+**Video 1.2 (27-10-2026):** `https://www.youtube.com/watch?v=FotaI7ziHxg` — already in `src/visual.ts`, support.html,
+the notes and the README. Paste it in Partner Center → Offer listing → Videos (canonical form only).
 
 ---
 
@@ -111,7 +110,7 @@ Twelve languages, style templates and setup tips, link labels, level headers, gr
 | Privacy policy | https://tinocallarisa-web.github.io/FlowChart/privacy.html |
 | Terms / licence | https://tinocallarisa-web.github.io/FlowChart/terms.html |
 | GitHub repo | https://github.com/tinocallarisa-web/FlowChart |
-| Video | https://www.youtube.com/watch?v=wXvxscw7e4k (TODO: 1.2 video) |
+| Video | https://www.youtube.com/watch?v=FotaI7ziHxg |
 
 Canonical YouTube URL only (policy 100.3.3.3). Shortened links, `/shorts/` and `/embed/` are
 rejected automatically.

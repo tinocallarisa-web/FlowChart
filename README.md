@@ -7,7 +7,7 @@ Built by [TCViz](https://tcviz.com).
 [Changelog](https://tinocallarisa-web.github.io/FlowChart/changelog.html) ·
 [Privacy](https://tinocallarisa-web.github.io/FlowChart/privacy.html) ·
 [Terms](https://tinocallarisa-web.github.io/FlowChart/terms.html) ·
-[Video walkthrough](https://www.youtube.com/watch?v=wXvxscw7e4k)
+[Video walkthrough](https://www.youtube.com/watch?v=FotaI7ziHxg)
 
 ## What it does
 

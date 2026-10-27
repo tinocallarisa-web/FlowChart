@@ -1,7 +1,7 @@
 Flow Chart 1.2.0.0 - GUID flowChart69C501A62F7E49748AD3DA7D4E840200
 Repo: github.com/tinocallarisa-web/FlowChart, branch certification (= main)
 Pages: tinocallarisa-web.github.io/FlowChart/ | Full notes: docs/
-Video: youtube.com/watch?v=wXvxscw7e4k
+Video: youtube.com/watch?v=FotaI7ziHxg
 
 PRO PREVIEW
 No licence, EDIT MODE ONLY: Pro layers drawn WORKING under a "Pro preview" watermark,

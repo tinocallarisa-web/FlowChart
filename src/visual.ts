@@ -14,8 +14,8 @@ import { LANDING_ICON } from "./landingIcon";
 
 const URL_GUIDE = "https://tinocallarisa-web.github.io/FlowChart/support.html";
 const URL_PRODUCT = "https://tcviz.com/product/flow-chart/?ref=visual-flowchart";
-// Vídeo de la 1.1; se cambia cuando Tino grabe el de la 1.2.
-const URL_VIDEO = "https://www.youtube.com/watch?v=wXvxscw7e4k";
+// Vídeo de la 1.2 (27-10-2026).
+const URL_VIDEO = "https://www.youtube.com/watch?v=FotaI7ziHxg";
 
 /** Vista previa Pro (editando, sin licencia): las capas Pro se dibujan solo en los nodos de más valor, para enseñarlas
  *  sin que sirvan de trabajo real (decisión 26-10-2026). Con licencia no hay límite. */
