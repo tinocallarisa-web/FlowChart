@@ -2,7 +2,7 @@
 
 All notable changes to the Flow Chart Power BI custom visual are documented here.
 
-## [1.2.0.0] - 2026-10 (in progress)
+## [1.2.0.0] - 2026-10-27
 
 ### Added
 - **Twelve languages.** English, Spanish, French, German, Italian, Portuguese (Brazil and Portugal), Dutch, Polish, Japanese, Simplified Chinese and Korean — the Format pane, the toolbar, tooltips, messages, the start screen and the setup tips. Until now the visual was in English only.

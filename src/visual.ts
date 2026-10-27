@@ -989,6 +989,7 @@ export class Visual implements IVisual {
                 { displayName: this.t("UI_Tip_Source", "Source"), value: s?.label ?? link.sourceId },
                 { displayName: this.t("UI_Tip_To", "To"), value: t?.label ?? link.targetId },
                 { displayName: this.t("Role_value", "Value"), value: this.formatValue(link.value, totalValue) },
+                { displayName: this.t("UI_Tip_Share", "% of total"), value: this.pct(link.value, totalValue) },
                 ...link.extra
             ];
         });
@@ -2178,6 +2179,13 @@ export class Visual implements IVisual {
                 if (this.canInteract && !this.formatMode) this.toggleSelection(node.selectionIds, e.ctrlKey);
                 return;
             }
+            if (e.key === "Escape") {
+                if (this.selectionManager.hasSelection()) {
+                    e.preventDefault();
+                    this.selectionManager.clear().then(() => this.applySelectionDimming());
+                }
+                return;
+            }
             // Flechas: a lo largo del flujo (siguiente / anterior nivel) y dentro del nivel. Home y End: primero y último.
             const visibles = Array.from(this.svgRoot.querySelectorAll(".flow-node"))
                 .map(el => this.data.nodes.find(n => n.id === el.getAttribute("data-node-id")))
@@ -2233,6 +2241,7 @@ export class Visual implements IVisual {
                             { displayName: this.t("UI_Tip_Origin", "Origin"), value: node.originLabels.join(", ") || "—" },
                             { displayName: this.t("UI_Tip_Inflow", "Inflow"), value: this.formatValue(visibleIn, this.data.totalValue) },
                             { displayName: this.t("UI_Tip_Outflow", "Outflow"), value: this.formatValue(visibleOut, this.data.totalValue) },
+                            { displayName: this.t("UI_Tip_Share", "% of total"), value: this.pct(visibleIn || visibleOut, this.data.totalValue) },
                             ...kpiItems,
                             ...node.extraTooltips
                         ] as any,
@@ -2301,6 +2310,12 @@ export class Visual implements IVisual {
             const match = variant.linkIds.includes(linkId);
             (el as HTMLElement).style.opacity = match ? "1" : "0.08";
         });
+    }
+
+    /** Parte del total en el idioma del informe ("31,5 %" en español). */
+    private pct(v: number, total: number): string {
+        if (!(total > 0)) return "—";
+        return ((v / total) * 100).toLocaleString(this.host?.locale || undefined, { maximumFractionDigits: 1 }) + "%";
     }
 
     /** Barra de herramientas: visible y tamaño de letra (Diseño → Barra de herramientas, Tamaño de la barra). */
