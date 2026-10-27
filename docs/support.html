@@ -219,11 +219,12 @@
 <div class="wrap">
 
 <h1>Support &amp; Documentation</h1>
-<span class="verpill">Version 1.1.0.0 &middot; <a href="changelog.html">See what&rsquo;s new</a></span>
+<span class="verpill">Version 1.2.0.0 &middot; <a href="changelog.html">See what&rsquo;s new</a></span>
 <p>Flow Chart turns a set of ordered columns into a process diagram. Each column you drop into
 <strong>Levels</strong> becomes one stage of the flow, repeated values merge into shared branches, and the
 <strong>Value</strong> measure sets the weight of every node and link. Everything below is documented against
-version 1.1.0.0 of the visual.</p>
+version 1.2.0.0 of the visual. The visual follows the language of Power BI: English, Spanish, French,
+German, Italian, Portuguese (Brazil and Portugal), Dutch, Polish, Japanese, Simplified Chinese and Korean.</p>
 
 <div class="cta">
   <a class="btn btn-primary" href="#quickstart">Get started</a>
@@ -244,8 +245,12 @@ version 1.1.0.0 of the visual.</p>
   <p>Drag one field per stage into <strong>Levels</strong>, <em>in the order the process happens</em>. Field order
   is the structure: the first field is the root layer, the second the next layer, and so on. Rows that share the
   same value at a given level are merged into one node, which is how branches form.</p>
-  <p>Add a measure to <strong>Value</strong>. Node badges, link thickness and the dominant path are all derived
-  from it.</p>
+  <p>Two fields in Levels are the minimum: with one, the visual asks for a second; with none, it shows a start
+  screen with the three steps and links to this guide. Optionally add a measure to <strong>Value</strong>: node
+  badges, link thickness and the dominant path are derived from it. Without it, each row counts 1.</p>
+  <p>While you edit, setup tips at the bottom of the visual show which wells are filled and apply a style template,
+  link labels, level headers or the direction in one click. Close them with &#10005;; <em>Style template &rarr; Show
+  setup tips</em> brings them back. They never appear in reading view.</p>
 </div>
 
 <div class="card">
@@ -258,7 +263,7 @@ version 1.1.0.0 of the visual.</p>
 
 <div class="card">
   <h3>4. Add context</h3>
-  <p>A <strong>Target</strong> measure turns on the KPI badge on each node (actual against target, with the
+  <p>These three wells are Pro. A <strong>Target</strong> measure turns on the KPI badge on each node (actual against target, with the
   variation percentage). A <strong>Swimlane</strong> field draws coloured bands across the levels. Measures in
   <strong>Tooltip fields</strong> appear on hover without changing the layout.</p>
 </div>
@@ -270,7 +275,7 @@ version 1.1.0.0 of the visual.</p>
 </div>
 
 <h2 id="fields">Field Wells</h2>
-<p>Six field wells. Only <strong>Levels</strong> and <strong>Value</strong> are needed to draw a diagram.</p>
+<p>Six field wells. Only <strong>Levels</strong> is needed &mdash; two fields or more. <strong>Value</strong> is optional: without it each row counts 1.</p>
 
 <table>
   <thead>
@@ -278,32 +283,32 @@ version 1.1.0.0 of the visual.</p>
   </thead>
   <tbody>
     <tr>
-      <td><strong>Levels</strong></td><td>Grouping fields</td><td>Yes</td>
+      <td><strong>Levels</strong></td><td>Grouping fields</td><td>Yes &mdash; two or more</td>
       <td>One field per stage, in process order. Defines the layers of the diagram; repeated values merge into
       shared nodes. Add fields to go deeper, reorder them to restructure the flow.</td>
     </tr>
     <tr>
-      <td><strong>Level images</strong></td><td>Measure</td><td>No</td>
+      <td><strong>Level images (Pro)</strong></td><td>Measure</td><td>No</td>
       <td>Base64 image strings, one per level, supplied by your data model. Rendered inside the node chips.
       Nothing is fetched from the network &mdash; if the string is not in the model, no image appears.</td>
     </tr>
     <tr>
-      <td><strong>Value</strong></td><td>Measure</td><td>Yes</td>
+      <td><strong>Value</strong></td><td>Measure</td><td>No</td>
       <td>The weight of each node and link. Drives badge numbers, link thickness, the dominant path and the
-      variants ranking.</td>
+      variants ranking. Without it, each row counts 1.</td>
     </tr>
     <tr>
-      <td><strong>Target</strong></td><td>Measure</td><td>No</td>
+      <td><strong>Target &mdash; KPI badge (Pro)</strong></td><td>Measure</td><td>No</td>
       <td>Enables the KPI badge. Each node shows its value against target with a variation percentage, coloured
       by the KPI up/down colours.</td>
     </tr>
     <tr>
-      <td><strong>Swimlane</strong></td><td>Grouping field</td><td>No</td>
+      <td><strong>Swimlane (Pro)</strong></td><td>Grouping field</td><td>No</td>
       <td>Draws coloured bands across the levels so you can see which part of the organisation or which phase
       owns each stage.</td>
     </tr>
     <tr>
-      <td><strong>Tooltip fields</strong></td><td>Measures</td><td>No</td>
+      <td><strong>Tooltip fields (Pro)</strong></td><td>Measures</td><td>No</td>
       <td>Extra measures shown on hover. Report page tooltips are supported as well &mdash; see
       <a href="#interaction">Interaction</a>.</td>
     </tr>
@@ -311,8 +316,17 @@ version 1.1.0.0 of the visual.</p>
 </table>
 
 <h2 id="format">Format Pane Reference</h2>
-<p>Seven cards, listed in the order they appear in the pane. Default values are given so you can always get
+<p>Nine cards, listed in the order they appear in the pane. Default values are given so you can always get
 back to the starting point.</p>
+
+<h3>Style template</h3>
+<table>
+  <thead><tr><th>Setting</th><th>Default</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>Template</td><td>Default</td><td>Also Clean, Outline, Contrast, Compact and Minimal. A template only fills settings you have not changed yourself.</td></tr>
+    <tr><td>Show setup tips</td><td>On</td><td>The tips at the bottom of the visual, while editing only.</td></tr>
+  </tbody>
+</table>
 
 <h3>Layout</h3>
 <table>
@@ -321,6 +335,17 @@ back to the starting point.</p>
     <tr><td>Direction</td><td>Left to right</td><td>Or top to bottom. Left to right suits long processes; top to bottom suits deep hierarchies in a narrow visual.</td></tr>
     <tr><td>Spacing between nodes</td><td>24</td><td>Gap within a layer. Lower it when a level has many branches.</td></tr>
     <tr><td>Spacing between levels</td><td>100</td><td>Gap between layers. This is the setting to raise when links get hard to follow.</td></tr>
+    <tr><td>Fit large diagrams to the visual</td><td>On</td><td>A diagram larger than the visual is fitted when it loads, and again only when the data, the direction or the visual size changes.</td></tr>
+    <tr><td>Toolbar</td><td>On</td><td>Search, zoom buttons, Variants and the tooltip switch.</td></tr>
+    <tr><td>Zoom buttons</td><td>On</td><td>&minus;, + and Fit. With them hidden, Ctrl + mouse wheel and + / &minus; / 0 still zoom.</td></tr>
+    <tr><td>Toolbar size</td><td>12</td><td>Text size of the search box and buttons, 8 to 20.</td></tr>
+    <tr><td>Minimap</td><td>On</td><td>Shown with more than 6 nodes in a visual of at least 360 &times; 240.</td></tr>
+    <tr><td>Level headers</td><td>Off</td><td>The name of each Levels field above (or beside) its column of nodes.</td></tr>
+    <tr><td>Header size / color</td><td>11 / #4C566A</td><td></td></tr>
+    <tr><td>Background</td><td>Off</td><td>Paints the visual; the toolbar, legend and minimap take the same colour. Off, they are transparent.</td></tr>
+    <tr><td>Background color</td><td>#FFFFFF</td><td></td></tr>
+    <tr><td>Background grid</td><td>Off</td><td></td></tr>
+    <tr><td>Grid color</td><td>#E5E9F0</td><td></td></tr>
   </tbody>
 </table>
 
@@ -334,6 +359,7 @@ back to the starting point.</p>
     <tr><td>Font family</td><td>Segoe UI</td><td>Also Arial, Calibri, Georgia, Consolas.</td></tr>
     <tr><td>Label size</td><td>12</td><td>Node label size in points.</td></tr>
     <tr><td>Text color</td><td>#FFFFFF</td><td>Label colour. Pair it with the node colours below.</td></tr>
+    <tr><td>Step number</td><td>On</td><td>The level.order code at the top right of each node.</td></tr>
     <tr><td>Show value badge in chip</td><td>On</td><td>Off hides the number and leaves only the label.</td></tr>
     <tr><td>Badge font / size</td><td>Segoe UI / 9</td><td>Badge typography, set independently of the label.</td></tr>
     <tr><td>Badge text color</td><td>#FFFFFF</td><td></td></tr>
@@ -346,6 +372,11 @@ back to the starting point.</p>
     <tr><td>Color border by level</td><td>Off</td><td>On takes the border colour from the level palette instead.</td></tr>
     <tr><td>Show node shadow</td><td>Off</td><td></td></tr>
     <tr><td>Shadow color</td><td>#000000</td><td></td></tr>
+    <tr><td>Shadow blur / offset X / offset Y / opacity %</td><td>4 / 0 / 2 / 35</td><td></td></tr>
+    <tr><td>Image size</td><td>24</td><td>For node images (Pro).</td></tr>
+    <tr><td>Image background</td><td>Off</td><td>A colour behind node images, so a transparent or dark icon reads on any node colour.</td></tr>
+    <tr><td>Image background color</td><td>#FFFFFF</td><td></td></tr>
+    <tr><td>Image shape</td><td>Rounded</td><td>Also Circle and Square. The shape also crops the image.</td></tr>
   </tbody>
 </table>
 
@@ -353,8 +384,8 @@ back to the starting point.</p>
 <table>
   <thead><tr><th>Setting</th><th>Default</th><th>Notes</th></tr></thead>
   <tbody>
-    <tr><td>Number format</td><td>Thousands (1,234)</td><td>Also Plain, Compact (1.2K / 3.4M) and Percent.</td></tr>
-    <tr><td>Decimal places</td><td>0</td><td></td></tr>
+    <tr><td>Number format</td><td>Model format</td><td>The measure's own format, dynamic format strings included, in the report's language. Also Thousands, Compact (1.2K / 3.4M), Plain and Percent.</td></tr>
+    <tr><td>Decimal places</td><td>0</td><td>With Model format it applies only once you set it.</td></tr>
     <tr><td>Prefix</td><td>&mdash;</td><td>For example a currency symbol.</td></tr>
     <tr><td>Suffix</td><td>&mdash;</td><td>For example a unit.</td></tr>
   </tbody>
@@ -371,6 +402,19 @@ back to the starting point.</p>
     <tr><td>Dominant path thickness &times;</td><td>1.3</td><td>Multiplier applied to that path.</td></tr>
     <tr><td>Highlight top end-to-end variant</td><td>Off</td><td>Traces the single most frequent complete route instead.</td></tr>
     <tr><td>Top variant color</td><td>#F5A623</td><td>Colour used for that route.</td></tr>
+    <tr><td>Link labels</td><td>Off</td><td>A label on each link. When two labels would overlap, the larger link keeps its label.</td></tr>
+    <tr><td>Label shows</td><td>Value</td><td>Also % of total, or value and %.</td></tr>
+    <tr><td>Label size / color</td><td>9 / #4C566A</td><td></td></tr>
+  </tbody>
+</table>
+
+<h3>Color rules (Pro)</h3>
+<table>
+  <thead><tr><th>Setting</th><th>Default</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>Compare</td><td>Node value</td><td>Also % of total and % vs target (needs a Target measure).</td></tr>
+    <tr><td>Rule 1&ndash;3</td><td>Off</td><td>Each rule has a condition (greater than / less than), a value and a colour. The first rule a node meets paints it.</td></tr>
+    <tr><td>Rule colours</td><td>#C9524A, #3E9C5B, #D9A441</td><td></td></tr>
   </tbody>
 </table>
 
@@ -390,7 +434,12 @@ back to the starting point.</p>
 <h3>Legend</h3>
 <table>
   <thead><tr><th>Setting</th><th>Default</th><th>Notes</th></tr></thead>
-  <tbody><tr><td>Show legend</td><td>On</td><td>Single toggle.</td></tr></tbody>
+  <tbody>
+    <tr><td>Show legend</td><td>On</td><td>Shown when nodes are coloured by level.</td></tr>
+    <tr><td>Position</td><td>Bottom left</td><td>Also bottom right and top right. At the bottom it keeps its own space, so the diagram never sits under it.</td></tr>
+    <tr><td>Use field names</td><td>On</td><td>The name of each Levels field instead of &ldquo;Level 1, 2, 3&rdquo;.</td></tr>
+    <tr><td>Text size / color</td><td>11 / #333333</td><td></td></tr>
+  </tbody>
 </table>
 
 <h3>Data colors</h3>
@@ -408,26 +457,30 @@ back to the starting point.</p>
 <div class="card">
   <h3>Cross-filtering and selection</h3>
   <p>Clicking a node or a link filters the rest of the report through the standard Power BI selection model.
-  Ctrl+click adds to the selection; clicking empty space clears it. Selections made in other visuals dim the
+  Ctrl+click adds to the selection; clicking empty space or pressing Escape clears it. Selections made in other visuals dim the
   parts of the diagram that fall outside them, and the visual takes part in slicer state synchronisation.</p>
 </div>
 
 <div class="card">
   <h3>Tooltips</h3>
-  <p>Standard tooltips show the node or link with its value, plus anything in <strong>Tooltip fields</strong>.
+  <p>Node tooltips show the step, level, position, origin, inflow, outflow and share of the total (plus target
+  and variance with a Target measure); link tooltips show source, destination, value and share of the total. Anything
+  in <strong>Tooltip fields</strong> (Pro) is added.
   Report page tooltips are supported too, including on links: point the visual at a tooltip page and it will be
   used instead of the default card.</p>
 </div>
 
 <div class="card">
   <h3>Navigating a large diagram</h3>
-  <p>Zoom, native scrolling, a minimap, in-diagram search and a fit-to-view control. Collapsing a mid-level node
-  folds its branch away and recalculates the values downstream, which is usually a faster way to read a wide
-  process than zooming out.</p>
+  <p>Zoom (buttons, Ctrl + mouse wheel, or + / &minus; / 0 with the keyboard), native scrolling, a minimap at the
+  top right and fit to view; a large diagram is fitted to the visual when it loads, and the diagram stays centered
+  between the toolbar and the legend. Pro adds an in-diagram search and collapsing a mid-level node, which folds its
+  branch away and recalculates the values downstream &mdash; usually a faster way to read a wide process than
+  zooming out.</p>
 </div>
 
 <div class="card">
-  <h3>Variants panel</h3>
+  <h3>Variants panel (Pro)</h3>
   <p>Lists the top eight end-to-end paths by value. Selecting one traces it on the diagram, which answers
   &ldquo;what actually happens most of the time&rdquo; without rebuilding the model.</p>
 </div>
@@ -435,8 +488,9 @@ back to the starting point.</p>
 <h2 id="accessibility">Accessibility</h2>
 
 <h3>Keyboard navigation</h3>
-<p>The diagram is reachable with the keyboard: Tab moves focus into it, the arrow keys move between nodes,
-Enter selects and Escape clears the selection. Focus is visible at all times.</p>
+<p>The diagram is one tab stop. The arrow keys move along the flow and within a level, Home and End go to the
+first and last step, Enter or Space selects, Escape clears the selection, and + / &minus; / 0 zoom. The focus ring
+is always visible, and screen readers hear each step with its level, value and, with a Target, its variance.</p>
 
 <h3>High contrast</h3>
 <p>When Power BI is in a high-contrast theme the visual takes its colours from the host palette rather than the
@@ -447,9 +501,11 @@ dominant path and the selected node are distinguished by thicker outlines, not b
 <table>
   <thead><tr><th>&nbsp;</th><th>Free <span class="badge badge-free">Free</span></th><th>Pro <span class="badge badge-pro">Pro</span></th></tr></thead>
   <tbody>
-    <tr><td>Nodes per diagram</td><td><strong>Every node, always</strong></td><td>Every node, always</td></tr>
+    <tr><td>Nodes per diagram</td><td><strong>Every node, always</strong> (up to the rows Power BI sends the visual, 1,000 by default)</td><td>Every node, always</td></tr>
     <tr><td>Layout, links, legend, zoom, fit, minimap</td><td>Included</td><td>Included</td></tr>
     <tr><td>Cross-filtering, tooltips, keyboard, high contrast</td><td>Included</td><td>Included</td></tr>
+    <tr><td>12 languages, style templates, setup tips</td><td>Included</td><td>Included</td></tr>
+    <tr><td>Link labels, level headers, grid, backgrounds, legend and toolbar options, on-canvas formatting</td><td>Included</td><td>Included</td></tr>
     <tr><td>Collapse &amp; expand branches</td><td>&mdash;</td><td>Included</td></tr>
     <tr><td>Node search</td><td>&mdash;</td><td>Included</td></tr>
     <tr><td>Variants panel</td><td>&mdash;</td><td>Included</td></tr>
@@ -457,14 +513,15 @@ dominant path and the selected node are distinguished by thicker outlines, not b
     <tr><td>Node images</td><td>&mdash;</td><td>Included</td></tr>
     <tr><td>KPI badge (Target)</td><td>&mdash;</td><td>Included</td></tr>
     <tr><td>Extra tooltip fields</td><td>&mdash;</td><td>Included</td></tr>
+    <tr><td>Color rules</td><td>&mdash;</td><td>Included</td></tr>
   </tbody>
 </table>
 <p><strong>The free tier draws your whole diagram &mdash; every node, every link, in a published report too.</strong>
-Until version 1.1.0.0 it stopped at nine nodes, which is not a smaller diagram but a picture of a flow that does not
-exist. What Pro adds is the layer on top: the tools that only start to matter once a diagram is too big to read at a
+What Pro adds is the layer on top: the tools that only start to matter once a diagram is too big to read at a
 glance, and the wells that turn it into an analysis.</p>
-<p>While you edit a report without a licence, a Pro feature you turn on is drawn <strong>working</strong>, under a
-&ldquo;Pro preview&rdquo; watermark naming it, so you can see exactly what you would be buying. Reading view draws
+<p>While you edit a report without a licence, a Pro feature you turn on is drawn <strong>working</strong> on the five
+largest nodes, two swimlanes and three variants, under a &ldquo;Pro preview&rdquo; watermark naming it, so you can see
+on your own data what you would be buying. Reading view draws
 the free result with no watermark, so a published report never uses a feature you have not paid for.</p>
 <p>Pro is licensed through Microsoft AppSource. The licence is checked with the official Power BI licensing API,
 asynchronously and off the rendering path, and falls back to Free if the check cannot be completed. No external
@@ -475,8 +532,8 @@ server is involved. See the <a href="terms.html">Terms of Use</a> for what each 
 <details>
   <summary>My diagram is empty. What am I missing?</summary>
   <div class="faq-body">
-    <p>Flow Chart needs at least one field in <strong>Levels</strong> and a measure in <strong>Value</strong>.
-    With Levels alone there is nothing to weight the nodes with, and nothing is drawn.</p>
+    <p>Flow Chart needs at least two fields in <strong>Levels</strong>. With one, it asks for a second; with none,
+    it shows the start screen. <strong>Value</strong> is optional: without it each row counts 1.</p>
   </div>
 </details>
 
@@ -493,14 +550,14 @@ server is involved. See the <a href="terms.html">Terms of Use</a> for what each 
   <div class="faq-body">
     <p>No. Since version 1.1.0.0 the free tier draws every node, in Power BI Desktop and in a published report
     alike. Earlier versions stopped at nine. If a diagram still looks cut off, use <strong>Fit</strong> in the
-    toolbar, or check the Power BI row limit for very large models.</p>
+    toolbar (or press 0), or check the Power BI row limit for very large models.</p>
   </div>
 </details>
 
 <details>
-  <summary>I bought Pro but the limit is still there.</summary>
+  <summary>I bought Pro but still see the watermark or no search box.</summary>
   <div class="faq-body">
-    <p>The licence check runs asynchronously, so give the visual a moment after the report loads. If the limit
+    <p>The licence check runs asynchronously, so give the visual a moment after the report loads. If it
     persists, confirm the Pro subscription is assigned to the account viewing the report &mdash; not only to the
     account that bought it &mdash; then refresh. If it still does not resolve, email
     <a href="mailto:support@tcviz.com">support@tcviz.com</a> with the report and the account in question.</p>
@@ -541,10 +598,34 @@ server is involved. See the <a href="terms.html">Terms of Use</a> for what each 
 </details>
 
 <details>
+  <summary>The numbers look different after updating to 1.2.</summary>
+  <div class="faq-body">
+    <p>Since 1.2 the default number format is the measure's own format (<em>Value format &rarr; Model format</em>).
+    Choose <strong>Thousands</strong> there to get the 1.1 look back.</p>
+  </div>
+</details>
+
+<details>
+  <summary>Where did the setup tips go?</summary>
+  <div class="faq-body">
+    <p>They show only while editing, in a visual of at least 380 &times; 240. If you closed them, turn on
+    <em>Style template &rarr; Show setup tips</em>.</p>
+  </div>
+</details>
+
+<details>
+  <summary>Can I hide the toolbar?</summary>
+  <div class="faq-body">
+    <p>Yes: <em>Layout &rarr; Toolbar</em>, or only the zoom buttons with <em>Zoom buttons</em>. Readers can still
+    zoom with Ctrl + mouse wheel and + / &minus; / 0.</p>
+  </div>
+</details>
+
+<details>
   <summary>Does the visual send my data anywhere?</summary>
   <div class="faq-body">
     <p>No. There are no network calls, no telemetry and no browser storage. Everything is computed from the
-    Power BI data view inside the report. The <a href="privacy.html">Privacy Policy</a> spells this out.</p>
+    Power BI data view inside the report. The links on the start screen open only when you click them. The <a href="privacy.html">Privacy Policy</a> spells this out.</p>
   </div>
 </details>
 
@@ -560,7 +641,7 @@ server is involved. See the <a href="terms.html">Terms of Use</a> for what each 
 <div class="contact-box">
   <div class="icon">&#9993;</div>
   <div>
-    <h3>Need help? We reply within 1 business day.</h3>
+    <h3>Need help? We usually reply within one business day.</h3>
     <p>Email <a href="mailto:support@tcviz.com">support@tcviz.com</a>. Including your Power BI Desktop version and
     the visual version gets you an answer faster.</p>
   </div>

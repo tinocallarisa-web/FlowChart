@@ -202,7 +202,7 @@
 <div class="wrap">
 
   <h1>Terms of Use</h1>
-  <p class="meta">Flow Chart &mdash; TCViz &nbsp;&middot;&nbsp; Effective: September 2026</p>
+  <p class="meta">Flow Chart &mdash; TCViz &nbsp;&middot;&nbsp; Effective: October 2026</p>
 
   <p>These Terms of Use govern your use of Flow Chart, a Power BI custom visual developed by TCViz and
   distributed through Microsoft AppSource. By installing or using the visual you agree to them.</p>
@@ -218,10 +218,12 @@
       <li>Horizontal or vertical layout, per-layer centring and crossing-minimisation</li>
       <li>Cycle detection, drawn as discontinuous loops</li>
       <li>Dominant path emphasis and top end-to-end variant highlighting</li>
-      <li>Zoom, native scroll, minimap and fit to view</li>
+      <li>Zoom (buttons, Ctrl + mouse wheel, keyboard), native scroll, minimap and fit to view</li>
+      <li>Style templates, setup tips, link labels, level headers, background and grid, legend and toolbar options, on-canvas formatting</li>
+      <li>Twelve languages</li>
       <li>Native selection, cross-filtering, context menu, standard and report page tooltips</li>
       <li>Keyboard focus and high contrast support</li>
-      <li>The complete Format Pane: layout, nodes, badges, value format, links, swimlanes, legend, data colours</li>
+      <li>The Format Pane, except Color rules: style template, layout, nodes, badges, value format, links, swimlanes, legend, data colours</li>
     </ul>
 
     <h3 style="margin-top:20px;">Pro tier <span class="badge badge-pro">Pro</span></h3>
@@ -235,25 +237,28 @@
       <li>Level images from base64 strings in your model</li>
       <li>KPI badges (value against target, with variation %)</li>
       <li>Extra tooltip fields</li>
+      <li>Color rules: up to three, by value, share of total or variance against Target</li>
     </ul>
-    <p>While you edit a report without a licence, a Pro feature you turn on is drawn <em>working</em> under a
-    &ldquo;Pro preview&rdquo; watermark naming it. Reading view always shows the Free result.</p>
+    <p>While you edit a report without a licence, a Pro feature you turn on is drawn <em>working</em> on the five
+    largest nodes, two swimlanes and three variants, under a &ldquo;Pro preview&rdquo; watermark naming it. Reading
+    view always shows the Free result.</p>
   </div>
 
   <table>
     <thead><tr><th>Feature</th><th>Free</th><th>Pro</th></tr></thead>
     <tbody>
-      <tr><td>Nodes per diagram</td><td>No cap (Power BI row limit applies)</td><td>No cap (Power BI row limit applies)</td></tr>
+      <tr><td>Nodes per diagram</td><td>No cap (up to the rows Power BI sends the visual, 1,000 by default)</td><td>No cap (same row limit)</td></tr>
       <tr><td>Process diagram, branch merging, cycle detection</td><td>&#10003;</td><td>&#10003;</td></tr>
       <tr><td>Dominant path and top variant highlighting</td><td>&#10003;</td><td>&#10003;</td></tr>
       <tr><td>Zoom, minimap, fit to view</td><td>&#10003;</td><td>&#10003;</td></tr>
       <tr><td>Cross-filtering, context menu, tooltips</td><td>&#10003;</td><td>&#10003;</td></tr>
-      <tr><td>Keyboard focus, high contrast</td><td>&#10003;</td><td>&#10003;</td></tr>
-      <tr><td>Full Format Pane</td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>Keyboard navigation, high contrast, 12 languages</td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>Style templates, link labels, level headers, grid, backgrounds, legend and toolbar options</td><td>&#10003;</td><td>&#10003;</td></tr>
+      <tr><td>Format Pane</td><td>&#10003; except Color rules</td><td>&#10003;</td></tr>
       <tr><td>Collapse / expand with value recalculation</td><td>&mdash;</td><td>&#10003;</td></tr>
       <tr><td>Node search</td><td>&mdash;</td><td>&#10003;</td></tr>
       <tr><td>Variants panel (top 8 paths)</td><td>&mdash;</td><td>&#10003;</td></tr>
-      <tr><td>Swimlanes, level images, KPI badges, extra tooltips</td><td>&mdash;</td><td>&#10003;</td></tr>
+      <tr><td>Swimlanes, level images, KPI badges, extra tooltips, color rules</td><td>&mdash;</td><td>&#10003;</td></tr>
     </tbody>
   </table>
 
@@ -274,8 +279,9 @@
   <h2>4. Intellectual property</h2>
   <p>Flow Chart and its associated assets are the intellectual property of TCViz. The visual is licensed to you
   for use; it is not sold, and TCViz retains all ownership rights.</p>
-  <p>The source code is not published. It is made available to Microsoft for Power BI certification
-  review only.</p>
+  <p>The source code is published in a public GitHub repository so that it can be reviewed, including for
+  Power BI certification. Publishing it does not license it: it remains proprietary, all rights reserved, and the
+  restrictions in section 3 apply to it.</p>
 
   <h2>5. Disclaimer of warranties</h2>
   <p>Flow Chart is provided &ldquo;as is&rdquo;, without warranty of any kind, express or implied. TCViz makes no

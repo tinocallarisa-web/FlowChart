@@ -1,22 +1,13 @@
 Flow Chart for Power BI — build interactive process diagrams straight from your data model, with full native Power BI selection and cross-filtering.
 
-In this video: how to set up the visual, the hierarchical Levels field well, KPI badges, swimlanes, variant analysis, golden path highlighting, and the Free vs Pro tiers.
+In this video: how to set up the visual, the hierarchical Levels field well, style templates and setup tips, link labels and level headers, KPI badges, swimlanes, variant analysis, golden path highlighting, and the Free vs Pro tiers. The visual is available in 12 languages.
 
 CHAPTERS
-0:00 Introduction
-0:00 Setting up the data (Levels, Value)
-0:00 Automatic tree building and branch merging
-0:00 KPI badges (Target field)
-0:00 Swimlanes
-0:00 Golden path and Variants panel
-0:00 Collapse / expand, zoom, minimap, search
-0:00 Format pane tour
-0:00 Free vs Pro
-0:00 Wrap-up
+(add real timestamps when the 1.2 video is uploaded; YouTube ignores a list where every chapter is 0:00)
 
 FREE VS PRO
-Free: full feature set, diagrams up to 9 nodes.
-Pro: no node cap (Power BI row limit applies). Licensed through Microsoft AppSource — no extra setup, detected automatically once your subscription is active.
+Free: the whole diagram, every node, plus templates, link labels, level headers, grid, backgrounds and 12 languages.
+Pro: collapse/expand, node search, the Variants panel, swimlanes, node images, the KPI badge, extra tooltips and color rules. Licensed through Microsoft AppSource — no extra setup, detected automatically once your subscription is active.
 
 LINKS
 Support & FAQ: https://tinocallarisa-web.github.io/FlowChart/support.html
@@ -30,7 +21,7 @@ This visual makes no external network calls — everything runs locally inside y
 
 ---
 SHORT VERSION (Shorts / LinkedIn)
-Turn a flat table into a fully interactive process diagram in Power BI — no DAX, just drag your hierarchy fields in order. Native selection, cross-filtering, KPI badges, swimlanes and variant analysis included. #PowerBI #DataViz
+Turn a flat table into a fully interactive process diagram in Power BI — no DAX, just drag your hierarchy fields in order. Native selection, cross-filtering and 12 languages included; KPI badges, swimlanes and variant analysis in Pro. #PowerBI #DataViz
 
 ---
 ALTERNATE TITLES

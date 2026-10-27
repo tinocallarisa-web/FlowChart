@@ -209,28 +209,67 @@
 
   <div class="rel">
     <div class="rel-head">
-      <span class="rel-ver">1.1.0.0</span>
+      <span class="rel-ver">1.2.0.0</span>
       <span class="tag tag-cur">Current</span>
+      <span class="rel-date">2026-10-27</span>
+    </div>
+
+    <h4><span class="tag tag-add">Added</span></h4>
+    <ul>
+      <li><strong>Twelve languages.</strong> English, Spanish, French, German, Italian, Portuguese (Brazil and Portugal), Dutch, Polish, Japanese, Simplified Chinese and Korean — the Format pane, the toolbar, tooltips, messages, the start screen and the setup tips. Until now the visual was in English only.</li>
+      <li><strong>Style templates (free):</strong> Default, Clean, Outline, Contrast, Compact and Minimal. A template only fills settings you have not changed yourself.</li>
+      <li><strong>Setup tips while you edit (free):</strong> which wells are filled, the templates in one click, and link labels, level headers and direction as one-click switches. Close them with ✕; <em>Format → Style template → Show setup tips</em> brings them back. Never shown in reading view.</li>
+      <li><strong>Start screen</strong> of the TCViz series when the visual has no fields: the three steps and links to the guide, the product page and the video, in three sizes. Links open only on a click, through Power BI. With a single level it says that a flow needs a second one.</li>
+      <li><strong>Link labels (free):</strong> the value, its share of the total, or both, on each link. When two labels would overlap, the larger link keeps its label.</li>
+      <li><strong>Level headers (free):</strong> the name of each Levels field above (or beside) its column of nodes.</li>
+      <li><strong>Background grid (free)</strong> and <strong>step numbers on or off</strong> (<em>Nodes → Step number</em>).</li>
+      <li><strong>Background (free):</strong> <em>Layout → Background</em> paints the visual and gives the toolbar, legend and minimap the same color; without it they are transparent over the report background instead of white boxes.</li>
+      <li><strong>Image background and shape (free):</strong> <em>Nodes → Image background</em> puts a color behind node images, and <em>Image shape</em> (rounded, circle, square) also crops the image.</li>
+      <li><strong>Legend options:</strong> position (bottom left, bottom right, top right), text size and color, and the field names instead of "Level 1, 2, 3".</li>
+      <li><strong>Color rules (Pro):</strong> up to three rules that paint a node by its value, its share of the total or its variance against Target.</li>
+      <li><strong>Toolbar and minimap options (free):</strong> <em>Layout → Toolbar</em>, <em>Zoom buttons</em> and <em>Minimap</em> show or hide them (the diagram already fits itself on load), and <em>Toolbar size</em> scales the search box and buttons.</li>
+      <li><strong>Format on the canvas:</strong> in format mode, click a node, a link, a link label, the legend, a level header or the toolbar to format it there.</li>
+      <li><strong>Keyboard:</strong> one tab stop for the diagram; the arrow keys move along the flow and within a level, Home and End go to the first and last step. Visible focus ring.</li>
+    </ul>
+
+    <h4><span class="tag tag-chg">Changed</span></h4>
+    <ul>
+      <li><strong>Numbers use the format of your model by default</strong> (<em>Value format → Model format</em>), dynamic format strings included, in the report's language. Reports that never chose a format will show the measure's own format after the update; the previous options are still there.</li>
+      <li><strong>Large diagrams fit the visual when they load</strong> (<em>Layout → Fit large diagrams to the visual</em>), instead of opening at 100% with most of the diagram out of view.</li>
+      <li><strong>Node name and value are centered together</strong> in the node, with the same margin above and below; the value no longer sits on the bottom edge.</li>
+      <li><strong>The diagram is centered by the visual</strong>, horizontally and vertically, and zooming grows it from the center. Before, zooming in pushed it down. The space for the toolbar is kept above the diagram, so it is centered in the area below it, also top to bottom.</li>
+      <li><strong>Zoom without buttons:</strong> Ctrl + mouse wheel over the diagram, and + / − / 0 with the keyboard, so readers can still zoom when the author hides the zoom buttons.</li>
+      <li><strong>Top to bottom:</strong> the collapse button sits under the node, where the flow continues, instead of on its side.</li>
+      <li><strong>Smaller visuals:</strong> below 320 px wide the toolbar keeps only <em>Fit</em>; the minimap hides below 360 × 240 and the legend below 140 px high. The minimap moved to the top right, where it no longer covers the first or the last nodes (bottom right if the legend is at the top right).</li>
+      <li><strong>Pro preview</strong> while editing without a licence now draws the Pro layers on the five largest nodes, two swimlanes and three variants, under the watermark — enough to see them working on your data. Reading view is unchanged: the free diagram.</li>
+      <li>New icon of the TCViz series.</li>
+      <li>Tooling: powerbi-visuals-tools 7.2.1, ESLint with the certification plugin, <code>hostCapabilities.allowInteractions</code>.</li>
+    </ul>
+  </div>
+
+  <div class="rel">
+    <div class="rel-head">
+      <span class="rel-ver">1.1.0.0</span>
       <span class="rel-date">2026-09-22</span>
     </div>
 
     <h4><span class="tag tag-chg">Changed</span></h4>
     <ul>
-      <li><strong>The nine-node cap is gone. The free tier now draws the whole diagram, always.</strong> An org chart, a process or a sales funnel go past nine nodes almost every time, so the free tier handed back a diagram cut in half &mdash; a picture of a flow that does not exist, with nothing saying so. A node cap punishes exactly the person who has real data and would pay, while giving someone with eight nodes no reason to.</li>
+      <li><strong>The nine-node cap is gone. The free tier now draws the whole diagram, always.</strong> An org chart, a process or a sales funnel go past nine nodes almost every time, so the free tier handed back a diagram cut in half — a picture of a flow that does not exist, with nothing saying so. A node cap punishes exactly the person who has real data and would pay, while giving someone with eight nodes no reason to. What is bought now is the layer on top: the tools that only matter at scale, and the analyst wells.</li>
       <li><strong>Free vs Pro.</strong> Free: the complete diagram, nodes, links, layout, legend, zoom, fit and tooltips. Pro: collapse and expand branches, the node search, the Variants panel, swimlanes, node images, the KPI badge and extra tooltip fields. Nothing that would misrepresent the data is behind the licence.</li>
     </ul>
 
     <h4><span class="tag tag-fix">Fixed</span></h4>
     <ul>
-      <li><strong>There was no purchase path at all.</strong> The visual called <code>notifyFeatureBlocked()</code> and nothing else: the message read &ldquo;Pro removes the node cap&rdquo; and there was no button anywhere, because <code>notifyLicenseRequired()</code> &mdash; the call that carries the Upgrade bar &mdash; was never invoked. The sequence is now clear &rarr; the banner naming the feature &rarr; and, after about ten seconds, the Upgrade bar.</li>
-      <li><strong>No <code>innerHTML</code> anywhere, and no lint suppression.</strong> The render built the whole DOM as text and injected it with <code>innerHTML</code>, with the security rule disabled by hand. Everything is now built with <code>createElement</code> and <code>createElementNS</code>. <code>escapeHtml()</code> was removed entirely: while an escaping helper exists, escaping stays the responsibility of whoever writes the next line, and forgetting once is a vulnerability. Labels go through <code>textContent</code> and identifiers through <code>setAttribute</code>, neither of which ever interprets markup.</li>
-      <li><strong>A collapsed branch could survive the loss of a licence</strong>, leaving the diagram trimmed with no control to reopen it.</li>
+      <li><strong>There was no purchase path at all.</strong> The visual called <code>notifyFeatureBlocked()</code> and nothing else: the message read "Pro removes the node cap" and there was no button anywhere, because <code>notifyLicenseRequired()</code> — the call that carries the Upgrade bar — was never invoked. It was the only visual in the portfolio without a way to buy. The sequence is now <code>clearLicenseNotification()</code> → the banner naming the feature → and, after ~10 s, the Upgrade bar.</li>
+      <li><strong>No <code>innerHTML</code> anywhere, and no lint suppression.</strong> The render built the whole DOM as text and injected it with <code>innerHTML</code>, with <code>powerbi-visuals/no-inner-outer-html</code> disabled by hand — the exact pattern a sibling visual was rejected for under the XSS policy. The toolbar, the SVG, nodes, links, swimlanes, legend, minimap and the variants panel are now built with <code>createElement</code> and <code>createElementNS</code>. <code>escapeHtml()</code> was removed entirely: while an escaping helper exists, escaping stays the responsibility of whoever writes the next line, and forgetting once is an XSS. Labels now go through <code>textContent</code> and identifiers through <code>setAttribute</code>, neither of which ever interprets markup.</li>
+      <li><strong>A collapsed branch could survive the loss of a licence</strong>, leaving the diagram trimmed with no control to reopen it. The collapsed state is cleared when Pro is not in effect.</li>
     </ul>
 
     <h4><span class="tag tag-add">Added</span></h4>
     <ul>
-      <li><strong>Pro preview.</strong> Without a licence, and in edit mode only, a Pro feature is drawn <em>working</em> under a &ldquo;Pro preview&rdquo; watermark naming it. Reading view &mdash; and any environment where licences cannot be read &mdash; draws the free result with no watermark, so a published report never uses an unpaid feature.</li>
-      <li>The four Pro wells now say so: <code>Swimlane (Pro)</code>, <code>Level images (Pro)</code>, <code>Target &mdash; KPI badge (Pro)</code> and <code>Tooltip fields (Pro)</code>.</li>
+      <li><strong>Pro preview.</strong> Without a licence, and <strong>in edit mode only</strong>, a Pro feature is drawn <em>working</em> under a "Pro preview" watermark naming it, with Power BI's own purchase notice. Reading view — and any environment where licences cannot be read — draws the free result with no watermark, so a published report never uses an unpaid feature. Granted per feature. Above nine nodes the scale tools appear in preview, which is where they start to matter.</li>
+      <li>The four Pro wells now say so: <code>Swimlane (Pro)</code>, <code>Level images (Pro)</code>, <code>Target — KPI badge (Pro)</code>, <code>Tooltip fields (Pro)</code>.</li>
     </ul>
   </div>
 

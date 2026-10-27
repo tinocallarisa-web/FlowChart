@@ -1,43 +1,53 @@
-FLOW CHART — TIPS & HINTS
-==========================
+FLOW CHART — TIPS & HINTS (V1.2.0.0)
+=====================================
 
 
 GETTING STARTED
 ---------------
 Minimum setup: drag two or more fields into Levels (in order — the first
-one becomes the root) and a measure into Value. The tree builds itself;
-nodes with the same value at the same level automatically merge.
+one becomes the root) and, optionally, a measure into Value (without it
+each row counts 1). The tree builds itself; nodes with the same value at
+the same level automatically merge.
+While you edit, setup tips at the bottom apply a style template, link
+labels, level headers or the direction in one click. X hides them;
+Style template > Show setup tips brings them back.
 
 
 FIELD WELLS
 -----------
-. Levels ........... one field per hierarchy level, dragged in order
-. Level images ..... optional base64 image per level (aligned with Levels)
-. Value ............ the metric propagated through every parent-child link
-. Target ........... optional, turns on the KPI badge (value + up/down %)
-. Swimlane ......... optional, groups nodes into colored bands
-. Tooltip fields ... optional extra measures shown in tooltips
+. Levels ................... one field per hierarchy level, in order (2+)
+. Level images (Pro) ....... optional base64 image per level
+. Value .................... optional metric; without it each row counts 1
+. Target - KPI badge (Pro) . optional, turns on the KPI badge (value + %)
+. Swimlane (Pro) ........... optional, groups nodes into colored bands
+. Tooltip fields (Pro) ..... optional extra measures shown in tooltips
 
 
 FORMAT PANE
 -----------
 Free vs Pro
-    FREE ... the complete diagram: every node, every link, always. Layout,
-             legend, zoom, fit, tooltips. No node cap, and a published report
-             is never trimmed.
+    FREE ... the complete diagram: every node, every link, always, and
+             every setting below except Color rules (12 languages,
+             templates, link labels, level headers, grid, backgrounds,
+             legend and toolbar options, on-canvas formatting).
     PRO .... the layer on top: collapse/expand branches, node search, the
-             Variants panel, swimlanes, node images, the KPI badge and extra
-             tooltip fields.
-             Editing without a licence, a Pro feature you turn on is drawn
-             WORKING under a "Pro preview" watermark naming it. Reading view
-             draws the free result with no watermark.
-Layout ..... direction (horizontal/vertical), node gap, layer gap
-Nodes ...... width, height, corner radius, font, image size, border, shadow
-Badge/KPI .. font, colors, background opacity, up/down KPI colors
-Value fmt .. plain / thousands / compact (K/M) / percent of total, decimals
-Links ...... color, base width, curvature, golden-path & top-variant highlight
+             Variants panel, swimlanes, node images, the KPI badge, extra
+             tooltip fields and color rules.
+             Editing without a licence, Pro features are drawn WORKING on
+             the 5 largest nodes, 2 swimlanes and 3 variants, under a
+             "Pro preview" watermark. Reading view draws the free result.
+Style ...... 6 templates; setup tips on/off
+Layout ..... direction, node/layer gap, fit on load, toolbar, zoom buttons,
+             toolbar size, minimap, level headers, background, grid
+Nodes ...... size, corner radius, font, step number, badge, KPI colors,
+             border, shadow, image size, image background and shape
+Value fmt .. model format (default) / thousands / compact / plain /
+             percent of total, decimals, prefix/suffix
+Links ...... color, width, curvature, golden-path & top-variant highlight,
+             link labels (value, % or both)
+Color rules  (Pro) up to 3, by value / % of total / % vs target
 Swimlanes .. on/off, 4 band colors, opacity, label style
-Legend ..... on/off (level color legend)
+Legend ..... on/off, position, field names, text size and colour
 Data colors  default color, or per-level (up to 6 configurable colors)
 
 
@@ -47,20 +57,26 @@ TIPS & BEST PRACTICES
   hierarchy top to bottom, not the field names.
 . A node can have more than one parent (e.g. two channels feeding the same
   downstream step) — collapse/expand handles this correctly.
-. Collapsing a node hides its whole branch and recalculates values/targets/
-  link widths downstream, cutting only what passed through that branch.
-. Use the Variants panel (toolbar button) to see the 8 highest-value
+. Collapsing a node (Pro) hides its whole branch and recalculates values/
+  targets/link widths downstream, cutting only what passed through it.
+. Use the Variants panel (Pro, toolbar button) to see the 8 highest-value
   complete paths and trace one on the diagram.
 . Toggle tooltips off from the toolbar for a cleaner view when presenting.
-. The minimap appears automatically once the diagram has more than 6 nodes.
+. The minimap appears with more than 6 nodes in a visual of at least
+  360 x 240, at the top right; Layout > Minimap hides it.
+. Hidden toolbar? Ctrl + mouse wheel and + / - / 0 still zoom.
+. Format mode: click a node, link, label, legend or header to format it.
+. Keyboard: arrows move along the flow, Enter selects, Escape clears.
 
 
 TROUBLESHOOTING
 ----------------
-. Nothing renders ................ check Levels has 2+ fields and Value
-                                     has a measure
+. Nothing renders ................ Levels needs 2+ fields; the visual
+                                     tells you what is missing
+. Numbers changed after update .... 1.2 uses the model format; choose
+                                     Value format > Thousands for the old look
 . Diagram looks cut off ........... not the licence: the free tier draws
-                                     every node. Use Fit in the toolbar
+                                     every node. Use Fit (or press 0)
 . Node not in expected swimlane ... a node only joins a band if EVERY row
                                      feeding it shares the same swimlane
                                      value; otherwise it stays neutral

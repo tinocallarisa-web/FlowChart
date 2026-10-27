@@ -202,7 +202,7 @@
 <div class="wrap">
 
   <h1>Privacy Policy</h1>
-  <p class="meta">Flow Chart &mdash; TCViz &nbsp;&middot;&nbsp; Last updated: September 2026</p>
+  <p class="meta">Flow Chart &mdash; TCViz &nbsp;&middot;&nbsp; Last updated: October 2026</p>
 
   <div class="highlight-box">
     <strong>Short version:</strong> Flow Chart makes no network calls of its own, collects nothing, and stores
@@ -231,7 +231,8 @@
     <h3>Format Pane settings</h3>
     <p>Your formatting choices &mdash; colours, node size, spacing, number format, swimlane bands and the rest
     &mdash; are saved by Power BI inside your report file, on your own storage: OneDrive, SharePoint or the
-    Power BI Service. TCViz has no access to them.</p>
+    Power BI Service. TCViz has no access to them. Clicking a setup tip while editing saves that setting in the
+    report in the same way, like any Format Pane change.</p>
 
     <h3>Licence validation</h3>
     <p>To tell Free from Pro, the visual calls Microsoft's official licensing API
@@ -252,7 +253,12 @@
 
   <h2>4. Network requests and local storage</h2>
   <p>The visual makes exactly one kind of outbound call: the licence check to Microsoft described above. There
-  are no other network requests, no calls to TCViz servers, and no third-party scripts. The visual does not
+  are no other network requests, no calls to TCViz servers, and no third-party scripts.</p>
+  <p>When the visual has no fields it shows a start screen with links to this guide, the product page on
+  tcviz.com and the video on YouTube. They open only when you click them, through Power BI, in your browser; the
+  visual itself requests nothing. The product page link carries a referral tag so that tcviz.com can count visits
+  that come from the visual; it identifies no person, report or data.</p>
+  <p>The visual does not
   write to <code>localStorage</code>, <code>sessionStorage</code>, cookies or any other browser storage.</p>
 
   <h2>5. Third-party services</h2>

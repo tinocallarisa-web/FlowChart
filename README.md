@@ -13,40 +13,47 @@ Built by [TCViz](https://tcviz.com).
 
 Turns a flat table into a process diagram. Each field you drop into **Levels** becomes one stage of
 the flow, in the order you place them; rows sharing a value at a given level merge into one node,
-which is how branches form. The **Value** measure weights every node and link.
+which is how branches form. The **Value** measure weights every node and link (optional: without it each
+row counts 1). The visual is available in 12 languages.
 
 - **Structure from field order** — no hierarchy column, no DAX preparation
 - **Cycle detection** — transitions back to an earlier stage are drawn as discontinuous loops
   instead of distorting the layer order
-- **Dominant path and top variant** highlighting, plus a variants panel with the top 8 end-to-end
-  routes by value
-- **KPI badges** — value against target with a variation percentage
-- **Swimlanes** — colour bands across the levels
-- **Collapse and expand** branches, with cascading value recalculation downstream
-- **Navigation** — zoom, native scroll, minimap, in-diagram search, fit to view
+- **Dominant path and top variant** highlighting, plus a variants panel (Pro) with the top 8
+  end-to-end routes by value
+- **KPI badges (Pro)** — value against target with a variation percentage
+- **Swimlanes (Pro)** — colour bands across the levels
+- **Collapse and expand (Pro)** branches, with cascading value recalculation downstream
+- **Color rules (Pro)** — up to three, by value, share of total or variance against Target
+- **Navigation** — zoom (buttons, Ctrl + wheel, keyboard), native scroll, minimap, fit to view;
+  in-diagram search (Pro)
+- **Make it yours** — 12 languages, style templates and setup tips, link labels, level headers,
+  grid, backgrounds, legend and toolbar options, on-canvas formatting
 - **Native integration** — selection, cross-filtering, context menu, standard and report page
-  tooltips, keyboard focus, high contrast
+  tooltips, keyboard navigation, high contrast
 
 ## Data roles
 
 | Field well | Kind | Required | Purpose |
 |---|---|---|---|
-| Levels | Grouping (multiple) | Yes | One field per stage, in process order |
-| Level images | Measure (optional) | No | Base64 image strings from your model |
-| Value | Measure | Yes | Weights nodes, links and the dominant path |
-| Target | Measure (optional) | No | Enables the KPI badge |
-| Swimlane | Grouping (optional) | No | Colour bands across levels |
-| Tooltip fields | Measure (multiple, optional) | No | Extra measures on hover |
+| Levels | Grouping (multiple) | Yes — two or more | One field per stage, in process order |
+| Level images (Pro) | Measure (optional) | No | Base64 image strings from your model |
+| Value | Measure | No — each row counts 1 without it | Weights nodes, links and the dominant path |
+| Target — KPI badge (Pro) | Measure (optional) | No | Enables the KPI badge |
+| Swimlane (Pro) | Grouping (optional) | No | Colour bands across levels |
+| Tooltip fields (Pro) | Measure (multiple, optional) | No | Extra measures on hover |
 
 Full setup instructions, the complete Format Pane reference and the FAQ are in
 [support.html](https://tinocallarisa-web.github.io/FlowChart/support.html).
 
 ## Free vs Pro
 
-Every feature is unlocked in the Free tier. The only limit is size.
-
-- **Free** — diagrams up to 9 nodes, kept as a connected sub-tree from the root
-- **Pro** — no node cap (Power BI row limit applies), licensed through Microsoft AppSource
+- **Free** — the whole diagram, every node (up to the rows Power BI sends the visual, 1,000 by
+  default), plus templates, link labels, level headers, grid, backgrounds, legend and toolbar
+  options and 12 languages
+- **Pro** — collapse/expand, node search, the Variants panel, swimlanes, node images, the KPI
+  badge, extra tooltip fields and color rules, licensed through Microsoft AppSource. While editing
+  without a licence, Pro is previewed on the five largest nodes under a watermark.
 
 See [terms.html](https://tinocallarisa-web.github.io/FlowChart/terms.html) for the full breakdown.
 
@@ -54,7 +61,7 @@ See [terms.html](https://tinocallarisa-web.github.io/FlowChart/terms.html) for t
 
 No network calls of its own, no telemetry, no browser storage. Everything is computed from the
 Power BI data view inside the report. The one outbound call is the licence check to Microsoft's own
-licensing API. See [privacy.html](https://tinocallarisa-web.github.io/FlowChart/privacy.html).
+licensing API. The start-screen links open only when clicked, through Power BI. See [privacy.html](https://tinocallarisa-web.github.io/FlowChart/privacy.html).
 
 ## Support
 
